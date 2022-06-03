@@ -51,18 +51,6 @@ jobs:
       contents: 'read'
       id-token: 'write'
     runs-on: ubuntu-latest
-    env:
-      JOB_NAME: staging-peeq-tracking-db
-      REGION: europe-west9
-      CLOUDSQL_INSTANCES: favedom-dev:us-central1:mysql-peeq-staging
-      CLOUD_SQL_CONNECTION_NAME: favedom-dev:us-central1:mysql-peeq-staging
-      DB_DRIVER: "jdbc:mysql:"
-      DB_HOST: 127.0.0.1
-      DB_PORT: 3306
-      DB_NAME: peeqtrackingdb
-      DB_USER: peeqtracking
-      DB_PASSWORD: peeq-staging_MYSQL_TRACKING_PASSWORD:latest
-      SQL_PROXY_KEY: peeq-staging_SQL_PROXY_KEY:latest
     steps:
 
       - name: "🔧 Google Auth"
@@ -86,42 +74,42 @@ jobs:
         id: job-exist
         continue-on-error: true
         run: |-
-          gcloud beta run jobs list --filter=${{ env.JOB_NAME }} | cut -f 3 -d ' ' | grep ^${{ env.JOB_NAME }}$
+          gcloud beta run jobs list --filter=${{ inputs.JOB_NAME }} | cut -f 3 -d ' ' | grep ^${{ inputs.JOB_NAME }}$
           echo "JOB_EXISTS=$?" >> $GITHUB_ENV
 
       - name: "📦 Create Cloud Run Job"
         if: steps.job-exist.outcome == 'failure'
         run: |-
-          gcloud beta run jobs create ${{ env.JOB_NAME }} \
-          --image ${{ env.GCR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.NAME }}:latest  \
-          --set-cloudsql-instances=${{ env.CLOUDSQL_INSTANCES }} \
-          --set-env-vars CLOUD_SQL_CONNECTION_NAME=${{ env.CLOUD_SQL_CONNECTION_NAME }} \
-          --set-env-vars DB_DRIVER=${{ env.DB_DRIVER }} \
-          --set-env-vars DB_HOST=${{ env.DB_HOST }} \
-          --set-env-vars DB_PORT=${{ env.DB_PORT }} \
-          --set-env-vars DB_NAME=${{ env.DB_NAME }} \
-          --set-env-vars DB_USER=${{ env.DB_USER }} \
-          --set-secrets DB_PASSWORD=${{ env.DB_PASSWORD }} \
-          --set-secrets SQL_PROXY_KEY=${{ env.SQL_PROXY_KEY }} \
+          gcloud beta run jobs create ${{ inputs.JOB_NAME }} \
+          --image ${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}:latest  \
+          --set-cloudsql-instances=${{ inputs.CLOUDSQL_INSTANCES }} \
+          --set-env-vars CLOUD_SQL_CONNECTION_NAME=${{ inputs.CLOUD_SQL_CONNECTION_NAME }} \
+          --set-env-vars DB_DRIVER=${{ inputs.DB_DRIVER }} \
+          --set-env-vars DB_HOST=${{ inputs.DB_HOST }} \
+          --set-env-vars DB_PORT=${{ inputs.DB_PORT }} \
+          --set-env-vars DB_NAME=${{ inputs.DB_NAME }} \
+          --set-env-vars DB_USER=${{ inputs.DB_USER }} \
+          --set-secrets DB_PASSWORD=${{ inputs.DB_PASSWORD }} \
+          --set-secrets SQL_PROXY_KEY=${{ inputs.SQL_PROXY_KEY }} \
           --command sh \
           --args="-c" \
           --args="./flyway_migrate.sh" \
           --max-retries 1 \
-          --region ${{ env.REGION }} \
+          --region ${{ inputs.REGION }} \
           --quiet
 
       - name: "📦 Update Cloud Run Job"
         if: steps.job-exist.outcome == 'success'
         run: |-
-          gcloud beta run jobs update ${{ env.JOB_NAME }} \
-          --image=${{ env.GCR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.NAME}}:latest \
-          --region ${{ env.REGION }}
+          gcloud beta run jobs update ${{ inputs.JOB_NAME }} \
+          --image=${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME}}:latest \
+          --region ${{ inputs.REGION }}
 
       # https://console.cloud.google.com/run/jobs/details/europe-west9/staging-peeq-tracking-db/executions?project=favedom-dev
       - name: "🌐 Link to Cloud Run Job"
         run: |-
-          echo "https://console.cloud.google.com/run/jobs/details/${{ env.REGION }}/${{ env.JOB_NAME }}/executions?project=${{ env.PROJECT_ID }}"
+          echo "https://console.cloud.google.com/run/jobs/details/${{ inputs.REGION }}/${{ inputs.JOB_NAME }}/executions?project=${{ inputs.PROJECT_ID }}"
 
       - name: "🚀 Execute Cloud Run Job"
         run: |-
-          gcloud beta run jobs execute ${{ env.JOB_NAME }} --wait --region ${{ env.REGION }}
+          gcloud beta run jobs execute ${{ inputs.JOB_NAME }} --wait --region ${{ inputs.REGION }}
