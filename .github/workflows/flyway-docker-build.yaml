@@ -39,7 +39,7 @@ jobs:
       id-token: 'write'
     runs-on: ubuntu-latest
     env:
-      VERSION: 999.999.999
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       DOCKER_BUILDKIT: 1
     steps:
 
