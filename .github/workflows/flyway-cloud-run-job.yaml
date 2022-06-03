@@ -4,6 +4,20 @@ name: Flyway Cloud Run Job
 on:
   workflow_call:
     inputs:
+      NAME:
+        required: true
+        type: string
+      # favedom-dev
+      PROJECT_ID:
+        required: true
+        type: string
+      # GAR_LOCATION:
+        # required: true
+        # type: string
+      # gcr.io
+      GCR_LOCATION:
+        required: true
+        type: string
       JOB_NAME:
         required: true
         type: string
