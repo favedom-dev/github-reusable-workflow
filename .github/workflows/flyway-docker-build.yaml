@@ -75,6 +75,11 @@ jobs:
           tag_prefix: v
           dry_run: true
 
+      - name: Check Release version Output Parameters
+        run: |
+          echo "Got tag name ${{ steps.version.outputs.tag_name }}"
+          echo "Got release version ${{ steps.version.outputs.version }}"
+
       - name: "🐳 Docker build"
         run: |-
           docker build -f Dockerfile -t ${{ env.NAME }} .
