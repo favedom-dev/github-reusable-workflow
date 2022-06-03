@@ -22,6 +22,8 @@ on:
       # GitHub token
       GH_TOKEN:
         required: true
+      GITHUB_TOKEN:
+        required: true
       # Workload Identity Federation Provider
       WIF_PROVIDER:
         required: true
