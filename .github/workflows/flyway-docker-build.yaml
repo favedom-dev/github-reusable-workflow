@@ -1,0 +1,105 @@
+name: Docker Build
+
+on:
+  workflow_call:
+    inputs:
+      # name of service, (ex: peeq-tracking-db)
+      NAME:
+        required: true
+        type: string
+      # favedom-dev
+      PROJECT_ID:
+        required: true
+        type: string
+      # GAR_LOCATION:
+        # required: true
+        # type: string
+      # gcr.io
+      GCR_LOCATION:
+        required: true
+        type: string
+    secrets:
+      # GitHub token
+      GH_TOKEN:
+        required: true
+      # Workload Identity Federation Provider
+      WIF_PROVIDER:
+        required: true
+      # Workload Identity Federation Service Account
+      WIF_SERVICE_ACCOUNT:
+        required: true
+
+jobs:
+
+  docker:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+    env:
+      VERSION: 999.999.999
+      DOCKER_BUILDKIT: 1
+    steps:
+
+      - name: "☁️ Checkout repository"
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: "🔧 Google Auth"
+        if: ${{ !env.ACT }}
+        id: auth
+        uses: 'google-github-actions/auth@v0'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
+          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+
+      - name: "🔧 Docker Auth"
+        if: ${{ !env.ACT }}
+        id: docker-auth
+        uses: 'docker/login-action@v1'
+        with:
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.access_token }}'
+          registry: 'gcr.io'
+
+      # need the VERSION for docker tag
+      - name: "☑ Release version"
+        if: ${{ !env.ACT }}
+        id: version
+        uses: rymndhng/release-on-push-action@master
+        with:
+          bump_version_scheme: patch
+          tag_prefix: v
+          dry_run: true
+
+      - name: "🐳 Docker build"
+        run: |-
+          docker build -f Dockerfile -t ${{ env.NAME }} .
+
+      - name: "🐳 Docker tag"
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |-
+          docker image tag ${{ env.NAME }} "${{ env.GCR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.NAME }}:${{ env.VERSION }}"
+          docker image tag ${{ env.NAME }} "${{ env.GCR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.NAME }}:latest"
+
+      - name: "📦 Docker push"
+        if: ${{ !env.ACT }}
+        run: |-
+          docker push -a "${{ env.GCR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.NAME }}"
+
+      # https://console.cloud.google.com/gcr/images/favedom-dev/global/peeq-tracking-db?project=favedom-dev
+      - name: "🌐 Link to Container"
+        run: |-
+          echo "https://console.cloud.google.com/gcr/images/${{ env.PROJECT_ID }}/global/${{ env.NAME }}?project=${{ env.PROJECT_ID }}"
+
+      # Maybe move to indiviudal workflow
+      - name: "✅ GitHub release"
+        if: ${{ !env.ACT }}
+        id: release
+        uses: rymndhng/release-on-push-action@master
+        with:
+          bump_version_scheme: patch
+          tag_prefix: v
