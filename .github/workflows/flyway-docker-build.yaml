@@ -38,7 +38,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-      VERSION: 999.999.999
       DOCKER_BUILDKIT: 1
     steps:
 
@@ -82,22 +81,22 @@ jobs:
 
       - name: "🐳 Docker build"
         run: |-
-          docker build -f Dockerfile -t ${{ env.NAME }} .
+          docker build -f Dockerfile -t ${{ inputs.NAME }} .
 
       - name: "🐳 Docker tag"
         run: |-
-          docker image tag ${{ env.NAME }} "${{ env.GCR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.NAME }}:${{ steps.version.outputs.version }}"
-          docker image tag ${{ env.NAME }} "${{ env.GCR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.NAME }}:latest"
+          docker image tag ${{ inputs.NAME }} "${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}:${{ steps.version.outputs.version }}"
+          docker image tag ${{ inputs.NAME }} "${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}:latest"
 
       - name: "📦 Docker push"
         if: ${{ !env.ACT }}
         run: |-
-          docker push -a "${{ env.GCR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.NAME }}"
+          docker push -a "${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}"
 
       # https://console.cloud.google.com/gcr/images/favedom-dev/global/peeq-tracking-db?project=favedom-dev
       - name: "🌐 Link to Container"
         run: |-
-          echo "https://console.cloud.google.com/gcr/images/${{ env.PROJECT_ID }}/global/${{ env.NAME }}?project=${{ env.PROJECT_ID }}"
+          echo "https://console.cloud.google.com/gcr/images/${{ inputs.PROJECT_ID }}/global/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}"
 
       # Maybe move to indiviudal workflow
       - name: "✅ GitHub release"
