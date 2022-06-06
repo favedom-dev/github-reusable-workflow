@@ -7,6 +7,10 @@ on:
       NAME: # name of service, (ex: peeq-tracking-db)
         required: true
         type: string
+      VERSION:
+        default: 'latest'
+        required: false
+        type: string
       PROJECT_ID:
         default: 'favedom-dev'
         required: false
@@ -100,7 +104,7 @@ jobs:
         if: steps.job-exist.outcome == 'failure'
         run: |-
           gcloud beta run jobs create ${{ inputs.JOB_NAME }} \
-          --image ${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:latest  \
+          --image ${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:${{ inputs.VERSION }}  \
           --set-cloudsql-instances=${{ inputs.CLOUDSQL_INSTANCES }} \
           --set-env-vars CLOUD_SQL_CONNECTION_NAME=${{ inputs.CLOUD_SQL_CONNECTION_NAME }} \
           --set-env-vars DB_DRIVER=${{ inputs.DB_DRIVER }} \
@@ -121,7 +125,7 @@ jobs:
         if: steps.job-exist.outcome == 'success'
         run: |-
           gcloud beta run jobs update ${{ inputs.JOB_NAME }} \
-          --image=${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME}}:latest \
+          --image=${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:${{ inputs.VERSION }} \
           --region ${{ inputs.REGION }}
 
       # https://console.cloud.google.com/run/jobs/details/europe-west9/staging-peeq-tracking-db/executions?project=favedom-dev
