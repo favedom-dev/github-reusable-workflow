@@ -90,10 +90,10 @@ jobs:
         # docker image tag ${{ inputs.NAME }} "${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}:${{ steps.version.outputs.version }}"
         # docker image tag ${{ inputs.NAME }} "${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}:latest"
 
-      - name: "📦 Docker push"
-        if: ${{ !env.ACT }}
-        run: |-
-          docker push -a "${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ input.DOCKER_REGISTRY }}/${{ inputs.NAME }}"
+      # - name: "📦 Docker push"
+      #   if: ${{ !env.ACT }}
+      #   run: |-
+      #     docker push -a "${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ input.DOCKER_REGISTRY }}/${{ inputs.NAME }}"
 
         # # Google Container Registry (GCR)
         # docker push -a "${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}"
