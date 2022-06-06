@@ -3,30 +3,24 @@ name: Docker Build
 on:
   workflow_call:
     inputs:
-      # name of service, (ex: peeq-tracking-db)
-      NAME:
+      NAME: # name of service, (ex: peeq-tracking-db)
         required: true
         type: string
-      # favedom-dev
-      PROJECT_ID:
+      PROJECT_ID: # favedom-dev
         required: true
         type: string
-      # GAR_LOCATION:
-        # required: true
-        # type: string
-      # gcr.io
-      GCR_LOCATION:
-        required: true
+      GAR_LOCATION: # peeq-docker
+        required: false
+        type: string
+      GCR_LOCATION: # gcr.io
+        required: false
         type: string
     secrets:
-      # GitHub token
-      GH_TOKEN:
+      GH_TOKEN: # GitHub token
         required: true
-      # Workload Identity Federation Provider
-      WIF_PROVIDER:
+      WIF_PROVIDER: # Workload Identity Federation Provider
         required: true
-      # Workload Identity Federation Service Account
-      WIF_SERVICE_ACCOUNT:
+      WIF_SERVICE_ACCOUNT: # Workload Identity Federation Service Account
         required: true
 
 jobs:
@@ -62,9 +56,10 @@ jobs:
         with:
           username: 'oauth2accesstoken'
           password: '${{ steps.auth.outputs.access_token }}'
-          registry: 'gcr.io'
+          # registry: 'gcr.io' # Google Container Registry
+          registry: '${{ env.GAR_LOCATION }}-docker.pkg.dev' # Google Artifact Registry
 
-      # need the VERSION for docker tag
+      # need the VERSION for Docker tag
       - name: "☑ Release version"
         if: ${{ !env.ACT }}
         id: version
@@ -85,13 +80,20 @@ jobs:
 
       - name: "🐳 Docker tag"
         run: |-
-          docker image tag ${{ inputs.NAME }} "${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}:${{ steps.version.outputs.version }}"
-          docker image tag ${{ inputs.NAME }} "${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}:latest"
+          docker image tag ${{ inputs.NAME }} "${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}:${{ steps.version.outputs.version }}"
+          docker image tag ${{ inputs.NAME }} "${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}:latest"
+
+        # # Google Container Registry (GCR)
+        # docker image tag ${{ inputs.NAME }} "${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}:${{ steps.version.outputs.version }}"
+        # docker image tag ${{ inputs.NAME }} "${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}:latest"
 
       - name: "📦 Docker push"
         if: ${{ !env.ACT }}
         run: |-
-          docker push -a "${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}"
+          docker push -a "${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}"
+
+        # # Google Container Registry (GCR)
+        # docker push -a "${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}"
 
       # https://console.cloud.google.com/gcr/images/favedom-dev/global/peeq-tracking-db?project=favedom-dev
       - name: "🌐 Link to Container"
