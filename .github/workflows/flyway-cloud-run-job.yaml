@@ -41,13 +41,16 @@ on:
         required: true
         type: string
       DB_DRIVER:
-        required: true
+        default: 'jdbc:postgresql:'
+        required: false
         type: string
       DB_HOST:
+        default: 127.0.0.1
         required: true
         type: string
       DB_PORT:
-        required: true
+        default: 5432
+        required: false
         type: string
       DB_NAME:
         required: true
