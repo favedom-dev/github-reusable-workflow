@@ -101,7 +101,7 @@ jobs:
       # https://console.cloud.google.com/gcr/images/favedom-dev/global/peeq-tracking-db?project=favedom-dev
       - name: "🌐 Link to Container"
         run: |-
-          echo "https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}//${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
+          echo "https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
         # # Google Container Registry (GCR)
         # echo "https://console.cloud.google.com/gcr/images/${{ inputs.PROJECT_ID }}/global/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}"
 
