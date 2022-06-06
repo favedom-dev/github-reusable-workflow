@@ -15,6 +15,9 @@ on:
       GCR_LOCATION: # gcr.io
         required: false
         type: string
+      DOCKER_REGISTRY: # peeq-docker
+        required: false
+        type: string
     secrets:
       GH_TOKEN: # GitHub token
         required: true
@@ -80,8 +83,8 @@ jobs:
 
       - name: "🐳 Docker tag"
         run: |-
-          docker image tag ${{ inputs.NAME }} "${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}:${{ steps.version.outputs.version }}"
-          docker image tag ${{ inputs.NAME }} "${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}:latest"
+          docker image tag ${{ inputs.NAME }} "${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ input.DOCKER_REGISTRY }}/${{ inputs.NAME }}:${{ steps.version.outputs.version }}"
+          docker image tag ${{ inputs.NAME }} "${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ input.DOCKER_REGISTRY }}/${{ inputs.NAME }}:latest"
 
         # # Google Container Registry (GCR)
         # docker image tag ${{ inputs.NAME }} "${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}:${{ steps.version.outputs.version }}"
@@ -90,7 +93,7 @@ jobs:
       - name: "📦 Docker push"
         if: ${{ !env.ACT }}
         run: |-
-          docker push -a "${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}"
+          docker push -a "${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ input.DOCKER_REGISTRY }}/${{ inputs.NAME }}"
 
         # # Google Container Registry (GCR)
         # docker push -a "${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}"
