@@ -4,19 +4,20 @@ name: Flyway Cloud Run Job
 on:
   workflow_call:
     inputs:
-      NAME:
+      NAME: # name of service, (ex: peeq-tracking-db)
         required: true
         type: string
-      # favedom-dev
-      PROJECT_ID:
+      PROJECT_ID: # favedom-dev
         required: true
         type: string
-      # GAR_LOCATION:
-        # required: true
-        # type: string
-      # gcr.io
-      GCR_LOCATION:
+      GAR_LOCATION: # us-central1
+        required: false
+        type: string
+      GCR_LOCATION: # gcr.io
         required: true
+        type: string
+      DOCKER_REGISTRY: # peeq-docker
+        required: false
         type: string
       JOB_NAME:
         required: true
@@ -94,7 +95,7 @@ jobs:
         if: steps.job-exist.outcome == 'failure'
         run: |-
           gcloud beta run jobs create ${{ inputs.JOB_NAME }} \
-          --image ${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}:latest  \
+          --image ${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:latest  \
           --set-cloudsql-instances=${{ inputs.CLOUDSQL_INSTANCES }} \
           --set-env-vars CLOUD_SQL_CONNECTION_NAME=${{ inputs.CLOUD_SQL_CONNECTION_NAME }} \
           --set-env-vars DB_DRIVER=${{ inputs.DB_DRIVER }} \
