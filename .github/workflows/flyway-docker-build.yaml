@@ -33,6 +33,7 @@ on:
 jobs:
 
   flyway_docker:
+    timeout-minutes: 10
     permissions:
       contents: 'read'
       id-token: 'write'

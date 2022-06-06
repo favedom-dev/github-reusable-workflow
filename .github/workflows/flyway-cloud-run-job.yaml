@@ -72,6 +72,7 @@ on:
 
 jobs:
   flyway_deploy:
+    timeout-minutes: 10
     # Add 'id-token' with the intended permissions for workload identity federation
     permissions:
       contents: 'read'
