@@ -58,7 +58,7 @@ on:
         required: true
 
 jobs:
-  deploy_flyway:
+  flyway_deploy:
     # Add 'id-token' with the intended permissions for workload identity federation
     permissions:
       contents: 'read'
