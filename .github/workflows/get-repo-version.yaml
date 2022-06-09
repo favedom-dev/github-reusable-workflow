@@ -1,22 +1,26 @@
 name: Get Repo Version
 
 # To use version add to job `needs: get-version`
-# Then version is accessible via ${{ needs.get-version.outputs.version }}
+# Then version is accessible via ${{ needs.++JOB++.outputs.version }} || ${{ needs.get-version.outputs.version }}
 
 on:
   workflow_call:
     secrets:
       GH_TOKEN: # GitHub token
         required: true
+    outputs:
+      version:
+        description: "Repo Version"
+        value: ${{ jobs.version.outputs.version }}
 
 jobs:
 
-  get-version:
+  get-repo-version:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     outputs:
-        version: ${{ steps.version.outputs.version }}
+      version: ${{ steps.version.outputs.version  }}
     steps:
 
       - name: "☁️ Checkout repository"
