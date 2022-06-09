@@ -1,4 +1,4 @@
-name: Get Repo Version
+name: Repo Get Version
 
 # To use version add to job `needs: get-version`
 # Then version is accessible via ${{ needs.++JOB++.outputs.version }} || ${{ needs.get-version.outputs.version }}
@@ -15,7 +15,7 @@ on:
 
 jobs:
 
-  get-repo-version:
+  repo-get-version:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -36,6 +36,6 @@ jobs:
           tag_prefix: v
           dry_run: true
 
-      - name: DISPLAY version
+      - name: Display version
         run: |
           echo "${{ steps.version.outputs.version }}"
