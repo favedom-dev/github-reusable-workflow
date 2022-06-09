@@ -6,6 +6,9 @@ on:
       NAME: # name of service, (ex: peeq-tracking-db)
         required: true
         type: string
+      VER:
+        required: true
+        type: string
       VERSION:
         required: true
         type: string
@@ -92,6 +95,7 @@ jobs:
           echo "DOCKER_REGISTRY: ${{ inputs.DOCKER_REGISTRY }}"
           echo "NAME: ${{ inputs.NAME }}"
           echo "VERSION: ${{ inputs.VERSION }}"
+          echo "VER: ${{ inputs.VER }}"
 
       - name: "🐳 Docker: build, tag, and push"
         uses: docker/build-push-action@v3
