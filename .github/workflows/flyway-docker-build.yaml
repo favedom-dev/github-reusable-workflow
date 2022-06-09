@@ -6,6 +6,9 @@ on:
       NAME: # name of service, (ex: peeq-tracking-db)
         required: true
         type: string
+      VERSION:
+        required: true
+        type: string
       PROJECT_ID:
         default: 'favedom-dev'
         required: false
@@ -68,13 +71,13 @@ jobs:
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev' # Google Artifact Registry
 
       # need the VERSION for Docker tag
-      - name: "☑ Release version"
-        id: version
-        uses: rymndhng/release-on-push-action@master
-        with:
-          bump_version_scheme: patch
-          tag_prefix: v
-          dry_run: true
+      # - name: "☑ Release version"
+      #   id: version
+      #   uses: rymndhng/release-on-push-action@master
+      #   with:
+      #     bump_version_scheme: patch
+      #     tag_prefix: v
+      #     dry_run: true
 
       # - name: Check Release version Output Parameters
       #   run: |
@@ -86,7 +89,8 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:${{ steps.version.outputs.version }},${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:latest
+          tags: ${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:${{ inputs.VERSION }},${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:latest
+          # tags: ${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:${{ steps.version.outputs.version }},${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:latest
 
       - name: "🌐 Link to Container"
         run: |-
@@ -95,10 +99,10 @@ jobs:
         # echo "https://console.cloud.google.com/gcr/images/${{ inputs.PROJECT_ID }}/global/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}"
 
       # Maybe move to indiviudal workflow
-      - name: "✅ GitHub release"
-        if: ${{ !env.ACT }}
-        id: release
-        uses: rymndhng/release-on-push-action@master
-        with:
-          bump_version_scheme: patch
-          tag_prefix: v
+      # - name: "✅ GitHub release"
+      #   if: ${{ !env.ACT }}
+      #   id: release
+      #   uses: rymndhng/release-on-push-action@master
+      #   with:
+      #     bump_version_scheme: patch
+      #     tag_prefix: v
