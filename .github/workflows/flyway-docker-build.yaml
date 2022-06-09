@@ -69,7 +69,6 @@ jobs:
 
       # need the VERSION for Docker tag
       - name: "☑ Release version"
-        if: ${{ !env.ACT }}
         id: version
         uses: rymndhng/release-on-push-action@master
         with:

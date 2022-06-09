@@ -1,0 +1,20 @@
+name: Example
+
+on:
+  workflow_call:
+      inputs:
+      VER:
+        required: true
+        type: string
+
+jobs:
+
+  test:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: ECHO version
+        run: |
+          echo "VERSION: ${{ needs.get-version.outputs.version }}"
+          echo "VER: ${{ inputs.VER }}"
