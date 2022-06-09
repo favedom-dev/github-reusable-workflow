@@ -82,28 +82,13 @@ jobs:
       #     echo "Got tag name ${{ steps.version.outputs.tag_name }}"
       #     echo "Got release version ${{ steps.version.outputs.version }}"
 
-      - name: "🐳 Docker build"
-        run: |-
-          docker build -f Dockerfile -t ${{ inputs.NAME }} .
+      - name: "🐳 Docker: build, tag, and push"
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: ${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:${{ steps.version.outputs.version }},${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:latest
 
-      - name: "🐳 Docker tag"
-        run: |-
-          docker image tag ${{ inputs.NAME }} "${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:${{ steps.version.outputs.version }}"
-          docker image tag ${{ inputs.NAME }} "${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:latest"
-
-        # # Google Container Registry (GCR)
-        # docker image tag ${{ inputs.NAME }} "${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}:${{ steps.version.outputs.version }}"
-        # docker image tag ${{ inputs.NAME }} "${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}:latest"
-
-      - name: "📦 Docker push"
-        if: ${{ !env.ACT }}
-        run: |-
-          docker push -a "${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}"
-
-        # # Google Container Registry (GCR)
-        # docker push -a "${{ inputs.GCR_LOCATION }}/${{ inputs.PROJECT_ID }}/${{ inputs.NAME }}"
-
-      # https://console.cloud.google.com/gcr/images/favedom-dev/global/peeq-tracking-db?project=favedom-dev
       - name: "🌐 Link to Container"
         run: |-
           echo "https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
