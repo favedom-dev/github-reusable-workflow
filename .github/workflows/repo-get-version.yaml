@@ -36,6 +36,6 @@ jobs:
           tag_prefix: v
           dry_run: true
 
-      - name: Display version
+      - name: "📜 Display version"
         run: |
           echo "${{ steps.version.outputs.version }}"
