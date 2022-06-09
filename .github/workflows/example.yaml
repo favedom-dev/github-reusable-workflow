@@ -16,4 +16,5 @@ jobs:
 
       - name: ECHO version
         run: |
+          echo "VERSION: ${{ needs.get-version.outputs.version }}"
           echo "VER: ${{ inputs.VER }}"
