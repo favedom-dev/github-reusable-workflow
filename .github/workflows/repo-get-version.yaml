@@ -11,7 +11,7 @@ on:
     outputs:
       version:
         description: "Repo Version"
-        value: ${{ jobs.get-repo-version.outputs.version }}
+        value: ${{ jobs.repo-get-version.outputs.version }}
 
 jobs:
 
