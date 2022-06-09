@@ -84,6 +84,15 @@ jobs:
       #     echo "Got tag name ${{ steps.version.outputs.tag_name }}"
       #     echo "Got release version ${{ steps.version.outputs.version }}"
 
+
+      - name: Check Values
+        run: |
+          echo "GAR_LOCATION: ${{ inputs.GAR_LOCATION }}"
+          echo "PROJECT_ID: ${{ inputs.PROJECT_ID }}"
+          echo "DOCKER_REGISTRY: ${{ inputs.DOCKER_REGISTRY }}"
+          echo "NAME: ${{ inputs.NAME }}"
+          echo "VERSION: ${{ inputs.VERSION }}"
+
       - name: "🐳 Docker: build, tag, and push"
         uses: docker/build-push-action@v3
         with:
