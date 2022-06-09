@@ -2,7 +2,7 @@ name: Example
 
 on:
   workflow_call:
-      inputs:
+    inputs:
       VER:
         required: true
         type: string
