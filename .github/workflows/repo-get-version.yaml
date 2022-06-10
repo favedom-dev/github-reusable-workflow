@@ -23,6 +23,21 @@ jobs:
       version: ${{ steps.version.outputs.version  }}
     steps:
 
+      - name: "GITHUB INFO"
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: |-
+          echo "GITHUB_RUN_ATTEMPT: $GITHUB_RUN_ATTEMPT"
+          echo "GITHUB_RUN_ID     : $GITHUB_RUN_ID"
+          echo "GITHUB_RUN_NUMBER : $GITHUB_RUN_NUMBER"
+          echo "GITHUB_BASE_REF   : $GITHUB_BASE_REF"
+          echo "GITHUB_REF_TYPE   : $GITHUB_REF_TYPE"
+          echo "GITHUB_REF        : $GITHUB_REF"
+          echo "GITHUB_REF_NAME   : $GITHUB_REF_NAME"
+          echo "PR number         : ${{ github.event.pull_request.number }}"
+          echo "github.event_name : ${{ github.event_name }}"
+          echo "--------------------------------------
+
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v3
         with:
