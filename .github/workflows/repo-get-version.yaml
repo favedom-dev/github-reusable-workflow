@@ -57,12 +57,12 @@ jobs:
       - name: "📜 Set  version"
         id: set-version
         env:
-          PR_VERSION: ${{ steps.version.outputs.pr-version }}
+          PR_VERSION: ${{ steps.pr-version.outputs.version }}
         run: |
           echo "PR_VERSION: ${{ env.PR_VERSION }}"
           if [ -z ${{ env.PR_VERSION }} ]; then
-            echo "PR VERSION: ${{ steps.version.outputs.pr-version }}"
-            echo "::set-output name=version::${{ steps.version.outputs.pr-version }}"
+            echo "PR VERSION: ${{ steps.pr-version.outputs.version }}"
+            echo "::set-output name=version::${{ steps.pr-version.outputs.version }}"
           else
             echo "RELEASE VERSION: ${{ steps.version.outputs.version }}"
             echo "::set-output name=version::${{ steps.version.outputs.version }}"
