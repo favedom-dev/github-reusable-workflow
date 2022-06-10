@@ -6,9 +6,6 @@ on:
       NAME: # name of service, (ex: peeq-tracking-db)
         required: true
         type: string
-      VER:
-        required: true
-        type: string
       VERSION:
         required: true
         type: string
@@ -49,6 +46,16 @@ jobs:
       DOCKER_BUILDKIT: 1
     steps:
 
+      # - name: Display Values
+      #   if: ${{ env.DEBUG }}
+      #   run: |
+      #     echo "NAME: ${{ inputs.NAME }}"
+      #     echo "VERSION: ${{ inputs.VERSION }}"
+      #     echo "PROJECT_ID: ${{ inputs.PROJECT_ID }}"
+      #     echo "GAR_LOCATION: ${{ inputs.GAR_LOCATION }}"
+      #     echo "GCR_LOCATION: ${{ inputs.GCR_LOCATION }}"
+      #     echo "DOCKER_REGISTRY: ${{ inputs.DOCKER_REGISTRY }}"
+
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v3
         with:
@@ -86,16 +93,6 @@ jobs:
       #   run: |
       #     echo "Got tag name ${{ steps.version.outputs.tag_name }}"
       #     echo "Got release version ${{ steps.version.outputs.version }}"
-
-
-      - name: Check Values
-        run: |
-          echo "GAR_LOCATION: ${{ inputs.GAR_LOCATION }}"
-          echo "PROJECT_ID: ${{ inputs.PROJECT_ID }}"
-          echo "DOCKER_REGISTRY: ${{ inputs.DOCKER_REGISTRY }}"
-          echo "NAME: ${{ inputs.NAME }}"
-          echo "VERSION: ${{ inputs.VERSION }}"
-          echo "VER: ${{ inputs.VER }}"
 
       - name: "🐳 Docker: build, tag, and push"
         uses: docker/build-push-action@v3
