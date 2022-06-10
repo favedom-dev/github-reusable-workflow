@@ -60,7 +60,7 @@ jobs:
           PR_VERSION: ${{ steps.pr-version.outputs.version }}
         run: |
           echo "PR_VERSION: ${{ env.PR_VERSION }}"
-          if [ -z ${{ env.PR_VERSION }} ]; then
+          if [ ${{ env.PR_VERSION }} ]; then
             echo "PR VERSION: ${{ steps.pr-version.outputs.version }}"
             echo "::set-output name=version::${{ steps.pr-version.outputs.version }}"
           else
