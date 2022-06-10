@@ -50,6 +50,7 @@ jobs:
         if: github.event_name != 'pull_request'
         with:
           bump_version_scheme: patch
+          tag_prefix: ""
           dry_run: true
 
       - name: "📜 Set  version"
