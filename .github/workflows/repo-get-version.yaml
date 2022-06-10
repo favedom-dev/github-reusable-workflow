@@ -30,7 +30,7 @@ jobs:
         run: |-
           echo "PR number         : ${{ github.event.pull_request.number }}"
           echo "github.event_name : ${{ github.event_name }}"
-          echo "--------------------------------------
+          echo "--------------------------------------"
 
       - name: Set PR Version
         id: pr-version
