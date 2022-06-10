@@ -24,23 +24,22 @@ jobs:
       version: ${{ steps.set-version.outputs.version  }}
     steps:
 
-      - name: "GITHUB INFO"
-        env:
-          GITHUB_CONTEXT: ${{ toJSON(github) }}
-        run: |-
-          echo "PR number         : ${{ github.event.pull_request.number }}"
-          echo "github.event_name : ${{ github.event_name }}"
-          echo "--------------------------------------"
+      # - name: "GITHUB INFO"
+      #   env:
+      #     GITHUB_CONTEXT: ${{ toJSON(github) }}
+      #   run: |-
+      #     echo "PR number         : ${{ github.event.pull_request.number }}"
+      #     echo "github.event_name : ${{ github.event_name }}"
+      #     echo "--------------------------------------"
 
       - name: Set PR Version
         id: pr-version
-        # if: ${{ github.event_name }} == "pull_request"
+        if: github.event_name == 'pull_request'
         run: |
           echo "::set-output name=version::0.0.0-SNAPSHOT-PR-${{ github.event.number }}-${{ github.run_number }}"
 
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v3
-        # if: ${{ github.event_name }} != "pull_request"
         if: github.event_name != 'pull_request'
         with:
           fetch-depth: 0
@@ -48,7 +47,6 @@ jobs:
       - name: "☑ Release version"
         id: version
         uses: rymndhng/release-on-push-action@master
-        # if: ${{ github.event_name }} != "pull_request"
         if: github.event_name != 'pull_request'
         with:
           bump_version_scheme: patch
@@ -72,4 +70,3 @@ jobs:
       - name: "📜 Display version"
         run: |
           echo "set-version : ${{ steps.set-version.outputs.version }}"
-          # echo "${{ steps.version.outputs.version }}"
