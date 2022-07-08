@@ -1,0 +1,143 @@
+name: maven-docker
+
+on:
+  workflow_call:
+    inputs:
+      NAME: # name of service, (ex: peeq-tracking)
+        required: true
+        type: string
+      VERSION:
+        required: true
+        type: string
+      DOCKERFILE_FILE:
+        default: './Dockerfile'
+        required: false
+        type: string
+      TAG2:
+        default: 'latest'
+        required: false
+        type: string
+      PROJECT_ID:
+        default: 'favedom-dev'
+        required: false
+        type: string
+      GAR_LOCATION:
+        default: 'us-central1'
+        required: false
+        type: string
+      DOCKER_REGISTRY:
+        default: 'peeq-docker'
+        required: false
+        type: string
+    secrets:
+      GH_TOKEN: # GitHub token
+        required: true
+      WIF_PROVIDER: # Workload Identity Federation Provider
+        required: true
+      WIF_SERVICE_ACCOUNT: # Workload Identity Federation Service Account
+        required: true
+      NEXUS_FAVEDOM_DEV_PASSWORD:
+        required: true
+
+jobs:
+
+  maven-docker:
+    timeout-minutes: 15
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: "☁️ Checkout repository"
+        uses: actions/checkout@v3
+
+      - name: "🔧 Set up JDK 11"
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: "🔧 Maven ~/.m2/settings.xml"
+        run: |
+          cat <<EOT > ~/.m2/settings.xml
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                                http://maven.apache.org/xsd/settings-1.0.0.xsd">
+              <servers>
+                  <server>
+                      <id>favedom-dev</id>
+                      <username>favedom-dev</username>
+                      <password>${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}</password>
+                  </server>
+              </servers>
+              <profiles>
+                  <profile>
+                      <id>myprofile</id>
+                      <repositories>
+                          <!-- Maven2 is just to speed up downloading repositories -->
+                          <repository>
+                              <id>maven2</id>
+                              <name>maven2</name>
+                              <url>https://repo1.maven.org/maven2</url>
+                          </repository>
+                          <repository>
+                              <id>favedom-dev</id>
+                              <name>favedom-dev</name>
+                              <url>https://nexus-jx.favedom-dev.softcannery.com/repository/maven-releases</url>
+                          </repository>
+                      </repositories>
+                  </profile>
+              </profiles>
+              <activeProfiles>
+                  <activeProfile>myprofile</activeProfile>
+              </activeProfiles>
+          </settings>
+          EOT
+
+      - name: "🔨 Build with Maven"
+        run: mvn clean install
+
+      - name: "🔧 Google Auth"
+        if: ${{ !env.ACT }}
+        id: auth
+        uses: 'google-github-actions/auth@v0'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
+          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+
+      - name: "🔧 Docker Auth"
+        if: ${{ !env.ACT }}
+        id: docker-auth
+        uses: 'docker/login-action@v1'
+        with:
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.access_token }}'
+          registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev' # Google Artifact Registry
+
+      - name: "🔧 Setup Docker tags"
+        id: docker-tags
+        env:
+          DOCKER_LOCATION: ${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}
+        run: |-
+          DOCKER_TAGS=${{ env.DOCKER_LOCATION }}:${{ inputs.VERSION }}
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            DOCKER_TAGS=$DOCKER_TAGS,${{ env.DOCKER_LOCATION }}:latest
+            # echo "IF: DOCKER_TAGS: $DOCKER_TAGS"
+          fi
+          echo "DOCKER_TAGS: $DOCKER_TAGS"
+          echo "::set-output name=tags::$DOCKER_TAGS"
+
+      - name: "🐳 Docker: build, tag, and push"
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ${{ env.DOCKERFILE_FILE }}
+          push: true
+          tags: ${{ steps.docker-tags.outputs.tags }}
+
+      - name: "🌐 Link to Container"
+        run: |-
+          echo "https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
