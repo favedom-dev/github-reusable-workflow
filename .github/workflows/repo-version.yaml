@@ -18,7 +18,7 @@ on:
     outputs:
       version:
         description: "Repo Version"
-        value: ${{ jobs.repo-get-version.outputs.version }}
+        value: ${{ jobs.repo-version.outputs.version }}
 
 jobs:
 
@@ -64,7 +64,7 @@ jobs:
           ./auto-increment-version.sh
           echo "::set-output name=version::$(gh release view -q ".name" --json name | sed 's/v//')"
 
-      - name: "📜 Set  version"
+      - name: "📜 Set version"
         id: set-version
         env:
           PR_VERSION: ${{ steps.pr-version.outputs.version }}
