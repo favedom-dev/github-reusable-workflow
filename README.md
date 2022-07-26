@@ -116,20 +116,40 @@ jobs:
 - `auto-increment-version.sh`
   - used within GH action to set the version and if a merge into master update the repo version
 
+  ```yaml
+        - name: "☁️ Get auto-increment-version.sh"
+          if: github.event_name != 'pull_request'
+          run: |
+            wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/auto-increment-version.sh
+            chmod 777 ./auto-increment-version.sh
+  ```
+
 - `preview_copy_secrets.sh`
   - copy array of secrets into preview namespace
+  - Replace
+    - `++PR_NUM++` with PR number `${{ github.event.number }}`
+    - `++NAME++` with the app name (example `peeq-sms`)
+    - `++SECRET_NAMESPACE++` the namespace the secrets in the array reside in
+    - `++SECRETS_ARRAY++` array of secrets (example: `("rabbitmq" "peeq-users" "peeq-sms-twilio" "jx-staging-peeq-sms-pg")`)
 
   ```bash
-  export PR_NUM=67
-  export APP_NAME=peeq-sms
+  export PR_NUM=++PR_NUM++
+  export APP_NAME=++NAME++
 
-  export SECRET_NAMESPACE=jx-staging
-  export SECRETS_STAGING=("rabbitmq" "peeq-users" "peeq-sms-twilio" "jx-staging-peeq-sms-pg")
-  ./preview_copy_secrets.sh "${SECRETS_STAGING[@]}"
+  # repeat for all namespaces need to copy secrets from
+  export SECRET_NAMESPACE=++SECRET_NAMESPACE++
+  export SECRETS_ARRAY=++SECRETS_ARRAY++
+  ./preview_copy_secrets.sh "${SECRETS_ARRAY[@]}"
+  ```
 
-  export SECRET_NAMESPACE=jx
-  export SECRETS_JX=("stackhawk-fan" "stackhawk-preview")
-  ./preview_copy_secrets.sh "${SECRETS_JX[@]}"
+  - need to add a step to the workflow like this
+
+  ```yaml
+        - name: "☁️ Get preview_copy_secrets.sh"
+          if: github.event_name != 'pull_request'
+          run: |
+            wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/preview_copy_secrets.sh
+            chmod 777 ./preview_copy_secrets.sh
   ```
 
 - `setup_repo.sh`
