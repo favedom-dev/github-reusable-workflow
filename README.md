@@ -1,8 +1,68 @@
 # github-reusable-workflow
 
-First time a repo is using GitHub Actions see
+## Setup repo to use GH Actions
 
-- `setup_repo.sh` doc below under [`./scripts`](#scripts)
+- First time will need to authenticate the repo with Google to use GitHub Actions see
+  - `setup_repo.sh` doc below under [`./scripts`](#scripts)
+
+- create `./.github/workflows/ci.yaml`
+
+- example YAML is a Java back end service
+  - Replace `++NAME++` with the app name (example `peeq-sms`)
+
+```yaml
+name: CI
+
+on:
+  pull_request:
+   branches:
+     - master
+  push:
+    branches:
+      - master
+
+env:
+  NAME: '++NAME++'
+
+jobs:
+
+  # https://github.community/t/reusable-workflow-env-context-not-available-in-jobs-job-id-with/206111/10
+  workaround-name:
+    runs-on: ubuntu-latest
+    outputs:
+      NAME: ${{ env.NAME }}
+    steps:
+      - run: exit 0
+
+  repo-version:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  maven-docker:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/maven-docker.yaml@master
+    needs: [repo-version, workaround-name]
+    with:
+      NAME: ${{ needs.workaround-name.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
+      WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+      NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
+
+  preview:
+    uses: ./.github/workflows/preview-reusable.yaml
+    needs: [workaround-name, maven-docker]
+    if: github.event_name == 'pull_request'
+    with:
+      NAME: ${{ needs.workaround-name.outputs.NAME }}
+      # VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
+      WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+```
 
 ---
 
