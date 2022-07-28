@@ -31,6 +31,7 @@
 ## [`./.github/workflows`](./.github/workflows)
 
 ### `deploy-env.yaml`
+
 - Currently a **placeholder** for deploying a component into an environment (default: staging)
 - `yq eval "(.dependencies[] | select(has(\"name\")) | select(.name == \"peeq-sms\")).version = \"1.2.4\"" ./requirements.yaml`
 
@@ -61,7 +62,7 @@
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 ```
 
-- `maven-docker.yaml`
+### `maven-docker.yaml`
 
   ```yaml
     maven-docker:
@@ -77,40 +78,44 @@
         NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
   ```
 
-- `preview-env.yaml`
-  - Currently a **placeholder** for creating the Preview environment
-  - OPTIONS: 1) solely GH Actions or 2) GH Actions + Argo CD
+### `preview-env.yaml`
 
-  ```yaml
-    preview:
-      uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env.yaml@master
-      needs: [workaround-name, maven-docker]
-      if: github.event_name == 'pull_request'
-      with:
-        NAME: ${{ needs.workaround-name.outputs.NAME }}
-        VERSION: ${{ needs.repo-version.outputs.version }}
-      secrets:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
-  ```
+- Currently a **placeholder** for creating the Preview environment
+- OPTIONS: 1) solely GH Actions or 2) GH Actions + Argo CD
 
-- `preview-stackhawk.yaml`
-  - Currently a **placeholder**
-
-- `repo-version.yaml`
-  - typically the first job to be called
-
-  ```yaml
-    repo-version:
-      uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
-      secrets:
+```yaml
+  preview:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env.yaml@master
+    needs: [workaround-name, maven-docker]
+    if: github.event_name == 'pull_request'
+    with:
+      NAME: ${{ needs.workaround-name.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
-  ```
+```
+
+### `preview-stackhawk.yaml`
+
+- Currently a **placeholder**
+
+### `repo-version.yaml`
+
+- typically the first job to be called
+
+```yaml
+  repo-version:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
+    secrets:
+    GH_TOKEN: ${{ secrets.GH_TOKEN }}
+```
 
 ---
 
 ## [`./scripts`](./scripts)
 
 ### `auto-increment-version.sh`
+
 - used within GH action to set the version and if a merge into master update the repo version
 
 ```yaml
@@ -122,6 +127,7 @@
 ```
 
 ### `preview_copy_secrets.sh`
+
 - copy array of secrets into preview namespace
 - Replace
   - `++PR_NUM++` with PR number `${{ github.event.number }}`
@@ -150,6 +156,7 @@ export SECRETS_ARRAY=++SECRETS_ARRAY++
 ```
 
 ### `setup_ci.sh`
+
 - creates a base `ci.yaml` workflow based on a template
 - Replace `++CI_DIR++` with the correct [directory the templates is under](https://github.com/favedom-dev/github-reusable-workflow/tree/master/templates)
 - See [Example Workflows](#example-workflows)
@@ -161,6 +168,7 @@ export SECRETS_ARRAY=++SECRETS_ARRAY++
     ```
 
 ### `setup_repo.sh`
+
 - Only need to run 1 time to setup authentication in a repo that needs to Google Auth and create placeholder for the GitHub workflows
   - copy script to repo adding GH actions
   - run the script
