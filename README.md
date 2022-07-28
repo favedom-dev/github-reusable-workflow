@@ -17,88 +17,12 @@
 
 ## Setup repo to use GH Actions
 
-- First time will need to authenticate the repo with Google to use GitHub Actions see
-  - `setup_repo.sh` doc below under [`./scripts`](#scripts)
+1. First time will need to:
+    - authenticate the repo with Google to use GitHub Actions
+    - create `./.github/workflows/ci.yaml`
+    - `setup_repo.sh` doc below under [`./scripts`](#scripts)
 
-    ```bash
-    wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/setup_repo.sh
-    chmod 775 ./setup_repo.sh
-    ./setup_repo.sh
-    rm ./setup_repo.sh
-    ```
-
-- create `./.github/workflows/ci.yaml`
-
-  ```bash
-  mkdir -p .github/workflows
-  touch ./.github/workflows/ci.yaml
-  ```
-
-- example YAML is a **Java** and **Camunda BPM**
-  - Replace `++NAME++` with the app name (example `peeq-sms`)
-
-```yaml
-name: CI
-
-on:
-  pull_request:
-   branches:
-     - master
-  push:
-    branches:
-      - master
-
-env:
-  NAME: '++NAME++'
-
-jobs:
-
-  # https://github.community/t/reusable-workflow-env-context-not-available-in-jobs-job-id-with/206111/10
-  workaround-name:
-    runs-on: ubuntu-latest
-    outputs:
-      NAME: ${{ env.NAME }}
-    steps:
-      - run: exit 0
-
-  repo-version:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
-    secrets:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-  maven-docker:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/maven-docker.yaml@master
-    needs: [repo-version, workaround-name]
-    with:
-      NAME: ${{ needs.workaround-name.outputs.NAME }}
-      VERSION: ${{ needs.repo-version.outputs.version }}
-    secrets:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
-      WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-      NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
-
-  preview:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env.yaml@master
-    needs: [workaround-name, maven-docker]
-    if: github.event_name == 'pull_request'
-    with:
-      NAME: ${{ needs.workaround-name.outputs.NAME }}
-      VERSION: ${{ needs.repo-version.outputs.version }}
-    secrets:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-  staging:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
-    needs: [workaround-name, maven-docker]
-    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
-    with:
-      NAME: ${{ needs.workaround-name.outputs.NAME }}
-      VERSION: ${{ needs.repo-version.outputs.version }}
-    secrets:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-```
+1. See [Example Workflows](#example-workflows)
 
 ---
 
@@ -224,10 +148,17 @@ jobs:
   ```
 
 - `setup_repo.sh`
-  - Only need to run 1 time to setup authentication in a repo that needs to Google Auth
+  - Only need to run 1 time to setup authentication in a repo that needs to Google Auth and create placeholder for the GitHub workflows
     - copy script to repo adding GH actions
     - run the script
-    - do not add the script to the repo
+    - do not add the script to the repo (script deletes itself)
+
+    ```bash
+    wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/setup_repo.sh
+    chmod 775 ./setup_repo.sh
+    ./setup_repo.sh
+    ```
+
   - If not run the repo GH action step for Google Auth will have an error like this:
 
     ```bash
@@ -239,3 +170,74 @@ jobs:
         }
     }
     ```
+
+---
+
+## Example Workflows
+
+## **Java** and **Camunda BPM**
+
+- Replace `++NAME++` with the app name (example `peeq-sms`)
+
+```yaml
+name: CI
+
+on:
+  pull_request:
+   branches:
+     - master
+  push:
+    branches:
+      - master
+
+env:
+  NAME: '++NAME++'
+
+jobs:
+
+  # https://github.community/t/reusable-workflow-env-context-not-available-in-jobs-job-id-with/206111/10
+  workaround-name:
+    runs-on: ubuntu-latest
+    outputs:
+      NAME: ${{ env.NAME }}
+    steps:
+      - run: exit 0
+
+  repo-version:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  maven-docker:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/maven-docker.yaml@master
+    needs: [repo-version, workaround-name]
+    with:
+      NAME: ${{ needs.workaround-name.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
+      WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+      NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
+
+  preview:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env.yaml@master
+    needs: [workaround-name, maven-docker]
+    if: github.event_name == 'pull_request'
+    with:
+      NAME: ${{ needs.workaround-name.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  staging:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
+    needs: [workaround-name, maven-docker]
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    with:
+      NAME: ${{ needs.workaround-name.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+```
