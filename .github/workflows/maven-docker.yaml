@@ -78,7 +78,7 @@ jobs:
           echo "+++++++++++++++++++++++"
           cat ~/.m2/settings.xml
           echo "+++++++++++++++++++++++"
-          cat ~/.m2/settings-new.xml
+          cat ./settings-new.xml
           echo "#######################"
           env
 
