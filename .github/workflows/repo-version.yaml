@@ -32,22 +32,22 @@ jobs:
     steps:
 
       # https://docs.github.com/en/actions/learn-github-actions/environment-variables
-      - name: "GITHUB INFO"
-        env:
-          GITHUB_CONTEXT: ${{ toJSON(github) }}
-        run: |-
-          echo "PR number          : ${{ github.event.pull_request.number }}"
-          echo "github.event_name  : ${{ github.event_name }}"
-          echo "github.run_attempt : ${{ github.run_attempt }}"
-          echo "github.run_number  : ${{ github.run_number }}"
-          echo "--------------------------------------"
+      # - name: "GITHUB INFO"
+      #   env:
+      #     GITHUB_CONTEXT: ${{ toJSON(github) }}
+      #   run: |-
+      #     echo "PR number          : ${{ github.event.pull_request.number }}"
+      #     echo "github.event_name  : ${{ github.event_name }}"
+      #     echo "github.run_attempt : ${{ github.run_attempt }}"
+      #     echo "github.run_number  : ${{ github.run_number }}"
+      #     echo "--------------------------------------"
 
       # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run
       - name: Set PR Version
         id: pr-version
         if: github.event_name == 'pull_request'
         run: |
-          echo "::set-output name=version::0.0.0-SNAPSHOT-PR-${{ github.event.number }}-${{ github.run_number }}"
+          echo "::set-output name=version::0.0.0-SNAPSHOT-PR-${{ github.event.number }}-${{ github.run_attempt }}"
 
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v3
