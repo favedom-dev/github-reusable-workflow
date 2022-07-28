@@ -1,6 +1,6 @@
 # GitHub Reusable Workflow
 
-## TODO:
+## TODO
 
 - add [stackhawk](https://docs.stackhawk.com/continuous-integration/github-actions.html)
 - create preview environment
@@ -84,6 +84,20 @@ jobs:
 
 ## [`./.github/workflows`](./.github/workflows)
 
+- `deploy-env.yaml`
+  - Currently a **placeholder** for deploying a component into an environment (default: staging)
+
+  ```yaml
+    deploy-staging:
+      uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
+      needs: [workaround-name, maven-docker]
+      with:
+        NAME: ${{ needs.workaround-name.outputs.NAME }}
+        VERSION: ${{ needs.repo-version.outputs.version }}
+      secrets:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  ```
+
 - `flyway-docker-build.yaml`
 
   ```yaml
@@ -127,6 +141,8 @@ jobs:
       with:
         NAME: ${{ needs.workaround-name.outputs.NAME }}
         VERSION: ${{ needs.repo-version.outputs.version }}
+      secrets:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
   ```
 
 - `repo-version.yaml`

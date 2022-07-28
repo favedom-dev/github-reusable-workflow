@@ -9,6 +9,9 @@ on:
       VERSION:
         required: true
         type: string
+    secrets:
+      GH_TOKEN: # GitHub token
+        required: true
 
 jobs:
 
