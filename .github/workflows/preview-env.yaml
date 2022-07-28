@@ -3,9 +3,11 @@ name: Preview Environment
 on:
   workflow_call:
     inputs:
-      PREVIEW_INFO:
-        default: 'foo'
-        required: false
+      NAME: # name of service, (ex: peeq-tracking)
+        required: true
+        type: string
+      VERSION:
+        required: true
         type: string
 
 jobs:
@@ -16,6 +18,7 @@ jobs:
 
       - name: "TODO:"
         run: |
+          echo "Preview: ${{ inputs.NAME }} ${{ inputs.VERSION }}"
           echo "STEPS:"
           echo "1. Create Namespace"
           echo "2. Copy Secrets"

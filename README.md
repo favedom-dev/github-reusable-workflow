@@ -124,6 +124,9 @@ jobs:
       uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env.yaml@master
       needs: [workaround-name, maven-docker]
       if: github.event_name == 'pull_request'
+      with:
+        NAME: ${{ needs.workaround-name.outputs.NAME }}
+        VERSION: ${{ needs.repo-version.outputs.version }}
   ```
 
 - `repo-version.yaml`
