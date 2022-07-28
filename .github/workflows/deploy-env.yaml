@@ -17,6 +17,10 @@ on:
         default: 'favedom-dev/argocd-poc'
         required: false
         type: string
+      REQUIREMENTS_FILE:
+        default: 'requirements.yaml'
+        required: false
+        type: string
     secrets:
       GH_TOKEN: # GitHub token
         required: true
@@ -38,24 +42,43 @@ jobs:
           echo "======="
           echo "STEPS:"
           echo "1. Git clone environment repo"
-          echo "2. Update ++ENV_NAME++/requirements.yaml"
+          echo "2. Update ++ENV_NAME++/${{ inputs.REQUIREMENTS_FILE }}"
           echo "3. Create PR (gh cli: https://cli.github.com/manual/gh_pr_create)"
           echo "  a. Add \"approved\" label (-l, --label \"approved\")"
           echo "  b. Add title "chore: bump https://github.com/favedom-dev/peeq-sms from 0.0.24 to 0.0.25 " (-t, --title <string>)"
           echo "  c. Maybe add the comment(s) from the merged pull request to the body (-b, --body <string>)"
 
-      # - name: "☁️ Checkout repository"
-      #   uses: actions/checkout@v3
-      #   with:
-      #     repository: ${{ inputs.REPO_NAME }}
+      - name: "Git config"
+        run: |
+          git config --global user.email ""
+          git config --global user.name "velocityz-0x-pq-github"
 
-      # - name: "Update version in requirements.yaml"
-      #   uses: mikefarah/yq@v4.6.3
-      #   run: |
-      #     cd ${{ inputs.ENV_NAME }}
-      #     # yq eval "(.dependencies[] | select(has(\"name\")) | select(.name == \"peeq-sms\")).version = \"1.2.4\"" ./requirements.yaml
-      #     yq eval "(.dependencies[] | select(has(\"name\")) | select(.name == \"${{ inputs.NAME }}\")).version = \"${{ inputs.VERSION }}\"" -i ./requirements.yaml
+      - name: "☁️ Checkout environment repository"
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.REPO_NAME }}
+          token: ${{ secrets.GH_TOKEN }}
+          ref: master
 
-      # - name: "Create PR"
-      #   run: |
-      #     gh pr create --label "approved" --title "chore: bump ${{ inputs.NAME }} to ${{ inputs.VERSION }}"
+      - name: "Update version in values.yaml"
+        working-directory: ${{ inputs.ENV_NAME }}
+        run: |
+          yq \
+          eval \
+          --prettyPrint \
+          "(.dependencies[] | select(has(\"name\")) | select(.name == \"${{ inputs.NAME }}\")).version = \"${{ inputs.VERSION }}\"" \
+          -i ./${{ inputs.REQUIREMENTS_FILE }}
+
+      - name: "DEBUG: ./${{ inputs.REQUIREMENTS_FILE }}"
+        working-directory: ${{ inputs.ENV_NAME }}
+        run: |
+          cat ./${{ inputs.REQUIREMENTS_FILE }}
+
+      - name: "Create environment PR"
+        run: |
+          echo "UNCOMMENT THIS SECTION"
+          exit 1
+          # git checkout -b ${{ inputs.NAME }}_${{ inputs.VERSION }}
+          # git commit -a -m "${{ inputs.NAME }} ${{ inputs.VERSION }}"
+          # git push -u origin ${{ inputs.NAME }}_${{ inputs.VERSION }}
+          # gh pr create --label "approved" --title "chore: bump ${{ inputs.NAME }} to ${{ inputs.VERSION }}" --body "${{ inputs.NAME }} ${{ inputs.VERSION }}"
