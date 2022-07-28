@@ -196,18 +196,27 @@ export SECRETS_ARRAY=++SECRETS_ARRAY++
 
 ## Example Workflows
 
-### **Java** and **Camunda BPM**
+### flyway [./templates/flyway/ci.yaml](/templates/flyway/ci.yaml)
 
-- [./templates/maven/ci.yaml](/templates/maven/ci.yaml)
+- flyway (*-db)
 
-    ```bash
-    ./setup_ci.sh maven
-    ```
+  ```bash
+  ./setup_ci.sh flyway
+  ```
 
-### Flyway projects
+### java shared library [./templates/java-shared-lib/ci.yaml](/templates/java-shared-lib/ci.yaml)
 
-- [./templates/flyway/ci.yaml](/templates/flyway/ci.yaml)
+- java shared libarary
 
-    ```bash
-    ./setup_ci.sh flyway
-    ```
+  ```bash
+  ./setup_ci.sh java-shared-lib
+  ```
+
+### maven [./templates/maven/ci.yaml](/templates/maven/ci.yaml)
+
+- Camunda BPM
+- Java
+
+  ```bash
+  ./setup_ci.sh maven
+  ```
