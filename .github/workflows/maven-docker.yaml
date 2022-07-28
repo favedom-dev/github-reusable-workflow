@@ -9,6 +9,10 @@ on:
       VERSION:
         required: true
         type: string
+      MVN_ARGS:
+        default: 'clean install'
+        required: false
+        type: string
       DOCKERFILE_FILE:
         default: './Dockerfile'
         required: false
@@ -97,7 +101,8 @@ jobs:
           EOT
 
       - name: "🔨 Build with Maven"
-        run: mvn clean install
+        run: mvn ${{ inputs.MVN_ARGS }}
+        # run: mvn clean install
 
       - name: "🔧 Google Auth"
         if: ${{ !env.ACT }}
