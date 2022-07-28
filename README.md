@@ -3,11 +3,15 @@
 ## TODO
 
 - add [stackhawk](https://docs.stackhawk.com/continuous-integration/github-actions.html)
+
 - create preview environment
+  - `preview-env.yaml`
   - options
     - ArgoCD
     - scripts via GH Actions
+
 - update staging GitOps repo version on merge to master
+  - `deploy-env.yaml`
 
 ---
 
@@ -94,6 +98,7 @@ jobs:
 
 - `deploy-env.yaml`
   - Currently a **placeholder** for deploying a component into an environment (default: staging)
+  - `yq eval "(.dependencies[] | select(has(\"name\")) | select(.name == \"peeq-sms\")).version = \"1.2.4\"" ./requirements.yaml`
 
   ```yaml
     deploy-staging:
