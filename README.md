@@ -1,4 +1,15 @@
-# github-reusable-workflow
+# GitHub Reusable Workflow
+
+## TODO:
+
+- add [stackhawk](https://docs.stackhawk.com/continuous-integration/github-actions.html)
+- create preview environment
+  - options
+    - ArgoCD
+    - scripts via GH Actions
+- update staging GitOps repo version on merge to master
+
+---
 
 ## Setup repo to use GH Actions
 
@@ -7,7 +18,12 @@
 
 - create `./.github/workflows/ci.yaml`
 
-- example YAML is a Java back end service
+  ```bash
+  mkdir -p .github/workflows
+  touch ./.github/workflows/ci.yaml
+  ```
+
+- example YAML is a **Java** and **Camunda BPM**
   - Replace `++NAME++` with the app name (example `peeq-sms`)
 
 ```yaml

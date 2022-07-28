@@ -1,0 +1,26 @@
+name: Preview Environment
+
+on:
+  workflow_call:
+    inputs:
+      PREVIEW_INFO:
+        default: 'foo'
+        required: false
+        type: string
+
+jobs:
+
+  preview-environment:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: "TODO:"
+        run: |
+          echo "STEPS:"
+          echo "1. Create Namespace"
+          echo "2. Copy Secrets"
+          echo "3. Deploy"
+          echo "------------------"
+          echo "OPTIONS:"
+          echo "1. Do completely with GH Actions"
+          echo "2. GH Actions using Argo CD"
