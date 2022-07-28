@@ -1,0 +1,58 @@
+name: Flyway Docker Build
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '${APP_NAME}/**'
+      - 'docker/**'
+      - '**/Dockerfile'
+
+env:
+  NAME: '${APP_NAME}'
+
+jobs:
+
+  workaround-name:
+    runs-on: ubuntu-latest
+    outputs:
+      NAME: ${{ env.NAME }}
+    steps:
+      - run: exit 0
+
+  repo-version:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  docker:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/flyway-docker-build.yaml@master
+    needs: [repo-version, workaround-name]
+    with:
+      NAME: ${{ needs.workaround-name.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
+      WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+
+
+  # deploy:
+  #   uses: favedom-dev/github-reusable-workflow/.github/workflows/flyway-cloud-run-job.yaml@master
+  #   needs: docker
+  #   with:
+  #     NAME: 'peeq-tracking-db'
+  #     JOB_NAME: 'staging-peeq-tracking-db'
+  #     CLOUDSQL_INSTANCES: 'favedom-dev:us-central1:mysql-peeq-staging'
+  #     CLOUD_SQL_CONNECTION_NAME: 'favedom-dev:us-central1:mysql-peeq-staging'
+  #     DB_DRIVER: "jdbc:mysql:"
+  #     DB_HOST: 127.0.0.1
+  #     DB_PORT: 3306
+  #     DB_NAME: 'peeqtrackingdb'
+  #     DB_USER: 'peeqtracking'
+  #     DB_PASSWORD: 'peeq-staging_MYSQL_TRACKING_PASSWORD:latest'
+  #     SQL_PROXY_KEY: 'peeq-staging_SQL_PROXY_KEY:latest'
+  #   secrets:
+  #     WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
+  #     WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'

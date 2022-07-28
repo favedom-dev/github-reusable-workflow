@@ -28,11 +28,6 @@ set_workload_identity_provider_service_account_access() {
   --member="principalSet://iam.googleapis.com/${WORKLOAD_IDENTITY_POOL_ID}/attribute.repository/${REPO}"
 }
 
-create_empty_workflow() {
-  mkdir -p .github/workflows
-  touch ./.github/workflows/ci.yaml
-}
-
 cleanup() {
   rm $0
 }
@@ -40,5 +35,4 @@ cleanup() {
 ## MAIN
 get_workload_identity_pool
 set_workload_identity_provider_service_account_access
-create_empty_workflow
 cleanup

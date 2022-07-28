@@ -20,44 +20,46 @@
 1. First time will need to:
     - authenticate the repo with Google to use GitHub Actions
     - create `./.github/workflows/ci.yaml`
-    - `setup_repo.sh` doc below under [`./scripts`](#scripts)
+    - See [`setup_repo.sh`](#setupreposh)
 
-1. See [Example Workflows](#example-workflows)
+1. Create ci workflow
+    - See [`setup_ci.sh`](#setupcish)
+    - See [Example Workflows](#example-workflows)
 
 ---
 
 ## [`./.github/workflows`](./.github/workflows)
 
-- `deploy-env.yaml`
-  - Currently a **placeholder** for deploying a component into an environment (default: staging)
-  - `yq eval "(.dependencies[] | select(has(\"name\")) | select(.name == \"peeq-sms\")).version = \"1.2.4\"" ./requirements.yaml`
+### `deploy-env.yaml`
+- Currently a **placeholder** for deploying a component into an environment (default: staging)
+- `yq eval "(.dependencies[] | select(has(\"name\")) | select(.name == \"peeq-sms\")).version = \"1.2.4\"" ./requirements.yaml`
 
-  ```yaml
-    deploy-staging:
-      uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
-      needs: [workaround-name, maven-docker]
-      if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
-      with:
-        NAME: ${{ needs.workaround-name.outputs.NAME }}
-        VERSION: ${{ needs.repo-version.outputs.version }}
-      secrets:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
-  ```
+```yaml
+  deploy-staging:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
+    needs: [workaround-name, maven-docker]
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    with:
+      NAME: ${{ needs.workaround-name.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+```
 
-- `flyway-docker-build.yaml`
+### `flyway-docker-build.yaml`
 
-  ```yaml
-    docker:
-      uses: favedom-dev/github-reusable-workflow/.github/workflows/flyway-docker-build.yaml@master
-      needs: repo-version
-      with:
-        NAME: 'peeq-tracking-db'
-        VERSION: ${{ needs.repo-version.outputs.version }}
-      secrets:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
-        WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-  ```
+```yaml
+  docker:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/flyway-docker-build.yaml@master
+    needs: repo-version
+    with:
+      NAME: 'peeq-tracking-db'
+      VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
+      WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+```
 
 - `maven-docker.yaml`
 
@@ -108,148 +110,96 @@
 
 ## [`./scripts`](./scripts)
 
-- `auto-increment-version.sh`
-  - used within GH action to set the version and if a merge into master update the repo version
+### `auto-increment-version.sh`
+- used within GH action to set the version and if a merge into master update the repo version
 
-  ```yaml
-        - name: "☁️ Get auto-increment-version.sh"
-          if: github.event_name != 'pull_request'
-          run: |
-            wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/auto-increment-version.sh
-            chmod 777 ./auto-increment-version.sh
-  ```
+```yaml
+      - name: "☁️ Get auto-increment-version.sh"
+        if: github.event_name != 'pull_request'
+        run: |
+          wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/auto-increment-version.sh
+          chmod 777 ./auto-increment-version.sh
+```
 
-- `preview_copy_secrets.sh`
-  - copy array of secrets into preview namespace
-  - Replace
-    - `++PR_NUM++` with PR number `${{ github.event.number }}`
-    - `++NAME++` with the app name (example `peeq-sms`)
-    - `++SECRET_NAMESPACE++` the namespace the secrets in the array reside in
-    - `++SECRETS_ARRAY++` array of secrets (example: `("rabbitmq" "peeq-users" "peeq-sms-twilio" "jx-staging-peeq-sms-pg")`)
+### `preview_copy_secrets.sh`
+- copy array of secrets into preview namespace
+- Replace
+  - `++PR_NUM++` with PR number `${{ github.event.number }}`
+  - `++NAME++` with the app name (example `peeq-sms`)
+  - `++SECRET_NAMESPACE++` the namespace the secrets in the array reside in
+  - `++SECRETS_ARRAY++` array of secrets (example: `("rabbitmq" "peeq-users" "peeq-sms-twilio" "jx-staging-peeq-sms-pg")`)
+
+```bash
+export PR_NUM=++PR_NUM++
+export APP_NAME=++NAME++
+
+# repeat for all namespaces need to copy secrets from
+export SECRET_NAMESPACE=++SECRET_NAMESPACE++
+export SECRETS_ARRAY=++SECRETS_ARRAY++
+./preview_copy_secrets.sh "${SECRETS_ARRAY[@]}"
+```
+
+- need to add a step to the workflow like this
+
+```yaml
+      - name: "☁️ Get preview_copy_secrets.sh"
+        if: github.event_name != 'pull_request'
+        run: |
+          wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/preview_copy_secrets.sh
+          chmod 777 ./preview_copy_secrets.sh
+```
+
+### `setup_ci.sh`
+- creates a base `ci.yaml` workflow based on a template
+- Replace `++CI_DIR++` with the correct [directory the templates is under](https://github.com/favedom-dev/github-reusable-workflow/tree/master/templates)
+- See [Example Workflows](#example-workflows)
 
   ```bash
-  export PR_NUM=++PR_NUM++
-  export APP_NAME=++NAME++
-
-  # repeat for all namespaces need to copy secrets from
-  export SECRET_NAMESPACE=++SECRET_NAMESPACE++
-  export SECRETS_ARRAY=++SECRETS_ARRAY++
-  ./preview_copy_secrets.sh "${SECRETS_ARRAY[@]}"
-  ```
-
-  - need to add a step to the workflow like this
-
-  ```yaml
-        - name: "☁️ Get preview_copy_secrets.sh"
-          if: github.event_name != 'pull_request'
-          run: |
-            wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/preview_copy_secrets.sh
-            chmod 777 ./preview_copy_secrets.sh
-  ```
-
-- `setup_repo.sh`
-  - Only need to run 1 time to setup authentication in a repo that needs to Google Auth and create placeholder for the GitHub workflows
-    - copy script to repo adding GH actions
-    - run the script
-    - do not add the script to the repo (script deletes itself)
-
-    ```bash
-    wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/setup_repo.sh
-    chmod 775 ./setup_repo.sh
-    ./setup_repo.sh
+  wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/setup_ci.sh
+  chmod 775 ./setup_ci.sh
+  ./setup_ci.sh ++CI_DIR++
     ```
 
-  - If not run the repo GH action step for Google Auth will have an error like this:
+### `setup_repo.sh`
+- Only need to run 1 time to setup authentication in a repo that needs to Google Auth and create placeholder for the GitHub workflows
+  - copy script to repo adding GH actions
+  - run the script
+  - do not add the script to the repo (script deletes itself)
 
-    ```bash
-    Error: google-github-actions/auth failed with: retry function failed with 0 attempts: failed to generate Google Cloud access token for ***: {
-    "error": {
-        "code": 403,
-        "message": "The caller does not have permission",
-        "status": "PERMISSION_DENIED"
-        }
-    }
-    ```
+  ```bash
+  wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/setup_repo.sh
+  chmod 775 ./setup_repo.sh
+  ./setup_repo.sh
+  ```
+
+- If not run the repo GH action step for Google Auth will have an error like this:
+
+  ```bash
+  Error: google-github-actions/auth failed with: retry function failed with 0 attempts: failed to generate Google Cloud access token for ***: {
+  "error": {
+      "code": 403,
+      "message": "The caller does not have permission",
+      "status": "PERMISSION_DENIED"
+      }
+  }
+  ```
 
 ---
 
 ## Example Workflows
 
-## **Java** and **Camunda BPM**
+### **Java** and **Camunda BPM**
 
 - [./templates/maven/ci.yaml](/templates/maven/ci.yaml)
 
-```bash
-wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/templates/maven/ci.yaml
-export APP_NAME=$(basename `git rev-parse --show-toplevel`)
-envsubst < ci.yaml > .github/workflows/ci.yaml
-rm ci.yaml
+    ```bash
+    ./setup_ci.sh maven
+    ```
 
-```
+### Flyway projects
 
+- [./templates/flyway/ci.yaml](/templates/flyway/ci.yaml)
 
-
-- Replace `++NAME++` with the app name (example `peeq-sms`)
-
-```yaml
-name: CI
-
-on:
-  pull_request:
-   branches:
-     - master
-  push:
-    branches:
-      - master
-
-env:
-  NAME: '++NAME++'
-
-jobs:
-
-  # https://github.community/t/reusable-workflow-env-context-not-available-in-jobs-job-id-with/206111/10
-  workaround-name:
-    runs-on: ubuntu-latest
-    outputs:
-      NAME: ${{ env.NAME }}
-    steps:
-      - run: exit 0
-
-  repo-version:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
-    secrets:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-  maven-docker:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/maven-docker.yaml@master
-    needs: [repo-version, workaround-name]
-    with:
-      NAME: ${{ needs.workaround-name.outputs.NAME }}
-      VERSION: ${{ needs.repo-version.outputs.version }}
-    secrets:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
-      WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-      NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
-
-  preview:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env.yaml@master
-    needs: [workaround-name, maven-docker]
-    if: github.event_name == 'pull_request'
-    with:
-      NAME: ${{ needs.workaround-name.outputs.NAME }}
-      VERSION: ${{ needs.repo-version.outputs.version }}
-    secrets:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-  staging:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
-    needs: [workaround-name, maven-docker]
-    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
-    with:
-      NAME: ${{ needs.workaround-name.outputs.NAME }}
-      VERSION: ${{ needs.repo-version.outputs.version }}
-    secrets:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-```
+    ```bash
+    ./setup_ci.sh flyway
+    ```
