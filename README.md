@@ -177,6 +177,20 @@
 
 ## **Java** and **Camunda BPM**
 
+```bash
+wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/templates/maven/ci.yaml
+export APP_NAME=$(basename `git rev-parse --show-toplevel`)
+envsubst < ci.yaml > .github/workflows/ci.yaml
+rm ci.yaml
+
+```
+
+<iframe
+  src="https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/templates/maven/ci.yaml"
+  style="width:100%; height:300px;"
+></iframe>
+
+
 - Replace `++NAME++` with the app name (example `peeq-sms`)
 
 ```yaml
