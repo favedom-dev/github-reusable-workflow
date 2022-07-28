@@ -88,7 +88,7 @@ jobs:
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-  deploy-staging:
+  staging:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
     needs: [workaround-name, maven-docker]
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true

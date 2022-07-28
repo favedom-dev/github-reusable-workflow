@@ -69,10 +69,11 @@ jobs:
         env:
           PR_VERSION: ${{ steps.pr-version.outputs.version }}
         run: |
-          echo "PR_VERSION: ${{ env.PR_VERSION }}"
+          # echo "PR_VERSION: ${{ env.PR_VERSION }}"
           if [ ${{ env.PR_VERSION }} ]; then
             echo "PR VERSION: ${{ steps.pr-version.outputs.version }}"
             echo "::set-output name=version::${{ steps.pr-version.outputs.version }}"
+            gh pr comment ${{ github.event.number }} --body "PR Build Version: ${{ steps.set-version.outputs.version }}"
           else
             echo "RELEASE VERSION: ${{ steps.version.outputs.version }}"
             echo "::set-output name=version::${{ steps.version.outputs.version }}"
