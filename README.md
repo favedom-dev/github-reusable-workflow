@@ -206,7 +206,8 @@ export SECRETS_ARRAY=++SECRETS_ARRAY++
 
 ### java shared library [./templates/java-shared-lib/ci.yaml](/templates/java-shared-lib/ci.yaml)
 
-- java shared libarary
+- java shared library
+- see [Google doc](https://cloud.google.com/artifact-registry/docs/java/store-java)
 
   ```bash
   ./setup_ci.sh java-shared-lib
