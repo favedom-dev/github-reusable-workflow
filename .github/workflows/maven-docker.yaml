@@ -67,61 +67,10 @@ jobs:
           NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
         run: |
           wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
-          # chmod 777 ./settings.xml
           envsubst < ./settings.xml > ~/.m2/settings.xml
-          # rm ./settings.xml
-
-      # - name: "🔧 DEBUG: Maven ~/.m2/settings.xml"
-      #   run: |
-      #     cat ./settings.xml
-      #     echo "+++++++++++++++++++++++"
-      #     cat ~/.m2/settings.xml
-      #     echo "+++++++++++++++++++++++"
-      #     cat ./settings-new.xml
-      #     echo "#######################"
-      #     env
-
-      # - name: "🔧 Maven ~/.m2/settings.xml"
-      #   run: |
-      #     cat <<EOT > ~/.m2/settings.xml
-      #     <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-      #               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      #               xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
-      #                           http://maven.apache.org/xsd/settings-1.0.0.xsd">
-      #         <servers>
-      #             <server>
-      #                 <id>favedom-dev</id>
-      #                 <username>favedom-dev</username>
-      #                 <password>${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}</password>
-      #             </server>
-      #         </servers>
-      #         <profiles>
-      #             <profile>
-      #                 <id>myprofile</id>
-      #                 <repositories>
-      #                     <!-- Maven2 is just to speed up downloading repositories -->
-      #                     <repository>
-      #                         <id>maven2</id>
-      #                         <name>maven2</name>
-      #                         <url>https://repo1.maven.org/maven2</url>
-      #                     </repository>
-      #                     <repository>
-      #                         <id>favedom-dev</id>
-      #                         <name>favedom-dev</name>
-      #                         <url>https://nexus-jx.favedom-dev.softcannery.com/repository/maven-releases</url>
-      #                     </repository>
-      #                 </repositories>
-      #             </profile>
-      #         </profiles>
-      #         <activeProfiles>
-      #             <activeProfile>myprofile</activeProfile>
-      #         </activeProfiles>
-      #     </settings>
-      #     EOT
 
       - name: "🔨 Build with Maven"
         run: mvn ${{ inputs.MVN_ARGS }}
-        # run: mvn clean install
 
       - name: "🔧 Google Auth"
         if: ${{ !env.ACT }}

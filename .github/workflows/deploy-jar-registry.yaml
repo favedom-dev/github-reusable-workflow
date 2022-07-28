@@ -10,7 +10,7 @@ on:
         required: true
         type: string
       MVN_ARGS:
-        default: 'clean install'
+        default: 'clean deploy'
         required: false
         type: string
       DOCKERFILE_FILE:
@@ -63,61 +63,20 @@ jobs:
           distribution: 'temurin'
 
       - name: "🔧 Maven ~/.m2/settings.xml"
+        env:
+          NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
         run: |
           wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
-          chmod 777 ./settings.xml
-          cat ./settings.xml > ~/.m2/settings.xml
-          rm ./settings.xml
-
+          envsubst < ./settings.xml > ~/.m2/settings.xml
 
       - name: "🔨 Build with Maven"
         run: mvn ${{ inputs.MVN_ARGS }}
-        # run: mvn clean install
 
-      - name: "🔧 Google Auth"
-        if: ${{ !env.ACT }}
-        id: auth
-        uses: 'google-github-actions/auth@v0'
-        with:
-          token_format: 'access_token'
-          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
-          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-
-      - name: "🔧 Docker Auth"
-        if: ${{ !env.ACT }}
-        id: docker-auth
-        uses: 'docker/login-action@v1'
-        with:
-          username: 'oauth2accesstoken'
-          password: '${{ steps.auth.outputs.access_token }}'
-          registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev' # Google Artifact Registry
-
-      - name: "🔧 Setup Docker tags"
-        id: docker-tags
-        env:
-          DOCKER_LOCATION: ${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}
-        run: |-
-          DOCKER_TAGS=${{ env.DOCKER_LOCATION }}:${{ inputs.VERSION }}
-          if [ "${{ github.event_name }}" != "pull_request" ]; then
-            DOCKER_TAGS=$DOCKER_TAGS,${{ env.DOCKER_LOCATION }}:latest
-            # echo "IF: DOCKER_TAGS: $DOCKER_TAGS"
-          fi
-          echo "DOCKER_TAGS: $DOCKER_TAGS"
-          echo "::set-output name=tags::$DOCKER_TAGS"
-
-      - name: "🐳 Docker: build, tag, and push"
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: ${{ env.DOCKERFILE_FILE }}
-          push: true
-          tags: ${{ steps.docker-tags.outputs.tags }}
-
-      - name: "🌐 Link to Container"
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |-
-          echo "https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            gh pr comment ${{ github.event.number }} --body "🐳 Container: [${{ inputs.NAME }} ${{ inputs.VERSION }}](https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/)"
-          fi
+      # - name: "🔧 Google Auth"
+      #   if: ${{ !env.ACT }}
+      #   id: auth
+      #   uses: 'google-github-actions/auth@v0'
+      #   with:
+      #     token_format: 'access_token'
+      #     workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
+      #     service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
