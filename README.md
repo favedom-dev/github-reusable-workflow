@@ -115,6 +115,17 @@ jobs:
         NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
   ```
 
+- `preview-env.yaml`
+  - Currently a **placeholder** for creating the Preview environment
+  - OPTIONS: 1) solely GH Actions or 2) GH Actions + Argo CD
+
+  ```yaml
+    preview:
+      uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env.yaml@master
+      needs: [workaround-name, maven-docker]
+      if: github.event_name == 'pull_request'
+  ```
+
 - `repo-version.yaml`
   - typically the first job to be called
 
