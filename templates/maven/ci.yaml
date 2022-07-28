@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  pull_request:
+   branches:
+     - master
+  push:
+    branches:
+      - master
+
+env:
+  NAME: '${APP_NAME}'
+
+jobs:
+
+  # https://github.community/t/reusable-workflow-env-context-not-available-in-jobs-job-id-with/206111/10
+  workaround-name:
+    runs-on: ubuntu-latest
+    outputs:
+      NAME: ${{ env.NAME }}
+    steps:
+      - run: exit 0
+
+  repo-version:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  maven-docker:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/maven-docker.yaml@master
+    needs: [repo-version, workaround-name]
+    with:
+      NAME: ${{ needs.workaround-name.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
+      WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+      NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
+
+  preview:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env.yaml@master
+    needs: [workaround-name, maven-docker]
+    if: github.event_name == 'pull_request'
+    with:
+      NAME: ${{ needs.workaround-name.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  staging:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
+    needs: [workaround-name, maven-docker]
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    with:
+      NAME: ${{ needs.workaround-name.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
