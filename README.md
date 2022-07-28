@@ -20,6 +20,13 @@
 - First time will need to authenticate the repo with Google to use GitHub Actions see
   - `setup_repo.sh` doc below under [`./scripts`](#scripts)
 
+    ```bash
+    wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/setup_repo.sh
+    chmod 775 ./setup_repo.sh
+    ./setup_repo.sh
+    rm ./setup_repo.sh
+    ```
+
 - create `./.github/workflows/ci.yaml`
 
   ```bash
