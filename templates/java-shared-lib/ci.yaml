@@ -14,7 +14,7 @@ env:
 jobs:
 
   # https://github.community/t/reusable-workflow-env-context-not-available-in-jobs-job-id-with/206111/10
-  workaround-name:
+  workaround-env:
     runs-on: ubuntu-latest
     outputs:
       NAME: ${{ env.NAME }}
@@ -28,9 +28,9 @@ jobs:
 
   # deploy-jar-registry:
   #   uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-jar-registry.yaml@master
-  #   needs: [repo-version, workaround-name]
+  #   needs: [repo-version, workaround-env]
   #   with:
-  #     NAME: ${{ needs.workaround-name.outputs.NAME }}
+  #     NAME: ${{ needs.workaround-env.outputs.NAME }}
   #     VERSION: ${{ needs.repo-version.outputs.version }}
   #   secrets:
   #     GH_TOKEN: ${{ secrets.GH_TOKEN }}

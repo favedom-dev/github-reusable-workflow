@@ -38,10 +38,10 @@
 ```yaml
   deploy-staging:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
-    needs: [workaround-name, maven-docker]
+    needs: [workaround-env, maven-docker]
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     with:
-      NAME: ${{ needs.workaround-name.outputs.NAME }}
+      NAME: ${{ needs.workaround-env.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -67,9 +67,9 @@
   ```yaml
     maven-docker:
       uses: favedom-dev/github-reusable-workflow/.github/workflows/maven-docker.yaml@master
-      needs: [repo-version, workaround-name]
+      needs: [repo-version, workaround-env]
       with:
-        NAME: ${{ needs.workaround-name.outputs.NAME }}
+        NAME: ${{ needs.workaround-env.outputs.NAME }}
         VERSION: ${{ needs.repo-version.outputs.version }}
       secrets:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -86,10 +86,10 @@
 ```yaml
   preview:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env.yaml@master
-    needs: [workaround-name, maven-docker]
+    needs: [workaround-env, maven-docker]
     if: github.event_name == 'pull_request'
     with:
-      NAME: ${{ needs.workaround-name.outputs.NAME }}
+      NAME: ${{ needs.workaround-env.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -158,7 +158,7 @@ export SECRETS_ARRAY=++SECRETS_ARRAY++
 ### `setup_ci.sh`
 
 - creates a base `ci.yaml` workflow based on a template
-- Replace `++CI_DIR++` with the correct [directory the templates is under](https://github.com/favedom-dev/github-reusable-workflow/tree/master/templates)
+- Replace `++CI_DIR++` with the correct [directory the template is under](https://github.com/favedom-dev/github-reusable-workflow/tree/master/templates)
 - See [Example Workflows](#example-workflows)
 
   ```bash
