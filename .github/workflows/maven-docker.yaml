@@ -66,7 +66,8 @@ jobs:
         run: |
           wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
           chmod 777 ./settings.xml
-          cat < cat ./settings.xml > ~/.m2/settings.xml
+          cat < ./settings.xml > ~/.m2/settings.xml
+          envsubst < ./settings.xml > ./settings-new.xml
           # rm ./settings.xml
 
       - name: "🔧 DEBUG: Maven ~/.m2/settings.xml"
@@ -74,6 +75,8 @@ jobs:
           cat ./settings.xml
           echo "+++++++++++++++++++++++"
           cat ~/.m2/settings.xml
+          echo "+++++++++++++++++++++++"
+          cat ~/.m2/settings-new.xml
           echo "#######################"
           env
 
