@@ -144,5 +144,5 @@ jobs:
         run: |-
           echo "https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            gh pr comment ${{ github.event.number }} --body "Container: https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
+            gh pr comment ${{ github.event.number }} --body "🐳 Container: https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
           fi

@@ -97,6 +97,7 @@ jobs:
       VERSION: ${{ needs.repo-version.outputs.version }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
 ```
 
 ---
