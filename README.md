@@ -68,16 +68,24 @@ jobs:
       NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
 
   preview:
-    uses: ./.github/workflows/preview-reusable.yaml
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env.yaml@master
     needs: [workaround-name, maven-docker]
     if: github.event_name == 'pull_request'
     with:
       NAME: ${{ needs.workaround-name.outputs.NAME }}
-      # VERSION: ${{ needs.repo-version.outputs.version }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
-      WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+
+  deploy-staging:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
+    needs: [workaround-name, maven-docker]
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    with:
+      NAME: ${{ needs.workaround-name.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
 ```
 
 ---
