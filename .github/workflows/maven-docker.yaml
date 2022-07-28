@@ -63,6 +63,8 @@ jobs:
           distribution: 'temurin'
 
       - name: "🔧 Maven ~/.m2/settings.xml"
+        env:
+          NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
         run: |
           wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
           chmod 777 ./settings.xml
