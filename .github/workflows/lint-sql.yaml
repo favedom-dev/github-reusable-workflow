@@ -4,9 +4,6 @@ name: SQLFluff
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      SQL_DIR:
-        required: true
-        type: string
       DIALECTS:
         default: 'postgres'
         required: false
