@@ -62,21 +62,31 @@
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 ```
 
+### `lint-yaml.yaml`
+
+```yaml
+  lint-yaml:
+    if: github.event_name == 'pull_request'
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/lint-yaml.yaml@master
+    with:
+      YAML_DIRS: '.github templates'
+```
+
 ### `maven-docker.yaml`
 
-  ```yaml
-    maven-docker:
-      uses: favedom-dev/github-reusable-workflow/.github/workflows/maven-docker.yaml@master
-      needs: [repo-version, workaround-env]
-      with:
-        NAME: ${{ needs.workaround-env.outputs.NAME }}
-        VERSION: ${{ needs.repo-version.outputs.version }}
-      secrets:
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
-        WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-        NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
-  ```
+```yaml
+  maven-docker:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/maven-docker.yaml@master
+    needs: [repo-version, workaround-env]
+    with:
+      NAME: ${{ needs.workaround-env.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
+      WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+      NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
+```
 
 ### `preview-env.yaml`
 
