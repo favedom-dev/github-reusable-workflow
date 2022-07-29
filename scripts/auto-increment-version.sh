@@ -49,6 +49,11 @@ if [ -z "$NEEDS_TAG" ]; then
     # git tag $NEW_TAG
     # git push --tags
     gh release create $NEW_TAG --generate-notes
+    rc=$?
+    if [ ${rc} -ne 0 ] ; then
+      exit ${rc}
+    fi
 else
     echo "Already a tag on this commit"
 fi
+exit 0
