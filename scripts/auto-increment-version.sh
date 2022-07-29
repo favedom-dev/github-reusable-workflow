@@ -48,7 +48,10 @@ if [ -z "$NEEDS_TAG" ]; then
     echo "Tagged with $NEW_TAG (Ignoring fatal:cannot describe - this means commit is untagged) "
     # git tag $NEW_TAG
     # git push --tags
-    env
+    env | sort
+    echo "#####"
+    echo "GH_TOKEN    : ${GH_TOKEN}"
+    echo "GITHUB_TOKEN: ${GITHUB_TOKEN}"
     gh release create $NEW_TAG --generate-notes
     rc=$?
     if [ ${rc} -ne 0 ] ; then
