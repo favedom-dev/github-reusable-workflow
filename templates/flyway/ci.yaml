@@ -16,18 +16,27 @@ jobs:
 
   workaround-env:
     runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     outputs:
       NAME: ${{ env.NAME }}
     steps:
       - run: exit 0
 
+  lint-sql:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/lint-sql.yaml@master
+    if: github.event_name == 'pull_request'
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
   repo-version:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
   docker:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/flyway-docker-build.yaml@master
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     needs: [repo-version, workaround-env]
     with:
       NAME: ${{ needs.workaround-env.outputs.NAME }}
@@ -37,6 +46,15 @@ jobs:
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
+  staging:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
+    needs: [workaround-env, docker]
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    with:
+      NAME: ${{ needs.workaround-env.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
   # deploy:
   #   uses: favedom-dev/github-reusable-workflow/.github/workflows/flyway-cloud-run-job.yaml@master
