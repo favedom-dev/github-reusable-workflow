@@ -56,6 +56,8 @@ jobs:
       - name: "☑ Release version"
         id: version
         if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           ./auto-increment-version.sh
           echo "::set-output name=version::$(gh release view -q ".name" --json name | sed 's/v//')"
