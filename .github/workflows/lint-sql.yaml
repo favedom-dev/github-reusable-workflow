@@ -2,7 +2,18 @@
 name: SQLFluff
 
 on:  # yamllint disable-line rule:truthy
-  - pull_request
+  workflow_call:
+    inputs:
+      SQL_DIR:
+        required: true
+        type: string
+      DIALECTS:
+        default: 'postgres'
+        required: false
+        type: string
+    secrets:
+      GH_TOKEN:
+        required: true
 
 jobs:
   lint-models:
@@ -25,30 +36,31 @@ jobs:
         with:
           output: ' '
 
-      - name: Get changed .sql files in /models to lint
+      - name: Get changed .sql files to lint
         id: get_files_to_lint
         shell: bash -l {0}
         run: |
+          echo "SQL_DIR: ${{ inputs.SQL_DIR }}"
           # Set the command in the $() brackets as an output to use in later steps
           echo "::set-output name=lintees::$(
           # Issue where grep regular expressions don't work as expected on the
-          # Github Actions shell, check dbt/models/ folder
+          # Github Actions shell, check folder
           echo \
           $(echo ${{ steps.get_file_changes.outputs.files_modified }} |
           tr -s ' ' '\n' |
-          grep -E '^dbt/models.*[.]sql$' |
+          grep -E '^.*/public/.*[.]sql$' |
           tr -s '\n' ' ') \
           $(echo ${{ steps.get_file_changes.outputs.files_added }} |
           tr -s ' ' '\n' |
-          grep -E '^dbt/models.*[.]sql$' |
+          grep -E '^.*/public/.*[.]sql$' |
           tr -s '\n' ' ')
           )"
 
-      - name: Lint dbt models
+      - name: Lint sql
         id: sqlfluff_json
         if: steps.get_files_to_lint.outputs.lintees != ''
         shell: bash -l {0}
-        run: sqlfluff lint --format github-annotation --annotation-level failure --nofail ${{ steps.get_files_to_lint.outputs.lintees }} > annotations.json
+        run: sqlfluff lint --dialect ${{ inputs.DIALECTS }} --format github-annotation --annotation-level failure --nofail ${{ steps.get_files_to_lint.outputs.lintees }} > annotations.json
 
       - name: Annotate
         uses: yuzutech/annotations-action@v0.3.0
