@@ -70,4 +70,4 @@ jobs:
 
       - name: "📜 Display version"
         run: |
-echo "set-version : ${{ steps.set-version.outputs.version }}"
+          echo "set-version : ${{ steps.set-version.outputs.version }}"
