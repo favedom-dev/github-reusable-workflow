@@ -1,0 +1,14 @@
+name: CI
+
+on:
+  pull_request:
+   branches:
+     - master
+
+jobs:
+
+  lint-yaml:
+    # uses: favedom-dev/github-reusable-workflow/.github/workflows/lint-yaml.yaml@master
+    uses: ./.github/workflows/lint-yaml.yaml
+    with:
+      YAML_DIRS: '.github templates'
