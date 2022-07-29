@@ -91,8 +91,7 @@ jobs:
           mvn versions:set -DnewVersion=${{ inputs.VERSION }}
 
       - name: "🔨 Build with Maven"
-        # run: mvn ${{ inputs.MVN_ARGS }}
-        run: mvn deploy
+        run: mvn ${{ inputs.MVN_ARGS }}
 
       - name: "🌐 Link to Lib"
         env:
@@ -104,5 +103,5 @@ jobs:
           echo "${GAR_URL}"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             gh pr comment ${{ github.event.number }} \
-            --body \"📦 JAR Lib: [${{ inputs.NAME }} ${{ inputs.VERSION }}](${GAR_URL})"
+            --body "📦 JAR Lib: [${{ inputs.NAME }} ${{ inputs.VERSION }}](${GAR_URL})"
           fi
