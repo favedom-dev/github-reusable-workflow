@@ -65,7 +65,7 @@
 ### `lint-sql.yaml`
 
 - Currently a **placeholder** for SQL linting (flyway projects)
-  -  SQLFluff
+  - SQLFluff
     - [GitHub Actions](https://github.com/sqlfluff/sqlfluff-github-actions)
     - [Docs](https://docs.sqlfluff.com/en/stable/)
     - [Rules](https://docs.sqlfluff.com/en/stable/rules.html)
