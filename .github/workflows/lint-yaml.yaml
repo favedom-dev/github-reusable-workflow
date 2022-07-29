@@ -30,4 +30,6 @@ jobs:
       #     chmod 777 .yamllint
 
       - name: "Lint Yaml"
-        run: yamllint ${{ inputs.YAML_DIRS }}
+        run: |
+          yamllint --version
+          yamllint ${{ inputs.YAML_DIRS }}
