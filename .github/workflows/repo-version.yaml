@@ -61,6 +61,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
+          export GH_TOKEN=${{ secrets.GH_TOKEN }}
+          export GITHUB_TOKEN=${{ secrets.GH_TOKEN }}
           ./auto-increment-version.sh
           echo "::set-output name=version::$(gh release view -q ".name" --json name | sed 's/v//')"
 
