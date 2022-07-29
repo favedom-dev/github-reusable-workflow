@@ -1,9 +1,9 @@
 name: Maven and Docker
 
-on:
+on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      NAME: # name of service, (ex: peeq-tracking)
+      NAME:  # name of service, (ex: peeq-tracking)
         required: true
         type: string
       VERSION:
@@ -34,11 +34,11 @@ on:
         required: false
         type: string
     secrets:
-      GH_TOKEN: # GitHub token
+      GH_TOKEN:
         required: true
-      WIF_PROVIDER: # Workload Identity Federation Provider
+      WIF_PROVIDER:  # Workload Identity Federation Provider
         required: true
-      WIF_SERVICE_ACCOUNT: # Workload Identity Federation Service Account
+      WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
         required: true
       NEXUS_FAVEDOM_DEV_PASSWORD:
         required: true
@@ -88,7 +88,7 @@ jobs:
         with:
           username: 'oauth2accesstoken'
           password: '${{ steps.auth.outputs.access_token }}'
-          registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev' # Google Artifact Registry
+          registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
       - name: "🔧 Setup Docker tags"
         id: docker-tags

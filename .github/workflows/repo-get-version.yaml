@@ -3,10 +3,10 @@ name: Repo Get Version
 # To use version add to job `needs: get-version`
 # Then version is accessible via ${{ needs.++JOB++.outputs.version }} || ${{ needs.get-version.outputs.version }}
 
-on:
+on:  # yamllint disable-line rule:truthy
   workflow_call:
     secrets:
-      GH_TOKEN: # GitHub token
+      GH_TOKEN:  # GitHub token
         required: true
     outputs:
       version:
@@ -70,4 +70,4 @@ jobs:
 
       - name: "📜 Display version"
         run: |
-          echo "set-version : ${{ steps.set-version.outputs.version }}"
+echo "set-version : ${{ steps.set-version.outputs.version }}"

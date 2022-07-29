@@ -1,20 +1,9 @@
----
 name: Repo Version
 
-# On merge to master will tag the repo
-# To use:
-  # repo-version:
-  #   uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
-  #   secrets:
-  #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-# To use version add to job `needs: get-version`
-# Then version is accessible via ${{ needs.++JOB++.outputs.version }} || ${{ needs.get-version.outputs.version }}
-
-on:
+on:  # yamllint disable-line rule:truthy
   workflow_call:
     secrets:
-      GH_TOKEN: # GitHub token
+      GH_TOKEN:
         required: true
     outputs:
       version:

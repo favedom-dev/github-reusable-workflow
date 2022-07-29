@@ -1,6 +1,6 @@
 name: Lint Yaml (yamllint)
 
-on:
+on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       YAML_DIRS:

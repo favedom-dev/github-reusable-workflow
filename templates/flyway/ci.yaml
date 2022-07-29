@@ -1,6 +1,6 @@
 name: Flyway Docker Build
 
-on:
+on:  # yamllint disable-line rule:truthy
   push:
     branches:
       - master

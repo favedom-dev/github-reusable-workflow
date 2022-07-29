@@ -1,9 +1,9 @@
 name: Preview Stackhawk
 
-on:
+on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      NAME: # name of service, (ex: peeq-tracking)
+      NAME:  # name of service, (ex: peeq-tracking)
         required: true
         type: string
       VERSION:
