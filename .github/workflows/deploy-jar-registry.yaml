@@ -29,8 +29,16 @@ on:  # yamllint disable-line rule:truthy
         default: 'us-central1'
         required: false
         type: string
-      DOCKER_REGISTRY:
-        default: 'peeq-docker'
+      GAR_MAVEN_URL:
+        default: 'https://console.cloud.google.com/artifacts/maven/'
+        required: false
+        type: string
+      MAVEN_REGISTRY:
+        default: 'peeq-java'
+        required: false
+        type: string
+      JAR_PATH:
+        default: 'com.peeq'
         required: false
         type: string
     secrets:
@@ -85,3 +93,16 @@ jobs:
       - name: "🔨 Build with Maven"
         # run: mvn ${{ inputs.MVN_ARGS }}
         run: mvn deploy
+
+      - name: "🌐 Link to Lib"
+        env:
+# yamllint disable
+          # https://console.cloud.google.com/artifacts/maven/favedom-dev/us-central1/peeq-java/com.peeq:peeq-shared-lib/0.0.0-SNAPSHOT-PR-147-2?project=favedom-dev
+          GAR_URL: ${{ inputs.GAR_MAVEN_URL }}${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.MAVEN_REGISTRY }}/${{ inputs.JAR_PATH }}:${{ inputs.NAME }}/${{ inputs.VERSION }}?project=${{ inputs.PROJECT_ID }}
+# yamllint enable
+        run: |-
+          echo "${GAR_URL}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            gh pr comment ${{ github.event.number }} \
+            --body \"📦 JAR Lib: [${{ inputs.NAME }} ${{ inputs.VERSION }}](${GAR_URL})"
+          fi
