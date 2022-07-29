@@ -62,6 +62,16 @@
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 ```
 
+### `lint-sql.yaml`
+
+- Currently a **placeholder** for SQL linting (flyway projects)
+  -  SQLFluff
+    - [GitHub Actions](https://github.com/sqlfluff/sqlfluff-github-actions)
+    - [Docs](https://docs.sqlfluff.com/en/stable/)
+    - [Rules](https://docs.sqlfluff.com/en/stable/rules.html)
+    - [cli](https://docs.sqlfluff.com/en/stable/cli.html)
+    - repo [sqlfluff](https://github.com/sqlfluff/sqlfluff)
+
 ### `lint-yaml.yaml`
 
 ```yaml
