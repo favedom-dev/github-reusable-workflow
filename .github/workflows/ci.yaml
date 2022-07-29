@@ -17,8 +17,8 @@ jobs:
     with:
       YAML_DIRS: '.github templates'
 
-  repo-version:
-    if: github.event_name != 'pull_request'
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
-    secrets:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  # repo-version:
+  #   if: github.event_name != 'pull_request'
+  #   uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
+  #   secrets:
+  #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
