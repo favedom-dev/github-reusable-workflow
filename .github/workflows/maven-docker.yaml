@@ -1,4 +1,4 @@
-name: maven-docker
+name: Maven and Docker
 
 on:
   workflow_call:

@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  pull_request:
+   branches:
+     - master
+  push:
+    branches:
+      - master
+
+env:
+  NAME: '${APP_NAME}'
+
+jobs:
+
+  # https://github.community/t/reusable-workflow-env-context-not-available-in-jobs-job-id-with/206111/10
+  workaround-env:
+    runs-on: ubuntu-latest
+    outputs:
+      NAME: ${{ env.NAME }}
+    steps:
+      - run: exit 0
+
+  repo-version:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
