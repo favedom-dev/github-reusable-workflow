@@ -15,6 +15,7 @@ jobs:
   repo-version:
     runs-on: ubuntu-latest
     env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     outputs:
       # version: ${{ steps.version.outputs.version  }}
