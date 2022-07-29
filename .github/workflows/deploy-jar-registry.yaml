@@ -74,7 +74,8 @@ jobs:
           mvn versions:set -DnewVersion=${{ inputs.VERSION }}
 
       - name: "🔨 Build with Maven"
-        run: mvn ${{ inputs.MVN_ARGS }}
+        # run: mvn ${{ inputs.MVN_ARGS }}
+        run: mvn deploy
 
       # - name: "🔧 Google Auth"
       #   if: ${{ !env.ACT }}
