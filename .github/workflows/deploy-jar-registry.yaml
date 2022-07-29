@@ -1,9 +1,9 @@
 name: Deploy jar registry
 
-on:
+on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      NAME: # name of service, (ex: peeq-tracking)
+      NAME:  # name of service, (ex: peeq-tracking)
         required: true
         type: string
       VERSION:
@@ -34,11 +34,11 @@ on:
         required: false
         type: string
     secrets:
-      GH_TOKEN: # GitHub token
+      GH_TOKEN:  # GitHub token
         required: true
-      WIF_PROVIDER: # Workload Identity Federation Provider
+      WIF_PROVIDER:  # Workload Identity Federation Provider
         required: true
-      WIF_SERVICE_ACCOUNT: # Workload Identity Federation Service Account
+      WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
         required: true
       NEXUS_FAVEDOM_DEV_PASSWORD:
         required: true

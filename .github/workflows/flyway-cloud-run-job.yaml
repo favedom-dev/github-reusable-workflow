@@ -1,9 +1,9 @@
 name: Flyway Cloud Run Job
 
-on:
+on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      NAME: # name of service, (ex: peeq-tracking-db)
+      NAME:  # name of service, (ex: peeq-tracking-db)
         required: true
         type: string
       VERSION:

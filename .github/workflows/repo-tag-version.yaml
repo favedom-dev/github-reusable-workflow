@@ -1,9 +1,9 @@
 name: Repo Tag Version
 
-on:
+on:  # yamllint disable-line rule:truthy
   workflow_call:
     secrets:
-      GH_TOKEN: # GitHub token
+      GH_TOKEN:
         required: true
 
 jobs:

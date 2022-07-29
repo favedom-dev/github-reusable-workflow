@@ -1,0 +1,41 @@
+name: Lint Yaml (yamllint)
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      YAML_DIRS:
+        default: '.'
+        required: false
+        type: string
+
+jobs:
+
+  lint-yaml:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: "☁️ Checkout repository"
+        uses: actions/checkout@v3
+
+      - name: "Set up Python"
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
+      # https://yamllint.readthedocs.io/en/stable/
+      - name: "Install yamllint"
+        run: pip install --user yamllint
+
+      # - name: "Config yamllint"
+      #   run: |
+      #     wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.yamllint
+      #     chmod 777 .yamllint
+
+      # - name: "yamllint version"
+      #   run: |
+      #     yamllint --version
+
+      - name: "Lint Yaml"
+        run: |
+          yamllint ${{ inputs.YAML_DIRS }}

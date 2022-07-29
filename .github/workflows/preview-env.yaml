@@ -1,16 +1,16 @@
 name: Preview Environment
 
-on:
+on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      NAME: # name of service, (ex: peeq-tracking)
+      NAME:  # name of service, (ex: peeq-tracking)
         required: true
         type: string
       VERSION:
         required: true
         type: string
     secrets:
-      GH_TOKEN: # GitHub token
+      GH_TOKEN:
         required: true
 
 jobs:
