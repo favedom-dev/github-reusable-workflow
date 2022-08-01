@@ -241,7 +241,7 @@ export SECRETS_ARRAY=++SECRETS_ARRAY++
   ./setup_ci.sh flyway
   ```
 
-### java shared library [./templates/java-shared-lib/ci.yaml](/templates/java-shared-lib/ci.yaml)
+### java-shared-lib [./templates/java-shared-lib/ci.yaml](/templates/java-shared-lib/ci.yaml)
 
 - java shared library
 - see [Google doc](https://cloud.google.com/artifact-registry/docs/java/store-java)
@@ -257,4 +257,12 @@ export SECRETS_ARRAY=++SECRETS_ARRAY++
 
   ```bash
   ./setup_ci.sh maven
+  ```
+
+### node [./templates/node/ci.yaml](/templates/node/ci.yaml)
+
+- front ends
+
+  ```bash
+  ./setup_ci.sh node
   ```
