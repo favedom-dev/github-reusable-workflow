@@ -147,6 +147,17 @@
     GH_TOKEN: ${{ secrets.GH_TOKEN }}
 ```
 
+### `set-app-name.yaml`
+
+- defaults `NAME` to repo name, can be overridden by passing int `OVERRIDE_NAME`
+
+```yaml
+  set-app-name:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/set-app-name.yaml@master
+    # with:
+    #   OVERRIDE_NAME: some-new-name
+```
+
 ---
 
 ## [`./scripts`](./scripts)
