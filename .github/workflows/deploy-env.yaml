@@ -14,11 +14,13 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       REPO_NAME:
-        default: 'favedom-dev/argocd-poc'
+        default: 'favedom-dev/environment-favedom-dev-staging'
+        # default: 'favedom-dev/environment-?'  # Uncomment for Argo and set to repo
         required: false
         type: string
       REQUIREMENTS_FILE:
-        default: 'requirements.yaml'
+        # default: 'requirements.yaml'  # Uncomment for Argo
+        default: 'helmfile.yaml'
         required: false
         type: string
     secrets:
@@ -61,7 +63,7 @@ jobs:
           ref: master
 
       - name: "Update version in values.yaml"
-        working-directory: ${{ inputs.ENV_NAME }}
+        # working-directory: ${{ inputs.ENV_NAME }}  # Uncomment for Argo
         run: |
           yq \
           eval \
@@ -70,7 +72,7 @@ jobs:
           -i ./${{ inputs.REQUIREMENTS_FILE }}
 
       - name: "DEBUG: ./${{ inputs.REQUIREMENTS_FILE }}"
-        working-directory: ${{ inputs.ENV_NAME }}
+        # working-directory: ${{ inputs.ENV_NAME }}  # Uncomment for Argo
         run: |
           cat ./${{ inputs.REQUIREMENTS_FILE }}
 
