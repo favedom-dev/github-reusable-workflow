@@ -8,18 +8,10 @@ on:  # yamllint disable-line rule:truthy
     branches:
       - master
 
-env:
-  NAME: '${APP_NAME}'
-
 jobs:
 
-  # https://github.community/t/reusable-workflow-env-context-not-available-in-jobs-job-id-with/206111/10
-  workaround-env:
-    runs-on: ubuntu-latest
-    outputs:
-      NAME: ${{ env.NAME }}
-    steps:
-      - run: exit 0
+  set-app-name:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/set-app-name.yaml@master
 
   repo-version:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
@@ -28,9 +20,9 @@ jobs:
 
   node-docker:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/node-docker.yaml@master
-    needs: [repo-version, workaround-env]
+    needs: [set-app-name, repo-version]
     with:
-      NAME: ${{ needs.workaround-env.outputs.NAME }}
+      NAME: ${{ needs.set-app-name.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -40,20 +32,20 @@ jobs:
 
   preview:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env.yaml@master
-    needs: [workaround-env, node-docker]
+    needs: [set-app-name, node-docker]
     if: github.event_name == 'pull_request'
     with:
-      NAME: ${{ needs.workaround-env.outputs.NAME }}
+      NAME: ${{ needs.set-app-name.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
   staging:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
-    needs: [workaround-env, node-docker]
+    needs: [set-app-name, node-docker]
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     with:
-      NAME: ${{ needs.workaround-env.outputs.NAME }}
+      NAME: ${{ needs.set-app-name.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}

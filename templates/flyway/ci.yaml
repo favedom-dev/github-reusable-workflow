@@ -9,18 +9,11 @@ on:  # yamllint disable-line rule:truthy
       - 'docker/**'
       - '**/Dockerfile'
 
-env:
-  NAME: '${APP_NAME}'
 
 jobs:
 
-  workaround-env:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
-    outputs:
-      NAME: ${{ env.NAME }}
-    steps:
-      - run: exit 0
+  set-app-name:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/set-app-name.yaml@master
 
   lint-sql:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/lint-sql.yaml@master
@@ -37,9 +30,9 @@ jobs:
   docker:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/flyway-docker-build.yaml@master
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
-    needs: [repo-version, workaround-env]
+    needs: [set-app-name, repo-version]
     with:
-      NAME: ${{ needs.workaround-env.outputs.NAME }}
+      NAME: ${{ needs.set-app-name.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -48,29 +41,10 @@ jobs:
 
   staging:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
-    needs: [workaround-env, docker]
+    needs: [set-app-name, docker]
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     with:
-      NAME: ${{ needs.workaround-env.outputs.NAME }}
+      NAME: ${{ needs.set-app-name.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-  # deploy:
-  #   uses: favedom-dev/github-reusable-workflow/.github/workflows/flyway-cloud-run-job.yaml@master
-  #   needs: docker
-  #   with:
-  #     NAME: 'peeq-tracking-db'
-  #     JOB_NAME: 'staging-peeq-tracking-db'
-  #     CLOUDSQL_INSTANCES: 'favedom-dev:us-central1:mysql-peeq-staging'
-  #     CLOUD_SQL_CONNECTION_NAME: 'favedom-dev:us-central1:mysql-peeq-staging'
-  #     DB_DRIVER: "jdbc:mysql:"
-  #     DB_HOST: 127.0.0.1
-  #     DB_PORT: 3306
-  #     DB_NAME: 'peeqtrackingdb'
-  #     DB_USER: 'peeqtracking'
-  #     DB_PASSWORD: 'peeq-staging_MYSQL_TRACKING_PASSWORD:latest'
-  #     SQL_PROXY_KEY: 'peeq-staging_SQL_PROXY_KEY:latest'
-  #   secrets:
-  #     WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
-  #     WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'

@@ -8,32 +8,24 @@ on:  # yamllint disable-line rule:truthy
     branches:
       - master
 
-env:
-  NAME: '${APP_NAME}'
-
 jobs:
 
-  # https://github.community/t/reusable-workflow-env-context-not-available-in-jobs-job-id-with/206111/10
-  workaround-env:
-    runs-on: ubuntu-latest
-    outputs:
-      NAME: ${{ env.NAME }}
-    steps:
-      - run: exit 0
+  set-app-name:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/set-app-name.yaml@master
 
   repo-version:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-  # deploy-jar-registry:
-  #   uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-jar-registry.yaml@master
-  #   needs: [repo-version, workaround-env]
-  #   with:
-  #     NAME: ${{ needs.workaround-env.outputs.NAME }}
-  #     VERSION: ${{ needs.repo-version.outputs.version }}
-  #   secrets:
-  #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
-  #     WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
-  #     WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-  #     NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
+  deploy-jar-registry:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-jar-registry.yaml@master
+    needs: [set-app-name, repo-version]
+    with:
+      NAME: ${{ needs.set-app-name.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
+      WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+      NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
