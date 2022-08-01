@@ -20,10 +20,10 @@
 1. First time will need to:
     - authenticate the repo with Google to use GitHub Actions
     - create `./.github/workflows/ci.yaml`
-    - See [`setup_repo.sh`](#setupreposh)
+    - See [`setup_repo.sh`](#setup_reposh)
 
 1. Create ci workflow
-    - See [`setup_ci.sh`](#setupcish)
+    - See [`setup_ci.sh`](#setup_cish)
     - See [Example Workflows](#example-workflows)
 
 ---
