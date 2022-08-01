@@ -9,7 +9,7 @@ on:  # yamllint disable-line rule:truthy
       - master
 
 env:
-  NAME: 'peeq-fan-fe'
+  NAME: '${APP_NAME}'
 
 jobs:
 
