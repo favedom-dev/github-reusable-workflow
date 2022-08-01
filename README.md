@@ -98,6 +98,23 @@
       NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
 ```
 
+### `node-docker.yaml`
+
+```yaml
+  node-docker:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/node-docker.yaml@master
+    needs: [repo-version, workaround-env]
+    with:
+      NAME: ${{ needs.workaround-env.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+      # UPLOAD_GS: true
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
+      WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+```
+
 ### `preview-env.yaml`
 
 - Currently a **placeholder** for creating the Preview environment
