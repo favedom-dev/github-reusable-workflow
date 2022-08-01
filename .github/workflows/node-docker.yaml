@@ -76,7 +76,7 @@ jobs:
 
       - name: "🔧 Setup DEPLOY_URL"
         id: set-deploy-url
-        # if: inputs.UPLOAD_GS == true
+        if: inputs.UPLOAD_GS == true
         run: |
           if [ "${{ github.event_name }}" != "pull_request" ]; then
             DEPLOY_URL="https://${{ inputs.GS_BUCKET }}/${{ inputs.NAME}}/${{ inputs.VERSION }}/"
@@ -99,7 +99,6 @@ jobs:
       #   run: |
       #     helm init --client-only --stable-repo-url ${{ inputs.HELM_REPO }}
 
-      # https://github.com/favedom-dev/peeq-meetandgreet-for-iOS/blob/master/.github/workflows/ios-build.yaml#L55
       - name: "🔧 Setup .npmrc"
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
