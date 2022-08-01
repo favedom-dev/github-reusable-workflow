@@ -90,7 +90,7 @@ jobs:
           echo "::set-output name=deploy-url::${DEPLOY_URL}"
 
       - name: "🔧 Update base Url"
-        # if: inputs.UPLOAD_GS == true
+        if: inputs.UPLOAD_GS == true
         run: sed -i "s/++DEPLOY_URL++/$(sed -e 's/\//\\\//g' DEPLOY_URL)/g" ./docker/environment.tpl.json
 
 # https://github.com/favedom-dev/jenkins-x-kubernetes/blob/master/packs/javascript-ui-nginx-helmfile/pipeline.yaml
