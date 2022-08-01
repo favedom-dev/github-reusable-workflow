@@ -65,6 +65,24 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      - name: "🔧 Google Auth"
+        if: ${{ !env.ACT }}
+        id: auth
+        uses: 'google-github-actions/auth@v0'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
+          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+
+      - name: "🔧 Docker Auth"
+        if: ${{ !env.ACT }}
+        id: docker-auth
+        uses: 'docker/login-action@v1'
+        with:
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.access_token }}'
+          registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
+
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v3
 
@@ -114,28 +132,10 @@ jobs:
       - name: "🔨 NPM ui build"
         run: npm run build
 
-      - name: "🔧 Google Auth"
-        if: ${{ !env.ACT }}
-        id: auth
-        uses: 'google-github-actions/auth@v0'
-        with:
-          token_format: 'access_token'
-          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
-          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-
       - name: "⬆️ Release: Upload to Google Storage"
         if: github.event_name != 'pull_request' && inputs.UPLOAD_GS == true
         run: |
           gsutil -m -q rsync -R dist/${{ inputs.NAME }} gs://${{ inputs.GS_BUCKET }}/${{ inputs.NAME }}/\${{ inputs.VERSION }}
-
-      - name: "🔧 Docker Auth"
-        if: ${{ !env.ACT }}
-        id: docker-auth
-        uses: 'docker/login-action@v1'
-        with:
-          username: 'oauth2accesstoken'
-          password: '${{ steps.auth.outputs.access_token }}'
-          registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
       - name: "🔧 Setup Docker tags"
         id: docker-tags

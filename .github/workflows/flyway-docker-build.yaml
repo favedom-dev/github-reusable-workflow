@@ -46,21 +46,6 @@ jobs:
       DOCKER_BUILDKIT: 1
     steps:
 
-      # - name: Display Values
-      #   if: ${{ env.DEBUG }}
-      #   run: |
-      #     echo "NAME: ${{ inputs.NAME }}"
-      #     echo "VERSION: ${{ inputs.VERSION }}"
-      #     echo "PROJECT_ID: ${{ inputs.PROJECT_ID }}"
-      #     echo "GAR_LOCATION: ${{ inputs.GAR_LOCATION }}"
-      #     echo "GCR_LOCATION: ${{ inputs.GCR_LOCATION }}"
-      #     echo "DOCKER_REGISTRY: ${{ inputs.DOCKER_REGISTRY }}"
-
-      - name: "☁️ Checkout repository"
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
       - name: "🔧 Google Auth"
         if: ${{ !env.ACT }}
         id: auth
@@ -77,22 +62,22 @@ jobs:
         with:
           username: 'oauth2accesstoken'
           password: '${{ steps.auth.outputs.access_token }}'
-          # registry: 'gcr.io'  # Google Container Registry
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
-      # need the VERSION for Docker tag
-      # - name: "☑ Release version"
-      #   id: version
-      #   uses: rymndhng/release-on-push-action@master
-      #   with:
-      #     bump_version_scheme: patch
-      #     tag_prefix: v
-      #     dry_run: true
-
-      # - name: Check Release version Output Parameters
+      # - name: Display Values
+      #   if: ${{ env.DEBUG }}
       #   run: |
-      #     echo "Got tag name ${{ steps.version.outputs.tag_name }}"
-      #     echo "Got release version ${{ steps.version.outputs.version }}"
+      #     echo "NAME: ${{ inputs.NAME }}"
+      #     echo "VERSION: ${{ inputs.VERSION }}"
+      #     echo "PROJECT_ID: ${{ inputs.PROJECT_ID }}"
+      #     echo "GAR_LOCATION: ${{ inputs.GAR_LOCATION }}"
+      #     echo "GCR_LOCATION: ${{ inputs.GCR_LOCATION }}"
+      #     echo "DOCKER_REGISTRY: ${{ inputs.DOCKER_REGISTRY }}"
+
+      - name: "☁️ Checkout repository"
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: "🐳 Docker: build, tag, and push"
         uses: docker/build-push-action@v3
@@ -104,16 +89,10 @@ jobs:
 # yamllint enable
 
       - name: "🌐 Link to Container"
+# yamllint disable
         run: |-
           echo "https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
-        # # Google Container Registry (GCR)
-        # echo "https://console.cloud.google.com/gcr/images/${{ inputs.PROJECT_ID }}/global/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}"
-
-      # Maybe move to indiviudal workflow
-      # - name: "✅ GitHub release"
-      #   if: ${{ !env.ACT }}
-      #   id: release
-      #   uses: rymndhng/release-on-push-action@master
-      #   with:
-      #     bump_version_scheme: patch
-      #     tag_prefix: v
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            gh pr comment ${{ github.event.number }} --body "🐳 Container: [${{ inputs.NAME }} ${{ inputs.VERSION }}](https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/)"
+          fi
+# yamllint enable
