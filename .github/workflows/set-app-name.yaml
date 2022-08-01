@@ -8,7 +8,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
     outputs:
       NAME:
-        value: ${{ jobs.app-name.outputs.NAME  }}
+        value: ${{ jobs.set-app-name.outputs.NAME  }}
 
 jobs:
 
