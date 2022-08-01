@@ -9,7 +9,7 @@ on:  # yamllint disable-line rule:truthy
       - master
 
 env:
-  NAME: '${APP_NAME}'
+  NAME: 'peeq-fan-fe'
 
 jobs:
 
@@ -23,5 +23,37 @@ jobs:
 
   repo-version:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  node-docker:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/node-docker.yaml@master
+    needs: [repo-version, workaround-env]
+    with:
+      NAME: ${{ needs.workaround-env.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
+      WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+
+  preview:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env.yaml@master
+    needs: [workaround-env, node-docker]
+    if: github.event_name == 'pull_request'
+    with:
+      NAME: ${{ needs.workaround-env.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  staging:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
+    needs: [workaround-env, node-docker]
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    with:
+      NAME: ${{ needs.workaround-env.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}

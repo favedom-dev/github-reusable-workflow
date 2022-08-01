@@ -1,0 +1,171 @@
+name: Node and Docker
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      NAME:  # name of service, (ex: peeq-tracking)
+        required: true
+        type: string
+      VERSION:
+        required: true
+        type: string
+      HELM_REPO:
+        default: 'https://charts.helm.sh/stable'
+        required: false
+        type: string
+      NODE_VERSION:
+        default: 16
+        required: false
+        type: number
+      UPLOAD_GS:
+        default: false
+        required: false
+        type: boolean
+      GS_BUCKET:
+        default: 'peeq-public-assets.joinpeeq.com'
+        required: false
+        type: string
+      DOCKERFILE_FILE:
+        default: './Dockerfile'
+        required: false
+        type: string
+      TAG2:
+        default: 'latest'
+        required: false
+        type: string
+      PROJECT_ID:
+        default: 'favedom-dev'
+        required: false
+        type: string
+      GAR_LOCATION:
+        default: 'us-central1'
+        required: false
+        type: string
+      DOCKER_REGISTRY:
+        default: 'peeq-docker'
+        required: false
+        type: string
+    secrets:
+      GH_TOKEN:  # GitHub token
+        required: true
+      NPM_TOKEN:
+        required: true
+      WIF_PROVIDER:  # Workload Identity Federation Provider
+        required: true
+      WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
+        required: true
+
+jobs:
+
+  node-docker:
+    timeout-minutes: 15
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: "☁️ Checkout repository"
+        uses: actions/checkout@v3
+
+      - name: "🔧 Setup node.js"
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.NODE_VERSION }}
+          cache: npm
+
+      - name: "🔧 Setup DEPLOY_URL"
+        id: set-deploy-url
+        # if: inputs.UPLOAD_GS == true
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            DEPLOY_URL="https://${{ inputs.GS_BUCKET }}/${{ inputs.NAME}}/${{ inputs.VERSION }}/"
+            echo "RELEASE DEPLOY_URL: ${DEPLOY_URL}"
+          else
+            DEPLOY_URL="./"
+            echo "PR DEPLOY_URL: ${DEPLOY_URL}"
+          fi
+          echo "DEPLOY_URL: ${DEPLOY_URL}"
+          echo ${DEPLOY_URL} > DEPLOY_URL
+          echo "::set-output name=deploy-url::${DEPLOY_URL}"
+
+      - name: "🔧 Update base Url"
+        # if: inputs.UPLOAD_GS == true
+        run: sed -i "s/++DEPLOY_URL++/$(sed -e 's/\//\\\//g' DEPLOY_URL)/g" ./docker/environment.tpl.json
+
+# https://github.com/favedom-dev/jenkins-x-kubernetes/blob/master/packs/javascript-ui-nginx-helmfile/pipeline.yaml
+
+      # - name: "🔧 helm init"
+      #   run: |
+      #     helm init --client-only --stable-repo-url ${{ inputs.HELM_REPO }}
+
+      # https://github.com/favedom-dev/peeq-meetandgreet-for-iOS/blob/master/.github/workflows/ios-build.yaml#L55
+      - name: "🔧 Setup .npmrc"
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+
+      - name: "🔨 NPM install"
+        run: npm install --legacy-peer-deps
+
+      - name: "🔨 NPM test"
+        run: npm test
+
+      - name: "🔨 NPM ui build"
+        run: npm run build
+
+      - name: "🔧 Google Auth"
+        if: ${{ !env.ACT }}
+        id: auth
+        uses: 'google-github-actions/auth@v0'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
+          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+
+      - name: "⬆️ Release: Upload to Google Storage"
+        if: github.event_name != 'pull_request' && inputs.UPLOAD_GS == true
+        run: |
+          gsutil -m -q rsync -R dist/${{ inputs.NAME }} gs://${{ inputs.GS_BUCKET }}/${{ inputs.NAME }}/\${{ inputs.VERSION }}
+
+      - name: "🔧 Docker Auth"
+        if: ${{ !env.ACT }}
+        id: docker-auth
+        uses: 'docker/login-action@v1'
+        with:
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth.outputs.access_token }}'
+          registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
+
+      - name: "🔧 Setup Docker tags"
+        id: docker-tags
+        env:
+          DOCKER_LOCATION: ${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}
+        run: |-
+          DOCKER_TAGS=${{ env.DOCKER_LOCATION }}:${{ inputs.VERSION }}
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            DOCKER_TAGS=$DOCKER_TAGS,${{ env.DOCKER_LOCATION }}:latest
+            # echo "IF: DOCKER_TAGS: $DOCKER_TAGS"
+          fi
+          echo "DOCKER_TAGS: $DOCKER_TAGS"
+          echo "::set-output name=tags::$DOCKER_TAGS"
+
+      - name: "🐳 Docker: build, tag, and push"
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ${{ env.DOCKERFILE_FILE }}
+          push: true
+          tags: ${{ steps.docker-tags.outputs.tags }}
+
+      - name: "🌐 Link to Container"
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+# yamllint disable
+        run: |-
+          echo "https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            gh pr comment ${{ github.event.number }} --body "🐳 Container: [${{ inputs.NAME }} ${{ inputs.VERSION }}](https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/)"
+          fi
+# yamllint enable
