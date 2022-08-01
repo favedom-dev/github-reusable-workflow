@@ -1,17 +1,9 @@
 #!/bin/bash
 
-setup_app_name() {
-  export APP_NAME=$(basename `git rev-parse --show-toplevel`)
-}
-
 get_ci_yaml() {
-  wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/templates/${CI_DIR}/ci.yaml
-}
-
-update_ci_yaml() {
   mkdir -p .github/workflows
-  envsubst < ci.yaml > .github/workflows/ci.yaml
-  rm ci.yaml
+  cd .github/workflows
+  wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/templates/${CI_DIR}/ci.yaml
 }
 
 arg_ci_dir() {
@@ -29,7 +21,5 @@ cleanup() {
 
 ## MAIN
 arg_ci_dir $@
-setup_app_name
 get_ci_yaml
-update_ci_yaml
 cleanup
