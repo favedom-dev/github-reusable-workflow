@@ -12,10 +12,10 @@ on:  # yamllint disable-line rule:truthy
     #   - 'docker/**'
     #   - '**/Dockerfile'
 
-
 jobs:
 
   set-app-name:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     uses: favedom-dev/github-reusable-workflow/.github/workflows/set-app-name.yaml@master
 
   lint-sql:
