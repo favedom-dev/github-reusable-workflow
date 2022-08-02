@@ -2,8 +2,7 @@
 
 get_ci_yaml() {
   mkdir -p .github/workflows
-  cd .github/workflows
-  wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/templates/${CI_DIR}/ci.yaml
+  wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/templates/${CI_DIR}/ci.yaml -P .github/workflows/
 }
 
 arg_ci_dir() {
