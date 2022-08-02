@@ -12,7 +12,9 @@
 # export SECRETS_JX=("stackhawk-fan" "stackhawk-preview")
 # ./preview_copy_secrets.sh "${SECRETS_JX[@]}"
 
-PREVIEW_NAMESPACE=$(tr '[:upper:]' '[:lower:]' <<< ${APP_NAME}-PR-${PR_NUM})
+# PREVIEW_NAMESPACE=$(tr '[:upper:]' '[:lower:]' <<< ${APP_NAME}-PR-${PR_NUM})
+
+echo "PREVIEW_NAMESPACE: ${PREVIEW_NAMESPACE}"
 
 check_vars() {
     var_names=("$@")
@@ -25,9 +27,9 @@ check_vars() {
 
 function copy-secret() {
     check_vars \
-    APP_NAME \
-    PR_NUM \
     SECRET_NAMESPACE
+    # APP_NAME \
+    # PR_NUM \
 
 
     local arraySecrets=("$@")
