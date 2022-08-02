@@ -1,13 +1,16 @@
 name: Flyway Docker Build
 
 on:  # yamllint disable-line rule:truthy
+  pull_request:
+    branches:
+      - master
   push:
     branches:
       - master
-    paths:
-      - '${APP_NAME}/**'
-      - 'docker/**'
-      - '**/Dockerfile'
+    # paths:
+    #   - '${APP_NAME}/**'
+    #   - 'docker/**'
+    #   - '**/Dockerfile'
 
 
 jobs:
