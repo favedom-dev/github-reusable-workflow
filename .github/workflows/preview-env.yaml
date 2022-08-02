@@ -23,7 +23,7 @@ jobs:
         run: |
           echo "Preview: ${{ inputs.NAME }} ${{ inputs.VERSION }}"
           echo "STEPS:"
-          echo "1. Create Namespace"
+          echo "1. Create Namespace (pr-${{ inputs.NAME }}-${{ github.event.number }})"
           echo "2. Copy Secrets"
           echo "3. Deploy"
           echo "------------------"
