@@ -9,12 +9,17 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
 
-  test:
-    timeout-minutes: 5
+  debug:
+    timeout-minutes: 2
     runs-on: ubuntu-latest
     steps:
-
-      - name: ECHO version
-        run: |
-          echo "VERSION: ${{ needs.repo-get-version.outputs.version }}"
-          echo "VER: ${{ inputs.VER }}"
+      - name: "GITHUB INFO"
+        env:
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+        run: |-
+          echo "PR number          : ${{ github.event.pull_request.number }}"
+          echo "github.event_name  : ${{ github.event_name }}"
+          echo "github.run_attempt : ${{ github.run_attempt }}"
+          echo "github.run_number  : ${{ github.run_number }}"
+          echo "--------------------------------------"
+          echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"

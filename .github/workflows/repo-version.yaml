@@ -32,14 +32,16 @@ jobs:
       #     echo "github.run_attempt : ${{ github.run_attempt }}"
       #     echo "github.run_number  : ${{ github.run_number }}"
       #     echo "--------------------------------------"
+      #     echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
 
       # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run
       - name: Set PR Version
         id: pr-version
         if: github.event_name == 'pull_request'
         run: |
-          echo "PR Number (github.event.number): ${{ github.event.number }}"
-          echo "PR Attempt (github.run_attempt): ${{ github.run_attempt }}"
+          echo "PR Number (github.event.number)    : ${{ github.event.number }}"
+          echo "PR Run Attempt (github.run_attempt): ${{ github.run_attempt }}"
+          echo "PR Run Number (github.run_number)  : ${{ github.run_number }}"
           echo "::set-output name=version::0.0.0-SNAPSHOT-PR-${{ github.event.number }}-${{ github.run_attempt }}"
 
       - name: "☁️ Checkout repository"
