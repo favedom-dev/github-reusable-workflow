@@ -89,6 +89,7 @@ jobs:
       - name: "Create environment PR"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_NAME: ${{ inputs.REPO_NAME }}
           NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
           BRANCH_NAME: ${{ inputs.NAME }}_${{ inputs.VERSION }}
@@ -96,6 +97,7 @@ jobs:
           echo "NAME       : ${NAME}"
           echo "VERSION    : ${VERSION}"
           echo "BRANCH_NAME: ${BRANCH_NAME}"
+          echo "REPO_NAME  : ${REPO_NAME}"
           echo "===========:================"
           # git checkout -b ${{ inputs.NAME }}_${{ inputs.VERSION }}
           # git commit -a -m "${{ inputs.NAME }} ${{ inputs.VERSION }}"
@@ -104,4 +106,5 @@ jobs:
           git checkout -b ${BRANCH_NAME}
           git commit -a -m "${NAME} ${VERSION}"
           git push -u origin ${BRANCH_NAME}
-          gh pr create --label "approved" --title "chore: bump ${NAME} to ${VERSION}" --body "${NAME} ${VERSION}"
+          # gh pr create --label "approved" --title "chore: bump ${NAME} to ${VERSION}" --body "${NAME} ${VERSION}"
+          gh pr create --label "approved" --title "chore: bump ${NAME} to ${VERSION}" --body "${NAME} ${VERSION}" --repo ${REPO_NAME}
