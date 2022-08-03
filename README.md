@@ -137,7 +137,6 @@
 - Common workflow to used to clean up PR environments
 - See `pr-cleanup.yaml` [doc](#pr_cleanupyaml) or [file](./templates/pr-cleanup.yaml)
 
-
 ### `preview-stackhawk.yaml`
 
 - Currently a **placeholder**

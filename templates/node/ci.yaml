@@ -32,7 +32,7 @@ jobs:
 
   preview:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env.yaml@master
-    needs: [set-app-name, node-docker]
+    needs: [set-app-name, repo-version, node-docker]
     if: github.event_name == 'pull_request'
     with:
       NAME: ${{ needs.set-app-name.outputs.NAME }}
@@ -42,7 +42,7 @@ jobs:
 
   staging:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
-    needs: [set-app-name, node-docker]
+    needs: [set-app-name, repo-version, node-docker]
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     with:
       NAME: ${{ needs.set-app-name.outputs.NAME }}

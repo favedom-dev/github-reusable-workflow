@@ -45,7 +45,8 @@ jobs:
   staging:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
     needs: [set-app-name, repo-version, maven-docker]
-    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    if: github.event_name != 'pull_request'
+    # if: github.event_name == 'push' && github.event_name != 'pull_request'
     with:
       NAME: ${{ needs.set-app-name.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
