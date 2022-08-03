@@ -13,7 +13,6 @@ jobs:
   preview-cleanup:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env-cleanup.yaml@master
     needs: [set-app-name]
-    if: github.event.pull_request.merged == true
     with:
       NAME: ${{ needs.set-app-name.outputs.NAME }}
     secrets:
