@@ -62,13 +62,23 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
           ref: master
 
+      # Works for ARGO CD environment repo
+      # - name: "Update version in values.yaml"
+      #   working-directory: ${{ inputs.ENV_NAME }}  # Uncomment for Argo
+      #   run: |
+      #     yq \
+      #     eval \
+      #     --prettyPrint \
+      #     "(.dependencies[] | select(has(\"name\")) | select(.name == \"${{ inputs.NAME }}\")).version = \"${{ inputs.VERSION }}\"" \
+      #     -i ./${{ inputs.REQUIREMENTS_FILE }}
+
+      # Works with JX environment repos
       - name: "Update version in values.yaml"
-        # working-directory: ${{ inputs.ENV_NAME }}  # Uncomment for Argo
         run: |
           yq \
           eval \
           --prettyPrint \
-          "(.dependencies[] | select(has(\"name\")) | select(.name == \"${{ inputs.NAME }}\")).version = \"${{ inputs.VERSION }}\"" \
+          "(.releases[] | select(has(\"name\")) | select(.name == \"${{ inputs.NAME }}\")).version = \"${{ inputs.VERSION }}\"" \
           -i ./${{ inputs.REQUIREMENTS_FILE }}
 
       - name: "DEBUG: ./${{ inputs.REQUIREMENTS_FILE }}"

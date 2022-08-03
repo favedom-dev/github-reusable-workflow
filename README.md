@@ -132,6 +132,12 @@
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
 ```
 
+### `preview-env-cleanup.yaml`
+
+- Common workflow to used to clean up PR environments
+- See `pr-cleanup.yaml` [doc](#pr_cleanupyaml) or [file](./templates/pr-cleanup.yaml)
+
+
 ### `preview-stackhawk.yaml`
 
 - Currently a **placeholder**
@@ -249,6 +255,10 @@ export SECRETS_ARRAY=++SECRETS_ARRAY++
 ---
 
 ## Example Workflows
+
+### `pr-cleanup.yaml`
+
+- common to be used with any project that creates a PR environment.  This will remove the namespace
 
 ### flyway [./templates/flyway/ci.yaml](/templates/flyway/ci.yaml)
 
