@@ -1,0 +1,21 @@
+name: PR cleanup
+
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    types:
+      - closed
+
+jobs:
+
+  set-app-name:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/set-app-name.yaml@master
+
+  preview-cleanup:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env-cleanup.yaml@master
+    needs: [set-app-name]
+    if: github.event.pull_request.merged == true
+    with:
+      NAME: ${{ needs.set-app-name.outputs.NAME }}
+    secrets:
+      WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
+      WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'

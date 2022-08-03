@@ -1,0 +1,73 @@
+name: Preview Environment Cleanup
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      NAME:  # name of service, (ex: peeq-tracking)
+        required: true
+        type: string
+      # VERSION:
+      #   required: true
+      #   type: string
+      CLUSTER_NAME:
+        default: 'favedom-dev'
+        required: false
+        type: string
+      LOCATION:
+        default: 'us-central1-a'
+        required: false
+        type: string
+
+    secrets:
+      WIF_PROVIDER:  # Workload Identity Federation Provider
+        required: true
+      WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
+        required: true
+jobs:
+
+  preview-environment-cleanup:
+    timeout-minutes: 10
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+    steps:
+
+      # - name: "GITHUB INFO"
+      #   env:
+      #     GITHUB_CONTEXT: ${{ toJSON(github) }}
+      #   run: |-
+      #     echo "PR number                         : ${{ github.event.pull_request.number }}"
+      #     echo "github.event_name                 : ${{ github.event_name }}"
+      #     echo "github.run_attempt                : ${{ github.run_attempt }}"
+      #     echo "github.run_number                 : ${{ github.run_number }}"
+      #     echo "github.event.pull_request.merged  : ${{ github.event.pull_request.merged }}"
+      #     echo "==================================:=============================="
+      #     echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
+
+      - name: "🔧 Google Auth"
+        if: ${{ !env.ACT }}
+        id: auth
+        uses: 'google-github-actions/auth@v0'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
+          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+
+      - id: 'get-credentials'
+        uses: 'google-github-actions/get-gke-credentials@v0'
+        with:
+          cluster_name: ${{ inputs.CLUSTER_NAME }}
+          location: ${{ inputs.LOCATION }}
+
+      - name: "Set Name for PR namespace"
+        id: set-name-pr-namespace
+        run: |
+         echo "::set-output name=PR_NAMESPACE::pr-${{ inputs.NAME }}-${{ github.event.number }}"
+
+      - name: "Delete namespace: ${{ steps.set-name-pr-namespace.outputs.PR_NAMESPACE }}"
+        env:
+          PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.outputs.PR_NAMESPACE }}
+        run: |
+          echo "FIX: Delete Preview Namespace: ${PREVIEW_NAMESPACE} "
+          kubectl delete namespace ${PREVIEW_NAMESPACE} --dry-run=client
