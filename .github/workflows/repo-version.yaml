@@ -84,6 +84,6 @@ jobs:
           fi
           echo "${{ steps.version.outputs.version }}"
 
-      - name: "📜 Display version"
+      - name: "📜 Display version: ${{ steps.set-version.outputs.version }}"
         run: |
           echo "set-version : ${{ steps.set-version.outputs.version }}"
