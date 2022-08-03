@@ -203,6 +203,12 @@ export SECRETS_ARRAY=++SECRETS_ARRAY++
           chmod 777 ./preview_copy_secrets.sh
 ```
 
+### `preview_secrets.sh`
+
+- this is an example starter for copying secrets
+- copy into `++REPO++/scripts/`
+- update with array of secret names
+
 ### `setup_ci.sh`
 
 - creates a base `ci.yaml` workflow based on a template
