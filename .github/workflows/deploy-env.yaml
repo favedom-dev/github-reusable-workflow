@@ -78,6 +78,7 @@ jobs:
 
       - name: "Create environment PR"
         env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
           BRANCH_NAME: ${{ inputs.NAME }}_${{ inputs.VERSION }}
