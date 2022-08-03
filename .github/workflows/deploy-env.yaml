@@ -103,8 +103,8 @@ jobs:
           # git commit -a -m "${{ inputs.NAME }} ${{ inputs.VERSION }}"
           # git push -u origin ${{ inputs.NAME }}_${{ inputs.VERSION }}
           # gh pr create --label "approved" --title "chore: bump ${{ inputs.NAME }} to ${{ inputs.VERSION }}" --body "${{ inputs.NAME }} ${{ inputs.VERSION }}"
-          git checkout -b ${BRANCH_NAME}
-          git commit -a -m "${NAME} ${VERSION}"
-          git push -u origin ${BRANCH_NAME}
+          # git checkout -b ${BRANCH_NAME}
+          # git commit -a -m "${NAME} ${VERSION}"
+          # git push -u origin ${BRANCH_NAME}
           # gh pr create --label "approved" --title "chore: bump ${NAME} to ${VERSION}" --body "${NAME} ${VERSION}"
-          gh pr create --label "approved" --title "chore: bump ${NAME} to ${VERSION}" --body "${NAME} ${VERSION}" --repo ${REPO_NAME}
+          gh pr create --label "approved" --title "chore: bump ${NAME} to ${VERSION}" --body "${NAME} ${VERSION}" --base ${BRANCH_NAME} --repo ${REPO_NAME}
