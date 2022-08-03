@@ -1,4 +1,4 @@
-GITHUB_CONTEXT: {
+{
   "token": "***",
   "job": "preview-environment-cleanup",
   "ref": "refs/heads/master",
