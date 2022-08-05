@@ -69,5 +69,7 @@ jobs:
         env:
           PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.outputs.PR_NAMESPACE }}
         run: |
-          echo "FIX: Delete Preview Namespace: ${PREVIEW_NAMESPACE} "
-          kubectl delete namespace ${PREVIEW_NAMESPACE} --dry-run=client
+          kubectl delete namespace ${PREVIEW_NAMESPACE}
+          # echo "FIX: Delete Preview Namespace: ${PREVIEW_NAMESPACE} "
+          # kubectl delete namespace ${PREVIEW_NAMESPACE} --dry-run=client
+          # kubectl delete namespace ${PREVIEW_NAMESPACE} --dry-run=client
