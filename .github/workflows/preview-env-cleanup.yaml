@@ -69,4 +69,8 @@ jobs:
         env:
           PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.outputs.PR_NAMESPACE }}
         run: |
-          kubectl delete namespace ${PREVIEW_NAMESPACE}
+          if [[ $(kubectl get ns | awk '{print $1}' | grep ^${PREVIEW_NAMESPACE}$) == ${PREVIEW_NAMESPACE} ]]; then
+            kubectl delete namespace ${PREVIEW_NAMESPACE}
+          else
+            echo "SKIPPING: namespace \"${PREVIEW_NAMESPACE}\" does not exist"
+          fi

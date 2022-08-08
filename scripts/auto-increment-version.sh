@@ -46,12 +46,7 @@ NEEDS_TAG=`git describe --contains $GIT_COMMIT`
 # only tag if no tag already (would be better if the git describe command above could have a silent option)
 if [ -z "$NEEDS_TAG" ]; then
     echo "Tagged with $NEW_TAG (Ignoring fatal:cannot describe - this means commit is untagged) "
-    # git tag $NEW_TAG
-    # git push --tags
-    env | sort
-    echo "#####"
-    echo "GH_TOKEN    : ${GH_TOKEN}"
-    echo "GITHUB_TOKEN: ${GITHUB_TOKEN}"
+    # env | sort
     gh release create $NEW_TAG --generate-notes
     rc=$?
     if [ ${rc} -ne 0 ] ; then
