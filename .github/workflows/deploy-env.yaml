@@ -9,18 +9,28 @@ on:  # yamllint disable-line rule:truthy
       VERSION:
         required: true
         type: string
-      ENV_NAME:
-        default: 'staging'
-        required: false
-        type: string
-      REPO_NAME:
+      ENV_REPO_NAME:
+        # default: 'favedom-dev/environment-???'  # ArgoCD
         default: 'favedom-dev/environment-favedom-dev-staging'
-        # default: 'favedom-dev/environment-?'  # Uncomment for Argo and set to repo
         required: false
         type: string
-      REQUIREMENTS_FILE:
-        # default: 'requirements.yaml'  # Uncomment for Argo
-        default: 'helmfile.yaml'
+      ENV_REPO_PATH:
+        default: 'env-repo'
+        required: false
+        type: string
+      ENV_REPO_SUBDIR:
+        # default: 'staging'  # ArgoCD
+        default: '.'  # JX
+        required: false
+        type: string
+      YAML_FILE:
+        # default: 'requirements.yaml'  # ArgoCD
+        default: 'helmfile.yaml'  # JX
+        required: false
+        type: string
+      YAML_ELEMENT:
+        # default: 'dependencies'  # ArgoCD
+        default: 'releases'  # JX
         required: false
         type: string
     secrets:
@@ -30,76 +40,56 @@ on:  # yamllint disable-line rule:truthy
 jobs:
 
   deploy-environment:
-    timeout-minutes: 10
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
 
-      - name: "TODO:"
-        run: |
-          echo "DEPLOY:"
-          echo "======="
-          echo "NAME    : ${{ inputs.NAME }}"
-          echo "VERSION : ${{ inputs.VERSION }}"
-          echo "ENV_NAME: ${{ inputs.ENV_NAME }}"
-          echo "======="
-          echo "STEPS:"
-          echo "1. Git clone environment repo"
-          echo "2. Update ++ENV_NAME++/${{ inputs.REQUIREMENTS_FILE }}"
-          echo "3. Create PR (gh cli: https://cli.github.com/manual/gh_pr_create)"
-          echo "  a. Add \"approved\" label (-l, --label \"approved\")"
-          echo "  b. Add title "chore: bump https://github.com/favedom-dev/peeq-sms from 0.0.24 to 0.0.25 " (-t, --title <string>)"
-          echo "  c. Maybe add the comment(s) from the merged pull request to the body (-b, --body <string>)"
-
-      - name: "Git config"
+      - name: "🔧 Git config"
+        if: github.ref == 'refs/heads/master'
         run: |
           git config --global user.email ""
           git config --global user.name "velocityz-0x-pq-github"
 
-      - name: "☁️ Checkout environment repository"
+      - name: "☁️ Checkout environment repository: ${{ inputs.ENV_REPO_NAME }}"
+        if: github.ref == 'refs/heads/master'
         uses: actions/checkout@v3
         with:
-          repository: ${{ inputs.REPO_NAME }}
+          repository: ${{ inputs.ENV_REPO_NAME }}
           token: ${{ secrets.GH_TOKEN }}
           ref: master
+          path: ${{ inputs.ENV_REPO_PATH }}
 
-      # Works for ARGO CD environment repo
-      # - name: "Update version in values.yaml"
-      #   working-directory: ${{ inputs.ENV_NAME }}  # Uncomment for Argo
-      #   run: |
-      #     yq \
-      #     eval \
-      #     --prettyPrint \
-      #     "(.dependencies[] | select(has(\"name\")) | select(.name == \"${{ inputs.NAME }}\")).version = \"${{ inputs.VERSION }}\"" \
-      #     -i ./${{ inputs.REQUIREMENTS_FILE }}
-
-      # Works with JX environment repos
-      - name: "Update version in values.yaml"
+      - name: "Update version in environment repo: ${{ inputs.YAML_FILE }}"
+        working-directory: ${{ inputs.ENV_REPO_PATH }}
+# yamllint disable
         run: |
           yq \
           eval \
           --prettyPrint \
-          "(.releases[] | select(has(\"name\")) | select(.name == \"${{ inputs.NAME }}\")).version = \"${{ inputs.VERSION }}\"" \
-          -i ./${{ inputs.REQUIREMENTS_FILE }}
+          "(.${{ inputs.YAML_ELEMENT }}[] | select(has(\"name\")) | select(.name == \"${{ inputs.NAME }}\")).version = \"${{ inputs.VERSION }}\"" \
+          -i ./${{ inputs.YAML_FILE }}
+# yamllint enable
 
-      - name: "DEBUG: ./${{ inputs.REQUIREMENTS_FILE }}"
-        # working-directory: ${{ inputs.ENV_NAME }}  # Uncomment for Argo
-        run: |
-          cat ./${{ inputs.REQUIREMENTS_FILE }}
+#       - name: "DEBUG: ./${{ inputs.YAML_FILE }}"
+#         if: github.ref == 'refs/heads/master'
+# # yamllint disable
+#         working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ inputs.ENV_REPO_SUBDIR }}
+# # yamllint enable
+#         run: |
+#           cat ./${{ inputs.YAML_FILE }}
 
       - name: "Create environment PR"
+        if: github.ref == 'refs/heads/master'
+        working-directory: ${{ inputs.ENV_REPO_PATH }}
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          REPO_NAME: ${{ inputs.REPO_NAME }}
           NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
           BRANCH_NAME: ${{ inputs.NAME }}_${{ inputs.VERSION }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+# yamllint disable
         run: |
-          echo "NAME       : ${NAME}"
-          echo "VERSION    : ${VERSION}"
-          echo "BRANCH_NAME: ${BRANCH_NAME}"
-          echo "REPO_NAME  : ${REPO_NAME}"
-          echo "===========:================"
           git checkout -b ${BRANCH_NAME}
           git commit -a -m "${NAME} ${VERSION}"
           git push -u origin ${BRANCH_NAME}
-          gh pr create --label "approved" --title "chore: bump ${NAME} to ${VERSION}" --body "${NAME} ${VERSION}" --repo ${REPO_NAME}
+          gh pr create --label "approved" --title "chore: bump ${NAME} to ${VERSION}" --body "${NAME} ${VERSION}"
+# yamllint enable

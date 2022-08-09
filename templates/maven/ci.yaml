@@ -30,10 +30,9 @@ jobs:
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
       NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
 
-  preview:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env.yaml@master
+  helm-charts:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/helm-charts.yaml@master
     needs: [set-app-name, repo-version, maven-docker]
-    if: github.event_name == 'pull_request'
     with:
       NAME: ${{ needs.set-app-name.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
@@ -41,12 +40,12 @@ jobs:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+      CHARTMUSEUM_PASSWORD: '${{ secrets.JX_CHARTMUSEUM_PASSWORD }}'
 
   staging:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
-    needs: [set-app-name, repo-version, maven-docker]
+    needs: [set-app-name, repo-version, maven-docker, helm-charts]
     if: github.event_name != 'pull_request'
-    # if: github.event_name == 'push' && github.event_name != 'pull_request'
     with:
       NAME: ${{ needs.set-app-name.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
