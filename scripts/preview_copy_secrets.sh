@@ -9,6 +9,13 @@ DEFAULT_SECRET_FILENAME="./preview_secrets.txt"
 # 1st arg can override the SECRET_FILENAM name
 SECRET_FILENAME="${1:-$DEFAULT_SECRET_FILENAME}"
 
+# check that PREVIEW_NAMESPACE is set
+if [ -z ${PREVIEW_NAMESPACE} ]; then
+  echo "ERROR: \"PREVIEW_NAMESPACE\" is not set.  Should be done in the GitHub workflow"
+  echo "   export PREVIEW_NAMESPACE=++PREVIEW_NAMESPACE++"
+  exit 1
+fi
+
 # check that file exists
 if [ ! -f "$SECRET_FILENAME" ]; then
   echo "ERROR: \"${SECRET_FILENAME}\" does not exists in: $(pwd)"
