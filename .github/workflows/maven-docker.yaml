@@ -87,6 +87,11 @@ jobs:
           wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
           envsubst < ./settings.xml > ~/.m2/settings.xml
 
+      - name: "🔨 Maven set version"
+        env:
+          VERSION: ${{ inputs.VERSION }}
+        run: mvn versions:set -DnewVersion=${VERSION}
+
       - name: "🔨 Build with Maven"
         run: mvn ${{ inputs.MVN_ARGS }}
 
