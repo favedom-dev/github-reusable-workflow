@@ -402,4 +402,3 @@ jobs:
           gh pr comment ${{ github.event.number }} --body-file ${PR_BODY}
 # yamllint enable
 # END: PR ONLY
-
