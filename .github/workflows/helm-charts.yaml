@@ -1,0 +1,405 @@
+name: Helm Charts
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      NAME:  # name of service, (ex: peeq-tracking)
+        required: true
+        type: string
+      VERSION:
+        required: true
+        type: string
+      PROJECT_ID:
+        default: 'favedom-dev'
+        required: false
+        type: string
+      CLUSTER_NAME:
+        default: 'favedom-dev'
+        required: false
+        type: string
+      LOCATION:
+        default: 'us-central1-a'
+        required: false
+        type: string
+      DOCKER_REGISTRY:
+        default: 'us-central1-docker.pkg.dev'  # GAR
+        # default: 'gcr.io'  # JX
+        required: false
+        type: string
+      DOCKER_REGISTRY_NAME:
+        default: 'peeq-docker'
+        required: false
+        type: string
+      IS_HELM_GAR_REPO:
+        # default: true  # GAR
+        default: false  # JX
+        required: false
+        type: boolean
+      HELM_REGISTRY_NAME:
+        default: 'peeq-helm'
+        required: false
+        type: string
+      ENABLE_HELM_DEBUG:
+        default: true
+        required: false
+        type: boolean
+      HELM_DOCKER_REGISTRY:
+        # default: 'us-central1-docker.pkg.dev'  # GAR (oci://)
+        default: 'gcr.io'  # JX
+        required: false
+        type: string
+      HELM_VERSION:
+        default: 'v3.7.2'
+        required: false
+        type: string
+      CHARTMUSEUM:
+        default: 'jenkins-x-chartmuseum'
+        required: false
+        type: string
+      CHARTMUSEUM_REPO:
+        default: 'localhost:8080'
+        required: false
+        type: string
+      CHARTMUSEUM_USER:
+        default: 'admin'
+        required: false
+        type: string
+      PREVIEW_BASE_DOMAIN:
+        default: 'staging.joinpeeq.com'
+        required: false
+        type: string
+      PREVIEW_HEALTHCHECK:
+        default: ''  # /api/++SERVICE++/acutuator/health
+        required: false
+        type: string
+    secrets:
+      GH_TOKEN:  # GitHub token
+        required: true
+      WIF_PROVIDER:  # Workload Identity Federation Provider
+        required: true
+      WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
+        required: true
+      CHARTMUSEUM_PASSWORD:  # JX
+        required: true
+
+jobs:
+
+  helm-charts:
+    timeout-minutes: 10
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+
+      - name: "🔧 Git config"
+        run: |
+          git config --global user.email ""
+          git config --global user.name "velocityz-0x-pq-github"
+
+      - name: "☁️ Checkout repository: ${{ inputs.NAME }}"
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: "🔧 Enable helm debug"
+        if: inputs.ENABLE_HELM_DEBUG == true
+        run: |
+          echo "HELM_DEBUG_FLAG=--debug" >> $GITHUB_ENV
+
+      - name: "🔧 Set charts dir"
+        id: set-charts-dir
+        env:
+          BASE_DIR: ./charts
+          APP_NAME: ${{ inputs.NAME }}
+          GH_REF: ${{ github.ref }}
+        run: |
+          CHARTS_DIR=${BASE_DIR}/preview
+          if [ "${GH_REF}" == "refs/heads/master" ]; then
+            CHARTS_DIR=${BASE_DIR}/${APP_NAME}
+          fi;
+          echo "CHARTS_DIR: ${CHARTS_DIR}"
+          echo "CHARTS_DIR=${CHARTS_DIR}" >> $GITHUB_ENV
+          echo "::set-output name=CHARTS_DIR::${CHARTS_DIR}"
+
+      - name: "🔧 Setup helm"
+        uses: azure/setup-helm@v3
+        with:
+          version: ${{ inputs.HELM_VERSION }}
+        id: install
+
+      - name: "🔧 Google Auth"
+        if: ${{ !env.ACT }}
+        id: auth
+        uses: 'google-github-actions/auth@v0'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
+          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+
+      - name: "🔧 GKE credentials"
+        id: 'get-credentials'
+        uses: 'google-github-actions/get-gke-credentials@v0'
+        with:
+          cluster_name: ${{ inputs.CLUSTER_NAME }}
+          location: ${{ inputs.LOCATION }}
+
+      - name: "Update helm charts"
+        working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
+        env:
+          APP_NAME: ${{ inputs.NAME }}
+          VERSION: ${{ inputs.VERSION }}
+          DOCKER_REGISTRY: ${{ inputs.DOCKER_REGISTRY }}
+          DOCKER_REGISTRY_NAME: ${{ inputs.DOCKER_REGISTRY_NAME }}
+          PROJECT_ID: ${{ inputs.PROJECT_ID }}
+          GH_REF: ${{ github.ref }}
+# yamllint disable
+        run: |
+          echo "APP_NAME            : ${APP_NAME}"
+          echo "VERSION             : ${VERSION}"
+          echo "DOCKER_REGISTRY     : ${DOCKER_REGISTRY}"
+          echo "DOCKER_REGISTRY_NAME: ${DOCKER_REGISTRY_NAME}"
+          echo "=================================="
+          sed -i -e "s/version:.*/version: ${VERSION}/" Chart.yaml
+          sed -i -e "s/tag:.*/tag: ${VERSION}/" values.yaml
+          # if [ ${{ inputs.IS_HELM_GAR_REPO }} = true ]; then
+            echo "GAR (oci://): repository update"
+            sed -i -e "s|repository:.*|repository: ${DOCKER_REGISTRY}\/${PROJECT_ID}\/${DOCKER_REGISTRY_NAME}\/${APP_NAME}|" values.yaml
+          # else
+          #   echo "JX: repository update"
+          #   sed -i -e "s|repository:.*|repository: ${DOCKER_REGISTRY}\/${PROJECT_ID}\/${APP_NAME}|" values.yaml
+          # fi
+          if [ "${GH_REF}" == "refs/heads/master" ]; then
+            echo "appVersion: ${VERSION}" >> Chart.yaml
+          else
+            sed -i -e "s/version:.*/version: ${VERSION}/" ../*/Chart.yaml
+            echo "  version: ${VERSION}" >> requirements.yaml
+          fi
+# yamllint enable
+
+      # - name: "DEBUG: helm charts Before"
+      #   if: inputs.ENABLE_HELM_DEBUG == true
+      #   env:
+      #     GH_REF: ${{ github.ref }}
+      #   working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
+      #   run: |
+      #     echo "DEBUG"
+      #     echo "=================================="
+      #     echo "Chart.yaml"
+      #     cat Chart.yaml
+      #     echo "=================================="
+      #     echo "../${{ inputs.NAME }}/Chart.yaml"
+      #     cat ../${{ inputs.NAME }}/Chart.yaml
+      #     echo "=================================="
+      #     echo "values.yaml"
+      #     cat values.yaml
+      #     echo "=================================="
+      #     if [ "${GH_REF}" != "refs/heads/master" ]; then
+      #       echo "requirements.yaml"
+      #       cat requirements.yaml
+      #     fi
+
+      - name: "[JX]: Port forward - chartmuseum"
+        if: inputs.IS_HELM_GAR_REPO == false
+        run: |
+          kubectl -n jx port-forward svc/jenkins-x-chartmuseum 8080:8080 &
+          # need to wait to make sure a connection can be made
+          sleep 1
+
+      - name: "[JX]: Helm repo add"
+        if: inputs.IS_HELM_GAR_REPO == false
+        env:
+          CHARTMUSEUM_REPO: ${{ inputs.CHARTMUSEUM_REPO }}
+# yamllint disable
+        run: |
+          helm repo add jenkins-x-chartmuseum http://${CHARTMUSEUM_REPO} ${HELM_DEBUG_FLAG}
+          helm repo add jx https://jenkins-x-charts.github.io/v2/ ${HELM_DEBUG_FLAG}
+          echo "=================================="
+          helm repo list
+# yamllint enable
+
+      - name: "🔧 [GAR] (oci://): Helm login"
+        working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
+        if: inputs.IS_HELM_GAR_REPO == true
+        env:
+          HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
+          HELM_REGISTRY_NAME: ${{ inputs.HELM_REGISTRY_NAME }}
+          HELM_EXPERIMENTAL_OCI: 1
+        run: |
+          gcloud auth print-access-token | \
+          helm registry login -u oauth2accesstoken \
+          --password-stdin https://${HELM_DOCKER_REGISTRY}
+
+      - name: "Helm"
+        working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
+        env:
+          APP_NAME: ${{ inputs.NAME }}
+          VERSION: ${{ inputs.VERSION }}
+          HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
+        run: |
+          echo "HELM_DEBUG_FLAG: ${HELM_DEBUG_FLAG}"
+          echo "=================================="
+          echo "RUN: helm repo list"
+          helm repo list
+          echo "=================================="
+          echo "RUN: helm dependency update ${HELM_DEBUG_FLAG}"
+          helm dependency update ${HELM_DEBUG_FLAG}
+          echo "=================================="
+          echo "RUN: helm dependency build ${HELM_DEBUG_FLAG}"
+          helm dependency build ${HELM_DEBUG_FLAG}
+          # echo "=================================="
+          # echo "RUN: helm create ${APP_NAME} ${HELM_DEBUG_FLAG}"
+          # helm create ${APP_NAME} ${HELM_DEBUG_FLAG}
+          echo "=================================="
+          echo "RUN: helm package . --version ${VERSION} ${HELM_DEBUG_FLAG}"
+          helm package . --version ${VERSION} ${HELM_DEBUG_FLAG}
+
+      # - name: "DEBUG: charts After"
+      #   if: inputs.ENABLE_HELM_DEBUG == true
+      #   env:
+      #     GH_REF: ${{ github.ref }}
+      #   working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
+      #   run: |
+      #     echo "DEBUG"
+      #     echo "=================================="
+      #     echo "Chart.yaml"
+      #     cat Chart.yaml
+      #     echo "=================================="
+      #     echo "../${{ inputs.NAME }}/Chart.yaml"
+      #     cat ../${{ inputs.NAME }}/Chart.yaml
+      #     echo "=================================="
+      #     echo "values.yaml"
+      #     cat values.yaml
+      #     echo "=================================="
+      #     if [ "${GH_REF}" != "refs/heads/master" ]; then
+      #       echo "requirements.yaml"
+      #       cat requirements.yaml
+      #     fi
+
+      # - name: "DEBUG: Helm show Before"
+      #   if: inputs.ENABLE_HELM_DEBUG == true
+      #   working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
+      #   env:
+      #     APP_NAME: ${{ inputs.NAME }}
+      #     VERSION: ${{ inputs.VERSION }}
+      #     CHARTMUSEUM: jenkins-x-chartmuseum
+      #   run: |
+      #     echo "DEBUG: helm show all ${APP_NAME}"
+      #     helm show all ${CHARTMUSEUM}/${APP_NAME} ${HELM_DEBUG_FLAG}
+      #     echo "=================================="
+      #     echo "DEBUG: helm show chart ${APP_NAME}"
+      #     helm show chart ${CHARTMUSEUM}/${APP_NAME} ${HELM_DEBUG_FLAG}
+
+      - name: "RELEASE [GAR]: Upload helm chart to ocr://"
+        if: github.ref == 'refs/heads/master' && inputs.IS_HELM_GAR_REPO == true
+        working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
+        env:
+          APP_NAME: ${{ inputs.NAME }}
+          VERSION: ${{ inputs.VERSION }}
+          HELM_EXPERIMENTAL_OCI: 1  # needed for oci://
+          HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
+          HELM_REGISTRY_NAME: ${{ inputs.HELM_REGISTRY_NAME }}
+          PROJECT_ID: ${{ inputs.PROJECT_ID }}
+# yamllint disable
+        run: |
+          echo "TODO GAR (oci://): RUN: helm push..."
+          helm push \
+          ${APP_NAME}-${VERSION}.tgz \
+          oci://${HELM_DOCKER_REGISTRY}/${PROJECT_ID}/${HELM_REGISTRY_NAME}/${APP_NAME} \
+          ${HELM_DEBUG_FLAG}
+# yamllint enable
+
+      - name: "RELEASE [JX]: Upload helm chart to chartmuseum"
+        if: github.ref == 'refs/heads/master' && inputs.IS_HELM_GAR_REPO == false
+        working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
+        env:
+          APP_NAME: ${{ inputs.NAME }}
+          VERSION: ${{ inputs.VERSION }}
+          HELM_REGISTRY_NAME: ${{ inputs.HELM_REGISTRY_NAME }}
+          CHARTMUSEUM_USER: ${{ inputs.CHARTMUSEUM_USER }}
+          CHARTMUSEUM_PASSWORD: ${{ secrets.CHARTMUSEUM_PASSWORD }}
+          CHARTMUSEUM_REPO: ${{ inputs.CHARTMUSEUM_REPO }}
+        run: |
+          curl --fail \
+          -u ${CHARTMUSEUM_USER}:${CHARTMUSEUM_PASSWORD} \
+          --data-binary "@${APP_NAME}-${VERSION}.tgz" \
+          ${CHARTMUSEUM_REPO}/api/charts
+
+      # - name: "DEBUG: Helm show After"
+      #   if: inputs.ENABLE_HELM_DEBUG == true
+      #   working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
+      #   env:
+      #     APP_NAME: ${{ inputs.NAME }}
+      #     VERSION: ${{ inputs.VERSION }}
+      #     CHARTMUSEUM: jenkins-x-chartmuseum
+      #   run: |
+      #     echo "DEBUG: helm show all ${APP_NAME}"
+      #     helm show all ${CHARTMUSEUM}/${APP_NAME} ${HELM_DEBUG_FLAG}
+      #     echo "=================================="
+      #     echo "DEBUG: helm show chart ${APP_NAME}"
+      #     helm show chart ${CHARTMUSEUM}/${APP_NAME} ${HELM_DEBUG_FLAG}
+
+# START: PR ONLY
+      - name: "PREVIEW: Set Name for PR namespace"
+        if: github.ref != 'refs/heads/master'
+        id: set-name-pr-namespace
+        run: |
+         echo "::set-output name=PR_NAMESPACE::pr-${{ inputs.NAME }}-${{ github.event.number }}"
+
+      - name: "PREVIEW: Create namespace: ${{ steps.set-name-pr-namespace.outputs.PR_NAMESPACE }}"
+        if: github.ref != 'refs/heads/master'
+        env:
+          PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.outputs.PR_NAMESPACE }}
+        run: |
+          echo "Create Preview Namespace: ${PREVIEW_NAMESPACE} "
+          kubectl create namespace ${PREVIEW_NAMESPACE} --dry-run=client -o json | kubectl apply -f -
+          kubectl config set-context $(kubectl config current-context) --namespace ${PREVIEW_NAMESPACE}
+
+      - name: "PREVIEW: Copy secrets"
+        if: github.ref != 'refs/heads/master'
+        env:
+          PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.outputs.PR_NAMESPACE }}
+          SCRIPT_NAME: preview_copy_secrets.sh
+        working-directory: scripts
+        run: |
+          wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/${SCRIPT_NAME}
+          chmod 777 ./${SCRIPT_NAME}
+          ./${SCRIPT_NAME}
+
+      - name: "PREVIEW: Helm upgrade/install"
+        if: github.ref != 'refs/heads/master'
+        env:
+          NAME: ${{ inputs.NAME }}
+        working-directory: ./charts/preview
+        run: |
+          echo "NAME           : ${NAME}"
+          echo "HELM_DEBUG_FLAG: ${HELM_DEBUG_FLAG}"
+          helm upgrade --install ${NAME} . ${HELM_DEBUG_FLAG}
+
+      - name: "🌐 PREVIEW: Link to Preview"
+        if: github.ref != 'refs/heads/master'
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+# yamllint disable
+          PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.outputs.PR_NAMESPACE }}
+          PREVIEW_URL: https://${{ steps.set-name-pr-namespace.outputs.PR_NAMESPACE }}.${{ inputs.PREVIEW_BASE_DOMAIN }}
+          PREVIEW_HEALTHCHECK: ${{ inputs.PREVIEW_HEALTHCHECK }}
+          PR_BODY: pr_body.md
+        run: |-
+          echo "${PREVIEW_URL}"
+          # START: body message file
+          echo "🌐 PR built and available in a preview environment ${{ inputs.NAME }} pr ${{ github.event.number }}:" > ${PR_BODY}
+          echo "- [preview](${PREVIEW_URL})" >> ${PR_BODY}
+          if [ ${#PREVIEW_HEALTHCHECK}  -gt 0 ]; then
+            echo "- [healthcheck](${PREVIEW_URL}${PREVIEW_HEALTHCHECK})" >> ${PR_BODY}
+          fi
+          echo "===="
+          cat ${PR_BODY}
+          echo "===="
+          # END: body message file
+          gh pr comment ${{ github.event.number }} --body-file ${PR_BODY}
+# yamllint enable
+# END: PR ONLY
+
