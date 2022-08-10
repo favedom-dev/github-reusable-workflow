@@ -9,6 +9,9 @@ on:  # yamllint disable-line rule:truthy
       VERSION:
         required: true
         type: string
+      PR_NAMESPACE:
+        required: true
+        type: string
       PROJECT_ID:
         default: 'favedom-dev'
         required: false
@@ -222,7 +225,7 @@ jobs:
 
       - name: "🔧 [GAR] (oci://): Helm login"
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
-        if: inputs.IS_HELM_GAR_REPO == true
+        # if: inputs.IS_HELM_GAR_REPO == true
         env:
           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
           HELM_REGISTRY_NAME: ${{ inputs.HELM_REGISTRY_NAME }}
@@ -293,7 +296,7 @@ jobs:
       #     helm show chart ${CHARTMUSEUM}/${APP_NAME} ${HELM_DEBUG_FLAG}
 
       - name: "RELEASE [GAR]: Upload helm chart to ocr://"
-        if: github.ref == 'refs/heads/master' && inputs.IS_HELM_GAR_REPO == true
+        # if: github.ref == 'refs/heads/master' && inputs.IS_HELM_GAR_REPO == true
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
         env:
           APP_NAME: ${{ inputs.NAME }}
@@ -304,7 +307,6 @@ jobs:
           PROJECT_ID: ${{ inputs.PROJECT_ID }}
 # yamllint disable
         run: |
-          echo "TODO GAR (oci://): RUN: helm push..."
           helm push \
           ${APP_NAME}-${VERSION}.tgz \
           oci://${HELM_DOCKER_REGISTRY}/${PROJECT_ID}/${HELM_REGISTRY_NAME}/${APP_NAME} \
@@ -342,16 +344,16 @@ jobs:
       #     helm show chart ${CHARTMUSEUM}/${APP_NAME} ${HELM_DEBUG_FLAG}
 
 # START: PR ONLY
-      - name: "PREVIEW: Set Name for PR namespace"
-        if: github.ref != 'refs/heads/master'
-        id: set-name-pr-namespace
-        run: |
-         echo "::set-output name=PR_NAMESPACE::pr-${{ inputs.NAME }}-${{ github.event.number }}"
+      # - name: "PREVIEW: Set Name for PR namespace"
+      #   if: github.ref != 'refs/heads/master'
+      #   id: set-name-pr-namespace
+      #   run: |
+      #    echo "::set-output name=PR_NAMESPACE::pr-${{ inputs.NAME }}-${{ github.event.number }}"
 
-      - name: "PREVIEW: Create namespace: ${{ steps.set-name-pr-namespace.outputs.PR_NAMESPACE }}"
+      - name: "PREVIEW: Create namespace: ${{ inputs.PR_NAMESPACE }}"
         if: github.ref != 'refs/heads/master'
         env:
-          PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.outputs.PR_NAMESPACE }}
+          PREVIEW_NAMESPACE: ${{ inputs.PR_NAMESPACE }}
         run: |
           echo "Create Preview Namespace: ${PREVIEW_NAMESPACE} "
           kubectl create namespace ${PREVIEW_NAMESPACE} --dry-run=client -o json | kubectl apply -f -
@@ -360,7 +362,7 @@ jobs:
       - name: "PREVIEW: Copy secrets"
         if: github.ref != 'refs/heads/master'
         env:
-          PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.outputs.PR_NAMESPACE }}
+          PREVIEW_NAMESPACE: ${{ inputs.PR_NAMESPACE }}
           SCRIPT_NAME: preview_copy_secrets.sh
         working-directory: scripts
         run: |
@@ -383,8 +385,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 # yamllint disable
-          PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.outputs.PR_NAMESPACE }}
-          PREVIEW_URL: https://${{ steps.set-name-pr-namespace.outputs.PR_NAMESPACE }}.${{ inputs.PREVIEW_BASE_DOMAIN }}
+          PREVIEW_NAMESPACE: ${{ inputs.PR_NAMESPACE }}
+          PREVIEW_URL: https://${{ inputs.PR_NAMESPACE }}.${{ inputs.PREVIEW_BASE_DOMAIN }}
           PREVIEW_HEALTHCHECK: ${{ inputs.PREVIEW_HEALTHCHECK }}
           PR_BODY: pr_body.md
         run: |-
