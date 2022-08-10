@@ -2,7 +2,7 @@
 
 # NOTE: requires the following env variables which are used in stackhawk-tmpl.yml
 # APP_NAME
-# PR_HOST
+# PREVIEW_HOST
 # PQ_API_PATH
 # KEYCLOAK_AUTH
 # TEST_USERNAME

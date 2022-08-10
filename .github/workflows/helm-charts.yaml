@@ -9,7 +9,7 @@ on:  # yamllint disable-line rule:truthy
       VERSION:
         required: true
         type: string
-      PR_NAMESPACE:
+      PREVIEW_NAMESPACE:
         required: true
         type: string
       PROJECT_ID:
@@ -348,12 +348,12 @@ jobs:
       #   if: github.ref != 'refs/heads/master'
       #   id: set-name-pr-namespace
       #   run: |
-      #    echo "::set-output name=PR_NAMESPACE::pr-${{ inputs.NAME }}-${{ github.event.number }}"
+      #    echo "::set-output name=PREVIEW_NAMESPACE::pr-${{ inputs.NAME }}-${{ github.event.number }}"
 
-      - name: "PREVIEW: Create namespace: ${{ inputs.PR_NAMESPACE }}"
+      - name: "PREVIEW: Create namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
         if: github.ref != 'refs/heads/master'
         env:
-          PREVIEW_NAMESPACE: ${{ inputs.PR_NAMESPACE }}
+          PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
         run: |
           echo "Create Preview Namespace: ${PREVIEW_NAMESPACE} "
           kubectl create namespace ${PREVIEW_NAMESPACE} --dry-run=client -o json | kubectl apply -f -
@@ -362,7 +362,7 @@ jobs:
       - name: "PREVIEW: Copy secrets"
         if: github.ref != 'refs/heads/master'
         env:
-          PREVIEW_NAMESPACE: ${{ inputs.PR_NAMESPACE }}
+          PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           SCRIPT_NAME: preview_copy_secrets.sh
         working-directory: scripts
         run: |
@@ -385,8 +385,8 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 # yamllint disable
-          PREVIEW_NAMESPACE: ${{ inputs.PR_NAMESPACE }}
-          PREVIEW_URL: https://${{ inputs.PR_NAMESPACE }}.${{ inputs.PREVIEW_BASE_DOMAIN }}
+          PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
+          PREVIEW_URL: https://${{ inputs.PREVIEW_NAMESPACE }}.${{ inputs.PREVIEW_BASE_DOMAIN }}
           PREVIEW_HEALTHCHECK: ${{ inputs.PREVIEW_HEALTHCHECK }}
           PR_BODY: pr_body.md
         run: |-

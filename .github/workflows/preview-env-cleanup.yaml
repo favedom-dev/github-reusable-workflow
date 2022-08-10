@@ -63,11 +63,11 @@ jobs:
       - name: "Set Name for PR namespace"
         id: set-name-pr-namespace
         run: |
-         echo "::set-output name=PR_NAMESPACE::pr-${{ inputs.NAME }}-${{ github.event.number }}"
+         echo "::set-output name=PREVIEW_NAMESPACE::pr-${{ inputs.NAME }}-${{ github.event.number }}"
 
-      - name: "Delete namespace: ${{ steps.set-name-pr-namespace.outputs.PR_NAMESPACE }}"
+      - name: "Delete namespace: ${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}"
         env:
-          PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.outputs.PR_NAMESPACE }}
+          PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}
         run: |
           if [[ $(kubectl get ns | awk '{print $1}' | grep ^${PREVIEW_NAMESPACE}$) == ${PREVIEW_NAMESPACE} ]]; then
             kubectl delete namespace ${PREVIEW_NAMESPACE}

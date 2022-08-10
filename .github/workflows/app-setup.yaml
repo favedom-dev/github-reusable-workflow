@@ -17,8 +17,8 @@ on:  # yamllint disable-line rule:truthy
     outputs:
       NAME:
         value: ${{ jobs.app-setup.outputs.NAME }}
-      PR_NAMESPACE:
-        value: ${{ jobs.app-setup.outputs.PR_NAMESPACE }}
+      PREVIEW_NAMESPACE:
+        value: ${{ jobs.app-setup.outputs.PREVIEW_NAMESPACE }}
       IS_STACKHAWK_READY:
         value: ${{ jobs.app-setup.outputs.IS_STACKHAWK_READY }}
       PQ_API_PATH:
@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       NAME: ${{ steps.set-name.outputs.NAME }}
-      PR_NAMESPACE: ${{ steps.set-name-pr-namespace.PR_NAMESPACE }}
+      PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.PREVIEW_NAMESPACE }}
       PQ_API_PATH: ${{ steps.get-api-path.PQ_API_PATH }}
       IS_STACKHAWK_READY: ${{ steps.stackhawk-ready-repo.IS_STACKHAWK_READY }}
     steps:
@@ -48,10 +48,10 @@ jobs:
           fi
           echo "::set-output name=NAME::${NAME}"
 
-      - name: "Set Name for PR namespace"
+      - name: "Set Name for Preview Namespace"
         id: set-name-pr-namespace
         run: |
-         echo "::set-output name=PR_NAMESPACE::pr-${{ steps.set-name.outputs.NAME }}-${{ github.event.number }}"
+         echo "::set-output name=PREVIEW_NAMESPACE::pr-${{ steps.set-name.outputs.NAME }}-${{ github.event.number }}"
 
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v3
