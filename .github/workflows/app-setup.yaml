@@ -14,6 +14,10 @@ on:  # yamllint disable-line rule:truthy
         default: 'stackhawk'
         required: false
         type: string
+      STACKHAWK_TMPL_YML:
+        default: 'stackhawk-tmpl.yml'
+        required: false
+        type: string
     outputs:
       NAME:
         value: ${{ jobs.app-setup.outputs.NAME }}
