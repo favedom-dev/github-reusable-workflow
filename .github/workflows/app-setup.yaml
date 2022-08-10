@@ -35,9 +35,9 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       NAME: ${{ steps.set-name.outputs.NAME }}
-      PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.PREVIEW_NAMESPACE }}
-      PQ_API_PATH: ${{ steps.get-api-path.PQ_API_PATH }}
-      IS_STACKHAWK_READY: ${{ steps.stackhawk-ready-repo.IS_STACKHAWK_READY }}
+      PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}
+      PQ_API_PATH: ${{ steps.get-api-path.outputs.PQ_API_PATH }}
+      IS_STACKHAWK_READY: ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}
     steps:
 
       - name: "Set Name"
