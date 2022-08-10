@@ -51,7 +51,7 @@ jobs:
       - name: "Set Name for PR namespace"
         id: set-name-pr-namespace
         run: |
-         echo "::set-output name=PR_NAMESPACE::pr-${{ inputs.NAME }}-${{ github.event.number }}"
+         echo "::set-output name=PR_NAMESPACE::pr-${{ steps.set-name.outputs.NAME }}-${{ github.event.number }}"
 
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v3
