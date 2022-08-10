@@ -25,8 +25,8 @@ on:  # yamllint disable-line rule:truthy
         value: ${{ jobs.app-setup.outputs.PREVIEW_NAMESPACE }}
       IS_STACKHAWK_READY:
         value: ${{ jobs.app-setup.outputs.IS_STACKHAWK_READY }}
-      PQ_API_PATH:
-        value: ${{ jobs.app-setup.outputs.PQ_API_PATH }}
+      API_PATH:
+        value: ${{ jobs.app-setup.outputs.API_PATH }}
 
 jobs:
 
@@ -36,7 +36,7 @@ jobs:
     outputs:
       NAME: ${{ steps.set-name.outputs.NAME }}
       PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}
-      PQ_API_PATH: ${{ steps.get-api-path.outputs.PQ_API_PATH }}
+      API_PATH: ${{ steps.get-api-path.outputs.API_PATH }}
       IS_STACKHAWK_READY: ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}
     steps:
 
@@ -65,12 +65,12 @@ jobs:
         env:
           APPLICATION_FILE: ${{ inputs.APPLICATION_FILE }}
         run: |
-          PQ_API_PATH=""
+          API_PATH=""
           if [ -f "${APPLICATION_FILE}" ]; then
-            PQ_API_PATH=$(grep "context-path:" ${APPLICATION_FILE} | awk '{print $2}')
+            API_PATH=$(grep "context-path:" ${APPLICATION_FILE} | awk '{print $2}')
           fi
-          echo "PQ_API_PATH: ${PQ_API_PATH}"
-          echo "::set-output name=PQ_API_PATH::${PQ_API_PATH}/"
+          echo "API_PATH: ${API_PATH}"
+          echo "::set-output name=API_PATH::${API_PATH}/"
 
       - name: "Stackhawk ready repo"
         id: stackhawk-ready-repo
