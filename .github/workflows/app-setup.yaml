@@ -74,11 +74,11 @@ jobs:
 
       - name: "Stackhawk ready repo"
         id: stackhawk-ready-repo
-        working-directory: ${{ inputs.STACKHAWK_DIRECTORY }}
         env:
+          STACKHAWK_DIRECTORY: ${{ inputs.STACKHAWK_DIRECTORY }}
           FILE: ${{ inputs.STACKHAWK_TMPL_YML }}
         run: |
-          if [ -f "${FILE}" ]; then
+          if [ -f "${STACKHAWK_DIRECTORY}/${FILE}" ]; then
             echo "${FILE} exists"
             IS_STACKHAWK_READY=true
           else
