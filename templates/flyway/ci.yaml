@@ -58,7 +58,7 @@ jobs:
 
   staging:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
-    needs: [app-setup, docker, helm-charts]
+    needs: [app-setup, repo-version, docker, helm-charts]
     if: github.ref == 'refs/heads/master'
     with:
       NAME: ${{ needs.app-setup.outputs.NAME }}
