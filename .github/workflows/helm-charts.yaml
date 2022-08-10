@@ -295,23 +295,23 @@ jobs:
       #     echo "DEBUG: helm show chart ${APP_NAME}"
       #     helm show chart ${CHARTMUSEUM}/${APP_NAME} ${HELM_DEBUG_FLAG}
 
-      - name: "RELEASE [GAR]: Upload helm chart to ocr://"
-        # if: github.ref == 'refs/heads/master' && inputs.IS_HELM_GAR_REPO == true
-        working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
-        env:
-          APP_NAME: ${{ inputs.NAME }}
-          VERSION: ${{ inputs.VERSION }}
-          HELM_EXPERIMENTAL_OCI: 1  # needed for oci://
-          HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
-          HELM_REGISTRY_NAME: ${{ inputs.HELM_REGISTRY_NAME }}
-          PROJECT_ID: ${{ inputs.PROJECT_ID }}
-# yamllint disable
-        run: |
-          helm push \
-          ${APP_NAME}-${VERSION}.tgz \
-          oci://${HELM_DOCKER_REGISTRY}/${PROJECT_ID}/${HELM_REGISTRY_NAME}/${APP_NAME} \
-          ${HELM_DEBUG_FLAG}
-# yamllint enable
+#       - name: "RELEASE [GAR]: Upload helm chart to ocr://"
+#         # if: github.ref == 'refs/heads/master' && inputs.IS_HELM_GAR_REPO == true
+#         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
+#         env:
+#           APP_NAME: ${{ inputs.NAME }}
+#           VERSION: ${{ inputs.VERSION }}
+#           HELM_EXPERIMENTAL_OCI: 1  # needed for oci://
+#           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
+#           HELM_REGISTRY_NAME: ${{ inputs.HELM_REGISTRY_NAME }}
+#           PROJECT_ID: ${{ inputs.PROJECT_ID }}
+# # yamllint disable
+#         run: |
+#           helm push \
+#           ${APP_NAME}-${VERSION}.tgz \
+#           oci://${HELM_DOCKER_REGISTRY}/${PROJECT_ID}/${HELM_REGISTRY_NAME}/${APP_NAME} \
+#           ${HELM_DEBUG_FLAG}
+# # yamllint enable
 
       - name: "RELEASE [JX]: Upload helm chart to chartmuseum"
         if: github.ref == 'refs/heads/master' && inputs.IS_HELM_GAR_REPO == false
