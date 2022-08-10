@@ -4,7 +4,7 @@ get_ci_yaml() {
   filename="ci.yaml"
   echo "GETTING: ${filename}"
   mkdir -p .github/workflows
-  # wget -O .github/workflows/ci.yaml https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/templates/${CI_DIR}/ci.yaml
+  wget -O .github/workflows/ci.yaml https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/templates/${CI_DIR}/ci.yaml
 }
 
 get_preview_cleanup() {
