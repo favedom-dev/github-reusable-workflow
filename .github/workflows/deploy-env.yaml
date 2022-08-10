@@ -84,7 +84,7 @@ jobs:
         env:
           NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
-          BRANCH_NAME: ${{ inputs.NAME }}_${{ inputs.VERSION }}
+          BRANCH_NAME: gha_${{ inputs.NAME }}_${{ inputs.VERSION }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 # yamllint disable
         run: |

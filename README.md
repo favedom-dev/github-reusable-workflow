@@ -135,7 +135,7 @@
 ### `preview-env-cleanup.yaml`
 
 - Common workflow to used to clean up PR environments
-- See `pr-cleanup.yaml` [doc](#pr_cleanupyaml) or [file](./templates/pr-cleanup.yaml)
+- See `preview-cleanup.yaml` [doc](#pr_cleanupyaml) or [file](./templates/preview-cleanup.yaml)
 
 ### `preview-stackhawk.yaml`
 
@@ -255,7 +255,7 @@ export SECRETS_ARRAY=++SECRETS_ARRAY++
 
 ## Example Workflows
 
-### `pr-cleanup.yaml`
+### `preview-cleanup.yaml`
 
 - common to be used with any project that creates a PR environment.  This will remove the namespace
 

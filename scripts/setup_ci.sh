@@ -3,7 +3,7 @@
 get_ci_yaml() {
   mkdir -p .github/workflows
   wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/templates/${CI_DIR}/ci.yaml -P .github/workflows/
-  wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/templates/pr-cleanup.yaml -P .github/workflows/
+  wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/templates/preview-cleanup.yaml -P .github/workflows/
 }
 
 get_secrets_template() {

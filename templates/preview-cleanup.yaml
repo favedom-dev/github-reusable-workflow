@@ -1,4 +1,4 @@
-name: PR cleanup
+name: Preview cleanup
 
 on:  # yamllint disable-line rule:truthy
   pull_request:
@@ -7,14 +7,15 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
 
-  set-app-name:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/set-app-name.yaml@master
+  app-setup:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/app-setup.yaml@master
 
   preview-cleanup:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env-cleanup.yaml@master
-    needs: [set-app-name]
+    needs: [app-setup]
     with:
-      NAME: ${{ needs.set-app-name.outputs.NAME }}
+      NAME: ${{ needs.app-setup.outputs.NAME }}
+      PREVIEW_NAMESPACE: ${{ needs.app-setup.outputs.PREVIEW_NAMESPACE }}
     secrets:
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
