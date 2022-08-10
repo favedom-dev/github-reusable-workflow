@@ -10,8 +10,6 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
 
-  set-app-name:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/set-app-name.yaml@master
   app-setup:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/app-setup.yaml@master
 
