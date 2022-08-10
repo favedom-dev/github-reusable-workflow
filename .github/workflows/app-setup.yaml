@@ -40,7 +40,7 @@ jobs:
       IS_STACKHAWK_READY: ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}
     steps:
 
-      - name: "Set Name"
+      - name: "📜 Set Name"
         id: set-name
         env:
           OVERRIDE_NAME: ${{ inputs.OVERRIDE_NAME }}
@@ -52,7 +52,7 @@ jobs:
           fi
           echo "::set-output name=NAME::${NAME}"
 
-      - name: "Set Name for Preview Namespace"
+      - name: "📜 Set Name for Preview Namespace"
         id: set-name-pr-namespace
         run: |
          echo "::set-output name=PREVIEW_NAMESPACE::pr-${{ steps.set-name.outputs.NAME }}-${{ github.event.number }}"
@@ -60,7 +60,7 @@ jobs:
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v3
 
-      - name: "Get API path"
+      - name: "📜 Get API path"
         id: get-api-path
         env:
           APPLICATION_FILE: ${{ inputs.APPLICATION_FILE }}
@@ -72,7 +72,7 @@ jobs:
           echo "API_PATH: ${API_PATH}"
           echo "::set-output name=API_PATH::${API_PATH}/"
 
-      - name: "Stackhawk ready repo"
+      - name: "🦅 Stackhawk ready repo"
         id: stackhawk-ready-repo
         env:
           STACKHAWK_DIRECTORY: ${{ inputs.STACKHAWK_DIRECTORY }}

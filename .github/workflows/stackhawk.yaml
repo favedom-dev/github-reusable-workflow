@@ -107,7 +107,7 @@ jobs:
         run: |
           curl ${APP_HOST}${API_PATH}${HEALTH_PATH}
 
-      - name: "Run Stackhawk"
+      - name: "🦅 Run Stackhawk"
         env:
           APP_HOST: https://${{ inputs.NAMESPACE }}.${{ inputs.BASE_DOMAIN }}
           # APP_ID: ${{ inputs.STACKHAWK_APP_ID }}
