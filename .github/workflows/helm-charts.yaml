@@ -391,9 +391,9 @@ jobs:
           echo "${PREVIEW_URL}"
           # START: body message file
           echo "🌐 PR built and available in a preview environment ${{ inputs.NAME }} pr ${{ github.event.number }}:" > ${PR_BODY}
-          echo "- [preview](${PREVIEW_URL})" >> ${PR_BODY}
+          echo "- preview [link](${PREVIEW_URL})" >> ${PR_BODY}
           if [ ${#PREVIEW_HEALTHCHECK}  -gt 0 ]; then
-            echo "- [healthcheck](${PREVIEW_URL}${PREVIEW_HEALTHCHECK})" >> ${PR_BODY}
+            echo "- healthcheck ${PREVIEW_HEALTHCHECK} [link](${PREVIEW_URL}${PREVIEW_HEALTHCHECK})" >> ${PR_BODY}
           fi
           echo "===="
           cat ${PR_BODY}
