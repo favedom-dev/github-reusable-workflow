@@ -10,8 +10,8 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
 
-  set-app-name:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/set-app-name.yaml@master
+  app-setup:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/app-setup.yaml@master
 
   repo-version:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
@@ -20,9 +20,9 @@ jobs:
 
   maven-docker:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/maven-docker.yaml@master
-    needs: [set-app-name, repo-version]
+    needs: [app-setup, repo-version]
     with:
-      NAME: ${{ needs.set-app-name.outputs.NAME }}
+      NAME: ${{ needs.app-setup.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -32,22 +32,36 @@ jobs:
 
   helm-charts:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/helm-charts.yaml@master
-    needs: [set-app-name, repo-version, maven-docker]
+    needs: [app-setup, repo-version, maven-docker]
     with:
-      NAME: ${{ needs.set-app-name.outputs.NAME }}
+      NAME: ${{ needs.app-setup.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
+      PREVIEW_NAMESPACE: ${{ needs.app-setup.outputs.PREVIEW_NAMESPACE }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
       CHARTMUSEUM_PASSWORD: '${{ secrets.JX_CHARTMUSEUM_PASSWORD }}'
 
+  stackhawk:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/stackhawk.yaml@master
+    needs: [app-setup, repo-version, maven-docker, helm-charts]
+    if: github.event_name == 'pull_request' && needs.app-setup.outputs.IS_STACKHAWK_READY == 'true'
+    with:
+      NAME: ${{ needs.app-setup.outputs.NAME }}
+      NAMESPACE: ${{ needs.app-setup.outputs.PREVIEW_NAMESPACE }}
+      API_PATH: ${{ needs.app-setup.outputs.API_PATH }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      HAWK_API_KEY: ${{ secrets.HAWK_API_KEY }}
+      TEST_PASSWORD: ${{ secrets.STACKHAWK_TEST_PASSWORD }}
+
   staging:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
-    needs: [set-app-name, repo-version, maven-docker, helm-charts]
+    needs: [app-setup, repo-version, maven-docker, helm-charts]
     if: github.event_name != 'pull_request'
     with:
-      NAME: ${{ needs.set-app-name.outputs.NAME }}
+      NAME: ${{ needs.app-setup.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
