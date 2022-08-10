@@ -1,14 +1,51 @@
 #!/bin/bash
 
 get_ci_yaml() {
+  filename="ci.yaml"
+  echo "GETTING: ${filename}"
   mkdir -p .github/workflows
-  wget -O .github/workflows/ci.yaml https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/templates/${CI_DIR}/ci.yaml
-  wget -O .github/workflows/preview-cleanup.yaml https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/templates/preview-cleanup.yaml
+  # wget -O .github/workflows/ci.yaml https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/templates/${CI_DIR}/ci.yaml
+}
+
+get_preview_cleanup() {
+  filename="preview-cleanup.yaml"
+  echo ""
+  echo "GETTING: ${filename}"
+  mkdir -p .github/workflows
+  wget -O .github/workflows/${filename} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/templates/${filename}
 }
 
 get_secrets_template() {
+  filename="scripts/preview_secrets.txt"
+  echo ""
+  echo "GETTING: ${filename}"
   mkdir -p scripts
-  wget -O scripts/preview_secrets.txt https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/preview_secrets.txt
+  wget -O ${filename} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/${filename}
+}
+
+update_stackhawk() {
+  filename="stackhawk/stackhawk-tmpl.yml"
+  if [ -f "${filename}" ]; then
+    echo "UPDATING: ${filename}"
+    sed -i -e "s/{PR_HOST}/{APP_HOST}/" ${filename}
+    sed -i -e "s/{PQ_API_PATH}/{API_PATH}/" ${filename}
+  fi
+}
+
+get_extras() {
+  case "${CI_DIR}" in
+    "node")
+     ;&
+    "maven")
+      echo ""
+      echo "Getting more files"
+      get_preview_cleanup
+      get_secrets_template
+      update_stackhawk
+      ;;
+    *)
+      echo "Nothing more to get"
+  esac
 }
 
 arg_ci_dir() {
@@ -27,5 +64,5 @@ cleanup() {
 ## MAIN
 arg_ci_dir $@
 get_ci_yaml
-get_secrets_template
+get_extras
 cleanup
