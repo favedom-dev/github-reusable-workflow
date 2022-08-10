@@ -10,8 +10,8 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
 
-  set-app-name:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/set-app-name.yaml@master
+  app-setup:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/app-setup.yaml@master
 
   repo-version:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
@@ -20,9 +20,9 @@ jobs:
 
   deploy-jar-registry:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-jar-registry.yaml@master
-    needs: [set-app-name, repo-version]
+    needs: [app-setup, repo-version]
     with:
-      NAME: ${{ needs.set-app-name.outputs.NAME }}
+      NAME: ${{ needs.app-setup.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}

@@ -12,6 +12,8 @@ jobs:
 
   set-app-name:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/set-app-name.yaml@master
+  app-setup:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/app-setup.yaml@master
 
   repo-version:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
@@ -20,9 +22,9 @@ jobs:
 
   node-docker:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/node-docker.yaml@master
-    needs: [set-app-name, repo-version]
+    needs: [app-setup, repo-version]
     with:
-      NAME: ${{ needs.set-app-name.outputs.NAME }}
+      NAME: ${{ needs.app-setup.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -30,24 +32,25 @@ jobs:
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
-  preview:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env.yaml@master
-    needs: [set-app-name, repo-version, node-docker]
-    if: github.event_name == 'pull_request'
+  helm-charts:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/helm-charts.yaml@master
+    needs: [app-setup, repo-version, node-docker]
     with:
-      NAME: ${{ needs.set-app-name.outputs.NAME }}
+      NAME: ${{ needs.app-setup.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
+      PREVIEW_NAMESPACE: ${{ needs.app-setup.outputs.PREVIEW_NAMESPACE }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+      CHARTMUSEUM_PASSWORD: '${{ secrets.JX_CHARTMUSEUM_PASSWORD }}'
 
   staging:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
-    needs: [set-app-name, repo-version, node-docker]
-    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    needs: [app-setup, repo-version, node-docker, helm-charts]
+    if: github.ref == 'refs/heads/master'
     with:
-      NAME: ${{ needs.set-app-name.outputs.NAME }}
+      NAME: ${{ needs.app-setup.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}

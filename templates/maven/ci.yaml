@@ -59,7 +59,7 @@ jobs:
   staging:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
     needs: [app-setup, repo-version, maven-docker, helm-charts]
-    if: github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/master'
     with:
       NAME: ${{ needs.app-setup.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
