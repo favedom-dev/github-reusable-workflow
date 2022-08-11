@@ -51,6 +51,7 @@ jobs:
       NAME: ${{ needs.app-setup.outputs.NAME }}
       NAMESPACE: ${{ needs.app-setup.outputs.PREVIEW_NAMESPACE }}
       API_PATH: ${{ needs.app-setup.outputs.API_PATH }}
+      HEALTH_PATH: ''
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       HAWK_API_KEY: ${{ secrets.HAWK_API_KEY }}
