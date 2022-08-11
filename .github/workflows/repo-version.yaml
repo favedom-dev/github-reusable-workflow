@@ -66,9 +66,9 @@ jobs:
           export GH_TOKEN=${{ secrets.GH_TOKEN }}
           export GITHUB_TOKEN=${{ secrets.GH_TOKEN }}
           ./auto-increment-version.sh
-          # need a second to make sure the version is updated
-          # sleep 1
-          echo "::set-output name=version::$(gh release view -q ".name" --json name | sed 's/v//')"
+          VERSION=$(cat VERSION)
+          echo "::set-output name=version::${VERSION}"
+          # echo "::set-output name=version::$(gh release view -q ".name" --json name | sed 's/v//')"
 
       - name: "📜 Set version"
         id: set-version
@@ -81,11 +81,11 @@ jobs:
             echo "::set-output name=version::${{ steps.pr-version.outputs.version }}"
             # gh pr comment ${{ github.event.number }} --body "PR Build Version: ${{ steps.set-version.outputs.version }}"
           else
-            RELEASE_VERSION=$(gh release view -q ".name" --json name | sed 's/v//')
-            echo "RELEASE VERSION: ${RELEASE_VERSION}"
-            echo "::set-output name=version::${RELEASE_VERSION}"
-            # echo "RELEASE VERSION: ${{ steps.version.outputs.version }}"
-            # echo "::set-output name=version::${{ steps.version.outputs.version }}"
+            # RELEASE_VERSION=$(gh release view -q ".name" --json name | sed 's/v//')
+            # echo "RELEASE VERSION: ${RELEASE_VERSION}"
+            # echo "::set-output name=version::${RELEASE_VERSION}"
+            echo "RELEASE VERSION: ${{ steps.version.outputs.version }}"
+            echo "::set-output name=version::${{ steps.version.outputs.version }}"
           fi
           # echo "${{ steps.version.outputs.version }}"
 

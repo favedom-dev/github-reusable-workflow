@@ -52,6 +52,8 @@ if [ -z "$NEEDS_TAG" ]; then
     if [ ${rc} -ne 0 ] ; then
       exit ${rc}
     fi
+    echo ${NEW_VERSION} > VERSION
+    echo ${NEW_TAG} > TAG_VERSION
 else
     echo "Already a tag on this commit"
 fi
