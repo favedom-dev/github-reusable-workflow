@@ -18,16 +18,12 @@ display_vars() {
   echo "-----------:-------------------"
 }
 
-get_() {
+get_branch_protection() {
   wget https://raw.githubusercontent.com/${ORG_NAME}/github-reusable-workflow/${BRANCH_NAME}/templates/${CI_DIR}/branch_protection.json
 }
 
-delete_branch_protection() {
-  gh api -X DELETE repos/${ORG_NAME}/${APP_NAME}/branches/${BRANCH_NAME}/protection
-}
-
 list_branch_protection() {
-  gh api repos/${ORG_NAME}/${APP_NAME}branches/${BRANCH_NAME}/protection
+  gh api repos/${ORG_NAME}/${APP_NAME}/branches/${BRANCH_NAME}/protection > ${APP_NAME}-orig-branch_protection.json
 }
 
 update_branch_protection() {
@@ -52,10 +48,9 @@ cleanup() {
 }
 
 ## MAIN
-# arg_ci_dir $@
-# setup_app_name
-# get_branch_protection
-# update_branch_protection
-# cleanup
-echo "TODO:"
-echo "Will create branch rules based on the CI"
+arg_ci_dir $@
+setup_app_name
+get_branch_protection
+list_branch_protection
+update_branch_protection
+cleanup
