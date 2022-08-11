@@ -36,6 +36,8 @@ get_extras() {
   case "${CI_DIR}" in
     "node")
      ;&
+    "bpm")
+     ;&
     "maven")
       echo ""
       echo "Getting more files"
