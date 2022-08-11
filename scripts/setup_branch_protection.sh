@@ -31,6 +31,8 @@ list_branch_protection() {
   echo ""
   echo "Dumping branch proection rule: ${output_file}"
   gh api repos/${ORG_NAME}/${APP_NAME}/branches/${BRANCH_NAME}/protection > ${output_file}
+  jq . ${output_file} > formated-${output_file}
+  mv formated-${output_file} ${output_file}
 }
 
 update_branch_protection() {
