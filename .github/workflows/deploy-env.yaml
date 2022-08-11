@@ -92,4 +92,5 @@ jobs:
           git commit -a -m "${NAME} ${VERSION}"
           git push -u origin ${BRANCH_NAME}
           gh pr create --label "approved" --title "chore: bump ${NAME} to ${VERSION}" --body "${NAME} ${VERSION}"
+          # gh pr merge --auto
 # yamllint enable
