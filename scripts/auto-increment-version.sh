@@ -36,6 +36,8 @@ fi
 # create new tag
 NEW_VERSION="$VNUM1.$VNUM2.$VNUM3"
 NEW_TAG="v$NEW_VERSION"
+echo ${NEW_VERSION} > VERSION
+echo ${NEW_TAG} > TAG_VERSION
 
 echo "Updating $VERSION to $NEW_TAG"
 
@@ -52,8 +54,6 @@ if [ -z "$NEEDS_TAG" ]; then
     if [ ${rc} -ne 0 ] ; then
       exit ${rc}
     fi
-    echo ${NEW_VERSION} > VERSION
-    echo ${NEW_TAG} > TAG_VERSION
 else
     echo "Already a tag on this commit"
 fi
