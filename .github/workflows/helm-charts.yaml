@@ -71,8 +71,12 @@ on:  # yamllint disable-line rule:truthy
         default: 'staging.joinpeeq.com'
         required: false
         type: string
+      API_PATH:
+        default: ''  # /api/++SERVICE++/
+        required: false
+        type: string
       PREVIEW_HEALTHCHECK:
-        default: ''  # /api/++SERVICE++/acutuator/health
+        default: ''  # acutuator/health
         required: false
         type: string
     secrets:
@@ -386,15 +390,15 @@ jobs:
 # yamllint disable
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           PREVIEW_URL: https://${{ inputs.PREVIEW_NAMESPACE }}.${{ inputs.PREVIEW_BASE_DOMAIN }}
-          PREVIEW_HEALTHCHECK: ${{ inputs.PREVIEW_HEALTHCHECK }}
+          PREVIEW_API_HEALTHCHECK: ${{ inputs.API_PATH }}${{ inputs.PREVIEW_HEALTHCHECK }}
           PR_BODY: pr_body.md
         run: |-
           echo "${PREVIEW_URL}"
           # START: body message file
           echo "🌐 PR built and available in a preview environment ${{ inputs.NAME }} pr ${{ github.event.number }}:" > ${PR_BODY}
           echo "- preview [link](${PREVIEW_URL})" >> ${PR_BODY}
-          if [ ${#PREVIEW_HEALTHCHECK}  -gt 0 ]; then
-            echo "- healthcheck ${PREVIEW_HEALTHCHECK} [link](${PREVIEW_URL}${PREVIEW_HEALTHCHECK})" >> ${PR_BODY}
+          if [ ${#PREVIEW_API_HEALTHCHECK}  -gt 0 ]; then
+            echo "- healthcheck ${PREVIEW_API_HEALTHCHECK} [link](${PREVIEW_URL}${PREVIEW_API_HEALTHCHECK})" >> ${PR_BODY}
           fi
           echo "===="
           cat ${PR_BODY}
