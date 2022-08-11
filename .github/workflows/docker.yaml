@@ -1,4 +1,4 @@
-name: Docker Build
+name: Docker
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
@@ -35,7 +35,7 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
 
-  flyway_docker:
+  docker:
     timeout-minutes: 10
     permissions:
       contents: 'read'

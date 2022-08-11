@@ -47,11 +47,11 @@
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
 ```
 
-### `flyway-docker-build.yaml`
+### `docker.yaml`
 
 ```yaml
   docker:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/flyway-docker-build.yaml@master
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/docker.yaml@master
     needs: repo-version
     with:
       NAME: 'peeq-tracking-db'
