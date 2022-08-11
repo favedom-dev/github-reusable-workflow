@@ -2,6 +2,7 @@
 
 ORG_NAME="favedom-dev"
 BRANCH_NAME="master"
+BASE_BRANCH_PROTECTION_NAME="-branch_protection.json"
 
 setup_app_name() {
   export APP_NAME=$(basename `git rev-parse --show-toplevel`)
@@ -27,12 +28,16 @@ get_branch_protection() {
 
 # takes 1 arg to add to output name
 list_branch_protection() {
-  output_file="${APP_NAME}-$1-branch_protection.json"
+  output_file="$1-${APP_NAME}${BASE_BRANCH_PROTECTION_NAME}"
   echo ""
   echo "Dumping branch proection rule: ${output_file}"
   gh api repos/${ORG_NAME}/${APP_NAME}/branches/${BRANCH_NAME}/protection > ${output_file}
   jq . ${output_file} > formated-${output_file}
   mv formated-${output_file} ${output_file}
+}
+
+compare_branch_protection() {
+  diff $1-${APP_NAME}${BASE_BRANCH_PROTECTION_NAME} $2-${APP_NAME}${BASE_BRANCH_PROTECTION_NAME}
 }
 
 update_branch_protection() {
@@ -65,4 +70,5 @@ get_branch_protection
 list_branch_protection orig
 update_branch_protection
 list_branch_protection updated
+compare_branch_protection orig updated
 cleanup
