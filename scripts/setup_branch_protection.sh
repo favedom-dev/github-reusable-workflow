@@ -19,15 +19,23 @@ display_vars() {
 }
 
 get_branch_protection() {
-  wget https://raw.githubusercontent.com/${ORG_NAME}/github-reusable-workflow/${BRANCH_NAME}/templates/${CI_DIR}/branch_protection.json
+  filename="branch_protection.json"
+  echo ""
+  echo "GETTING: ${filename}"
+  wget -O ${filename} https://raw.githubusercontent.com/${ORG_NAME}/github-reusable-workflow/${BRANCH_NAME}/templates/${CI_DIR}/${filename}
 }
 
 list_branch_protection() {
-  gh api repos/${ORG_NAME}/${APP_NAME}/branches/${BRANCH_NAME}/protection > ${APP_NAME}-orig-branch_protection.json
+  output_file="${APP_NAME}-orig-branch_protection.json"
+  echo ""
+  echo "Dumping original branch proection to: ${output_file}"
+  gh api repos/${ORG_NAME}/${APP_NAME}/branches/${BRANCH_NAME}/protection > ${output_file}
 }
 
 update_branch_protection() {
   # https://docs.github.com/en/rest/branches/branch-protection#update-branch-protection
+  echo ""
+  echo "UPDATING: branch protection: https://github.com/${ORG_NAME}/${APP_NAME}/settings/branches"
   gh api \
   --method PUT \
   repos/${ORG_NAME}/${APP_NAME}/branches/${BRANCH_NAME}/protection \
