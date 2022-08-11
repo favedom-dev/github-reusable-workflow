@@ -2,9 +2,7 @@
   "required_status_checks": {
     "strict": false,
     "contexts": [
-      "maven-docker / maven-docker",
-      "helm-charts / helm-charts",
-      "stackhawk / stackhawk"
+      "lint-sql / lint-sql"
     ]
   },
   "required_pull_request_reviews": {
