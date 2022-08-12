@@ -61,12 +61,16 @@ jobs:
           if [ -n "${OVERRIDE_NAME}" ]; then
             NAME=${{ inputs.OVERRIDE_NAME }}
           fi
+          echo "NAME: ${NAME}"
           echo "::set-output name=NAME::${NAME}"
 
       - name: "📜 Set Name for Preview Namespace"
         id: set-name-pr-namespace
         run: |
-         echo "::set-output name=PREVIEW_NAMESPACE::pr-${{ steps.set-name.outputs.NAME }}-${{ github.event.number }}"
+          PREVIEW_NAMESPACE=pr-${{ steps.set-name.outputs.NAME }}-${{ github.event.number }}
+          echo "PREVIEW_NAMESPACE: ${PREVIEW_NAMESPACE}"
+          # echo "::set-output name=PREVIEW_NAMESPACE::pr-${{ steps.set-name.outputs.NAME }}-${{ github.event.number }}"
+          echo "::set-output name=PREVIEW_NAMESPACE::${PREVIEW_NAMESPACE}"
 
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v3
@@ -101,4 +105,5 @@ jobs:
             echo "${FILE} does not exists"
             IS_STACKHAWK_READY=false
           fi
+          echo "IS_STACKHAWK_READY: ${IS_STACKHAWK_READY}"
           echo "::set-output name=IS_STACKHAWK_READY::${IS_STACKHAWK_READY}"
