@@ -86,8 +86,8 @@ jobs:
           if [ -n "${OVERRIDE_API_PATH}" ]; then
             API_PATH=${{ inputs.OVERRIDE_API_PATH }}
           elif [ -f "${API_FILE}" ]; then
-            # API_PATH=$(grep "context-path:" ${API_FILE} | awk '{print $2}')
-            API_PATH=$(grep "${API_SEARCH}" ${API_FILE} | awk '{print $2}')
+            # Only find the 1st occurrence
+            API_PATH=$(grep "${API_SEARCH}" ${API_FILE} | awk '{print $2}'  | head -1)
           fi
           echo "API_PATH: ${API_PATH}"
           echo "::set-output name=API_PATH::${API_PATH}/"
