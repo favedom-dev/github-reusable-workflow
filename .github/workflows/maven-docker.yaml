@@ -9,8 +9,14 @@ on:  # yamllint disable-line rule:truthy
       VERSION:
         required: true
         type: string
+      MVN_ENV_VARS:  # -DmyVariable=someValue
+        required: false
+        type: string
       MVN_ARGS:
         default: 'clean install'
+        required: false
+        type: string
+      MVN_ARGS_EXTRA:
         required: false
         type: string
       DOCKERFILE_FILE:
@@ -93,7 +99,7 @@ jobs:
         run: mvn versions:set -DnewVersion=${VERSION}
 
       - name: "🔨 Build with Maven"
-        run: mvn ${{ inputs.MVN_ARGS }}
+        run: mvn ${{ inputs.MVN_ENV_VARS }} ${{ inputs.MVN_ARGS }} ${{ inputs.MVN_ARGS_EXTRA }}
 
       - name: "🔧 Setup Docker tags"
         id: docker-tags
