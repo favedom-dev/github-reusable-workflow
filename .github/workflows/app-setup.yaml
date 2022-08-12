@@ -6,8 +6,12 @@ on:  # yamllint disable-line rule:truthy
       OVERRIDE_NAME:
         required: false
         type: string
-      APPLICATION_FILE:
+      API_FILE:
         default: 'src/main/resources/application.yaml'
+        required: false
+        type: string
+      API_SEARCH:
+        default: 'context-path:'
         required: false
         type: string
       STACKHAWK_DIRECTORY:
@@ -63,11 +67,13 @@ jobs:
       - name: "📜 Get API path"
         id: get-api-path
         env:
-          APPLICATION_FILE: ${{ inputs.APPLICATION_FILE }}
+          API_FILE: ${{ inputs.API_FILE }}
+          API_SEARCH: ${{ inputs.API_SEARCH }}
         run: |
           API_PATH=""
-          if [ -f "${APPLICATION_FILE}" ]; then
-            API_PATH=$(grep "context-path:" ${APPLICATION_FILE} | awk '{print $2}')
+          if [ -f "${API_FILE}" ]; then
+            # API_PATH=$(grep "context-path:" ${API_FILE} | awk '{print $2}')
+            API_PATH=$(grep "${API_SEARCH}" ${API_FILE} | awk '{print $2}')
           fi
           echo "API_PATH: ${API_PATH}"
           echo "::set-output name=API_PATH::${API_PATH}/"
