@@ -105,6 +105,7 @@ jobs:
           API_PATH: ${{ inputs.API_PATH }}
           HEALTH_PATH: ${{ inputs.HEALTH_PATH }}
         run: |
+          echo "CHECKING: ${APP_HOST}${API_PATH}${HEALTH_PATH}"
           curl ${APP_HOST}${API_PATH}${HEALTH_PATH}
 
       - name: "🦅 Run Stackhawk"
