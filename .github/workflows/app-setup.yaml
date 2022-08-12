@@ -6,6 +6,9 @@ on:  # yamllint disable-line rule:truthy
       OVERRIDE_NAME:
         required: false
         type: string
+      OVERRIDE_API_PATH:
+        required: false
+        type: string
       API_FILE:
         default: 'src/main/resources/application.yaml'
         required: false
@@ -67,11 +70,14 @@ jobs:
       - name: "📜 Get API path"
         id: get-api-path
         env:
+          OVERRIDE_API_PATH: ${{ inputs.OVERRIDE_API_PATH }}
           API_FILE: ${{ inputs.API_FILE }}
           API_SEARCH: ${{ inputs.API_SEARCH }}
         run: |
           API_PATH=""
-          if [ -f "${API_FILE}" ]; then
+          if [ -n "${OVERRIDE_API_PATH}" ]; then
+            API_PATH=${{ inputs.OVERRIDE_API_PATH }}
+          elif [ -f "${API_FILE}" ]; then
             # API_PATH=$(grep "context-path:" ${API_FILE} | awk '{print $2}')
             API_PATH=$(grep "${API_SEARCH}" ${API_FILE} | awk '{print $2}')
           fi
