@@ -82,7 +82,7 @@ jobs:
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v3
 
-      - name: "Setup stackhawk"
+      - name: "🔧 Setup stackhawk"
         working-directory: ${{ inputs.STACKHAWK_DIRECTORY }}
         env:
           SCRIPT_NAME: ${{ inputs.STACKHAWK_SETUP_SCRIPT_NAME }}
