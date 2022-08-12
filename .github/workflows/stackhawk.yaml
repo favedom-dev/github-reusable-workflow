@@ -56,6 +56,10 @@ on:  # yamllint disable-line rule:truthy
         default: true
         required: false
         type: boolean
+      JOBS_TIMEOUT:
+        default: 10
+        required: false
+        type: number
 
     secrets:
       GH_TOKEN:  # GitHub token
@@ -68,7 +72,7 @@ on:  # yamllint disable-line rule:truthy
 jobs:
 
   stackhawk:
-    timeout-minutes: 10
+    timeout-minutes: ${{ inputs.JOBS_TIMEOUT }}
     permissions:
       contents: 'read'
       id-token: 'write'
