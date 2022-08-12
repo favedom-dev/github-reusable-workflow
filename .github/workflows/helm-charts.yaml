@@ -80,7 +80,7 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       PREVIEW_HEALTHCHECK:
-        default: 'acutuator/health'
+        default: 'actuator/health'
         required: false
         type: string
     secrets:
