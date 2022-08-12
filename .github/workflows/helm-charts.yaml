@@ -55,6 +55,10 @@ on:  # yamllint disable-line rule:truthy
         default: 'v3.7.2'
         required: false
         type: string
+      HELM_ADD_REPOS:
+        default: false
+        required: false
+        type: boolean
       CHARTMUSEUM:
         default: 'jenkins-x-chartmuseum'
         required: false
@@ -226,6 +230,16 @@ jobs:
           echo "=================================="
           helm repo list
 # yamllint enable
+
+      - name: "Helm add repos"
+        if: inputs.HELM_ADD_REPOS == true
+        env:
+          SCRIPT_NAME: helm_add_repos.sh
+        working-directory: scripts
+        run: |
+          # wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/${SCRIPT_NAME}
+          chmod 777 ./${SCRIPT_NAME}
+          ./${SCRIPT_NAME}
 
       - name: "🔧 [GAR] (oci://): Helm login"
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}

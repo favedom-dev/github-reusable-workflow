@@ -38,6 +38,7 @@ jobs:
       VERSION: ${{ needs.repo-version.outputs.version }}
       PREVIEW_NAMESPACE: ${{ needs.app-setup.outputs.PREVIEW_NAMESPACE }}
       API_PATH: ${{ needs.app-setup.outputs.API_PATH }}
+      # HELM_ADD_REPOS: true
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'

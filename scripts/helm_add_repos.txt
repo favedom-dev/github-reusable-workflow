@@ -1,0 +1,1 @@
+rabbitmq,https://raw.githubusercontent.com/bitnami/charts/pre-2022/bitnami
