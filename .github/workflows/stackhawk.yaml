@@ -103,7 +103,7 @@ jobs:
         run: |
           cat ./stackhawk.yml
 
-      - name: "Check service is alive"
+      - name: "💓 Check that service is alive"
         env:
           APP_HOST: https://${{ inputs.NAMESPACE }}.${{ inputs.BASE_DOMAIN }}
           API_PATH: ${{ inputs.API_PATH }}
