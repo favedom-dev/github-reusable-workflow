@@ -413,8 +413,9 @@ jobs:
           echo "🌐 PR built and available in a preview environment ${{ inputs.NAME }} pr ${{ github.event.number }}:" > ${PR_BODY}
           echo "- preview [link](${PREVIEW_URL})" >> ${PR_BODY}
           if [ ${#API_PATH}  -gt 0 ]; then
-            echo "- healthcheck ${PREVIEW_API_HEALTHCHECK} [link](${PREVIEW_URL}${PREVIEW_API_HEALTHCHECK})" >> ${PR_BODY}
+            echo "- healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_URL}${PREVIEW_API_HEALTHCHECK})" >> ${PR_BODY}
           fi
+          echo "- preview namespace: `${PREVIEW_NAMESPACE}`" >> ${PR_BODY}
           echo "===="
           cat ${PR_BODY}
           echo "===="
