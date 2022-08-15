@@ -12,6 +12,10 @@ on:  # yamllint disable-line rule:truthy
       PREVIEW_NAMESPACE:
         required: true
         type: string
+      DO_PREVIEW_ENVIRONMENT:
+        default: true
+        required: false
+        type: boolean
       PROJECT_ID:
         default: 'favedom-dev'
         required: false
@@ -368,7 +372,7 @@ jobs:
       #    echo "::set-output name=PREVIEW_NAMESPACE::pr-${{ inputs.NAME }}-${{ github.event.number }}"
 
       - name: "⎈ PREVIEW: Create namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
-        if: github.ref != 'refs/heads/master'
+        if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
         run: |
@@ -377,7 +381,7 @@ jobs:
           kubectl config set-context $(kubectl config current-context) --namespace ${PREVIEW_NAMESPACE}
 
       - name: "🔐 PREVIEW: Copy secrets"
-        if: github.ref != 'refs/heads/master'
+        if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           SCRIPT_NAME: preview_copy_secrets.sh
@@ -388,7 +392,7 @@ jobs:
           ./${SCRIPT_NAME}
 
       - name: "⎈ PREVIEW: Helm upgrade/install"
-        if: github.ref != 'refs/heads/master'
+        if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
         env:
           NAME: ${{ inputs.NAME }}
         working-directory: ./charts/preview
@@ -398,7 +402,7 @@ jobs:
           helm upgrade --install ${NAME} . ${HELM_DEBUG_FLAG}
 
       - name: "🌐 PREVIEW: Link to Preview"
-        if: github.ref != 'refs/heads/master'
+        if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 # yamllint disable
