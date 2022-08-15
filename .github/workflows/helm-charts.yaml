@@ -241,7 +241,7 @@ jobs:
           SCRIPT_NAME: helm_add_repos.sh
         working-directory: scripts
         run: |
-          # wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/${SCRIPT_NAME}
+          wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/${SCRIPT_NAME}
           chmod 777 ./${SCRIPT_NAME}
           ./${SCRIPT_NAME}
 
