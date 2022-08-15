@@ -39,6 +39,14 @@ jobs:
       PREVIEW_NAMESPACE: ${{ needs.app-setup.outputs.PREVIEW_NAMESPACE }}
       API_PATH: ${{ needs.app-setup.outputs.API_PATH }}
       # HELM_ADD_REPOS: true
+      # BPM Skipping preview for 2 reasons:
+      # 1) not used, including stackhawk
+      # 2) helm upgrade error
+      #    requires one of ["container.roles.create"] permission(s).
+      #    Error: UPGRADE FAILED: failed to create resource: roles.rbac.authorization.k8s.io is forbidden:
+      #    User "***" cannot create resource "roles" in API group "rbac.authorization.k8s.io" in the namespace
+      #    "pr-peeq-shoutout-bpm-70": No policy matched.
+      DO_PREVIEW_ENVIRONMENT: false
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
