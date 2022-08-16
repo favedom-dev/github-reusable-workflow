@@ -31,4 +31,4 @@ echo "--------------:--------------"
 echo "REPO_STR      : ${REPO_STR}"
 echo "--------------:--------------"
 
-sed -i -e "s/image: ${REPO_STR}${NAME}:.*/image: ${REPO_STR}${NAME}: ${VERSION}/" ${YAML_FILE}
+sed -i -e "s/image: ${REPO_STR}${NAME}:.*/image: ${SED_GAR_REPO}${NAME}:${VERSION}/" ${YAML_FILE}
