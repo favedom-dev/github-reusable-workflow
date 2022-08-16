@@ -15,6 +15,7 @@ display_vars() {
   echo "-----------:-------------------"
 }
 
+# https://docs.github.com/en/rest/repos/autolinks
 set_autolink() {
   echo ""
   echo "Setup: PQ-"
@@ -22,7 +23,7 @@ set_autolink() {
   --method POST \
   -H "Accept: application/vnd.github+json" \
   /repos/${ORG}/${REPO_NAME}/autolinks \
-  -f key_prefix='PQ-'
+  -f key_prefix='PQ-' \
   -f url_template='https://velocityz.atlassian.net/browse/PQ-<num>'
 
   echo ""
@@ -31,7 +32,7 @@ set_autolink() {
   --method POST \
   -H "Accept: application/vnd.github+json" \
   /repos/${ORG}/${REPO_NAME}/autolinks \
-  -f key_prefix='PQK-'
+  -f key_prefix='PQK-' \
   -f url_template='https://velocityz.atlassian.net/browse/PQK-<num>'
 }
 
