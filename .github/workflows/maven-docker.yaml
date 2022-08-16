@@ -39,6 +39,7 @@ on:  # yamllint disable-line rule:truthy
         default: 'peeq-docker'
         required: false
         type: string
+
     secrets:
       GH_TOKEN:
         required: true
@@ -48,6 +49,8 @@ on:  # yamllint disable-line rule:truthy
         required: true
       NEXUS_FAVEDOM_DEV_PASSWORD:
         required: true
+      MVN_ARGS_SECRETS:
+        required: false
 
 jobs:
 
@@ -99,7 +102,16 @@ jobs:
         run: mvn versions:set -DnewVersion=${VERSION}
 
       - name: "🔨 Build with Maven"
-        run: mvn ${{ inputs.MVN_ENV_VARS }} ${{ inputs.MVN_ARGS }} ${{ inputs.MVN_ARGS_EXTRA }}
+        run: |
+          echo "MVN_ARGS        : ${{ inputs.MVN_ARGS }}"
+          echo "MVN_ENV_VARS    : ${{ inputs.MVN_ENV_VARS }}"
+          echo "MVN_ARGS_EXTRA  : ${{ inputs.MVN_ARGS_EXTRA }}"
+          echo "MVN_ARGS_SECRETS: ${{ secrets.MVN_ARGS_SECRETS }}"
+          mvn \
+          ${{ secrets.MVN_ARGS_SECRETS }} \
+          ${{ inputs.MVN_ENV_VARS }} \
+          ${{ inputs.MVN_ARGS }} \
+          ${{ inputs.MVN_ARGS_EXTRA }}
 
       - name: "🔧 Setup Docker tags"
         id: docker-tags
