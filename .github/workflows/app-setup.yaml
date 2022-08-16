@@ -6,7 +6,7 @@ on:  # yamllint disable-line rule:truthy
       OVERRIDE_NAME:
         required: false
         type: string
-      OVERRIDE_API_PATH:
+      OVERRIDE_API_PATH:  # '/api/++SERVICE++'
         required: false
         type: string
       API_FILE:
