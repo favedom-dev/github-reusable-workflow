@@ -141,6 +141,7 @@ jobs:
         with:
           path: 'dist/${{ inputs.NAME }}'
           destination: '${{ inputs.GS_BUCKET }}/${{ inputs.NAME }}/${{ inputs.VERSION }}'
+          parent: false
 
       - name: "🔧 Setup Docker tags"
         id: docker-tags
