@@ -29,13 +29,14 @@ jobs:
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
-# TODO: need to update a specific file for helmfile (helm/values/identityx-v17.yaml) and different file for helm (env/values.yaml)
-  # staging:
-  #   uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
-  #   needs: [app-setup, repo-version, node-docker, helm-charts]
-  #   if: github.ref == 'refs/heads/master'
-  #   with:
-  #     NAME: ${{ needs.app-setup.outputs.NAME }}
-  #     VERSION: ${{ needs.repo-version.outputs.version }}
-  #   secrets:
-  #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  staging:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
+    needs: [app-setup, repo-version, docker]
+    if: github.ref == 'refs/heads/master'
+    with:
+      NAME: ${{ needs.app-setup.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+      YAML_FILE:  # 'helm/values/identityx-v17.yaml'
+      VERSION_SCRIPT_NAME: 'update_themes.sh'
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
