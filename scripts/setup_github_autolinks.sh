@@ -36,8 +36,7 @@ set_autolink() {
 }
 
 cleanup() {
-  # rm $0
-  echo "TODO: cleanup"
+  rm $0
 }
 
 ## MAIN
