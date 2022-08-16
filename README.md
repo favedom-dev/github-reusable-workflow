@@ -30,6 +30,18 @@
 
 ## [`./.github/workflows`](./.github/workflows)
 
+### `app-setup.yaml`
+
+- defaults `NAME` to repo name, can be overridden by passing int `OVERRIDE_NAME`
+
+```yaml
+  app-setup:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/app-setup.yaml@master
+    # with:
+    #   OVERRIDE_NAME: 'some-new-name'
+    #   OVERRIDE_API_PATH: '/api/++SERVICE++'
+```
+
 ### `deploy-env.yaml`
 
 - Currently a **placeholder** for deploying a component into an environment (default: staging)
@@ -60,6 +72,24 @@
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+```
+
+### `helm-charts.yaml`
+
+```yaml
+  helm-charts:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/helm-charts.yaml@master
+    needs: [app-setup, repo-version, maven-docker]
+    with:
+      NAME: ${{ needs.app-setup.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+      PREVIEW_NAMESPACE: ${{ needs.app-setup.outputs.PREVIEW_NAMESPACE }}
+      API_PATH: ${{ needs.app-setup.outputs.API_PATH }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
+      WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+      CHARTMUSEUM_PASSWORD: '${{ secrets.JX_CHARTMUSEUM_PASSWORD }}'
 ```
 
 ### `lint-sql.yaml`
@@ -115,31 +145,10 @@
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 ```
 
-### `preview-env.yaml`
-
-- Currently a **placeholder** for creating the Preview environment
-- OPTIONS: 1) solely GH Actions or 2) GH Actions + Argo CD
-
-```yaml
-  preview:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env.yaml@master
-    needs: [workaround-env, maven-docker]
-    if: github.event_name == 'pull_request'
-    with:
-      NAME: ${{ needs.workaround-env.outputs.NAME }}
-      VERSION: ${{ needs.repo-version.outputs.version }}
-    secrets:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
-```
-
 ### `preview-env-cleanup.yaml`
 
 - Common workflow to used to clean up PR environments
 - See `preview-cleanup.yaml` [doc](#pr_cleanupyaml) or [file](./templates/preview-cleanup.yaml)
-
-### `preview-stackhawk.yaml`
-
-- Currently a **placeholder**
 
 ### `repo-version.yaml`
 
@@ -152,15 +161,22 @@
     GH_TOKEN: ${{ secrets.GH_TOKEN }}
 ```
 
-### `app-setup.yaml`
-
-- defaults `NAME` to repo name, can be overridden by passing int `OVERRIDE_NAME`
+### `stackhawk.yaml`
 
 ```yaml
-  app-setup:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/app-setup.yaml@master
-    # with:
-    #   OVERRIDE_NAME: some-new-name
+  stackhawk:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/stackhawk.yaml@master
+    needs: [app-setup, repo-version, maven-docker, helm-charts]
+    if: github.event_name == 'pull_request' && needs.app-setup.outputs.IS_STACKHAWK_READY == 'true'
+    with:
+      NAME: ${{ needs.app-setup.outputs.NAME }}
+      NAMESPACE: ${{ needs.app-setup.outputs.PREVIEW_NAMESPACE }}
+      API_PATH: ${{ needs.app-setup.outputs.API_PATH }}
+      # JOBS_TIMEOUT: 15
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      HAWK_API_KEY: ${{ secrets.HAWK_API_KEY }}
+      TEST_PASSWORD: ${{ secrets.STACKHAWK_TEST_PASSWORD }}
 ```
 
 ---
@@ -178,6 +194,14 @@
           wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/auto-increment-version.sh
           chmod 777 ./auto-increment-version.sh
 ```
+
+### `helm_add_repos.sh`
+
+- add custom repos, typically only done with PR builds
+
+### `helm_add_repos.txt`
+
+- example of the file consumed by `helm_add_repos.sh`
 
 ### `preview_copy_secrets.sh`
 
@@ -213,6 +237,14 @@ export SECRETS_ARRAY=++SECRETS_ARRAY++
 - this is an example starter for copying secrets
 - copy into `++REPO++/scripts/`
 - update with array of secret names
+
+### `preview_secrets.txt`
+
+- example of the file consumed by `preview_secrets.sh`
+
+### `setup_branch_protection.sh`
+
+- setup GitHub branch protection for rules before merging
 
 ### `setup_ci.sh`
 
@@ -251,6 +283,36 @@ export SECRETS_ARRAY=++SECRETS_ARRAY++
   }
   ```
 
+### `update_component_version.sh`
+
+- **placeholder** to update version number for components
+
+### `update_tag.sh`
+
+- used by peeq-keycloak to update version in tag element
+
+### `update_themes.sh`
+
+- used by Keycloak themes to update version in keycloak config yaml
+
+---
+
+## [`./stackhawk`](./stackhawk)
+
+- files to run stackhawk with GitHub reusable actions
+
+---
+
+## [`./templates`](./templates)
+
+- standard files for types of repositories
+
+---
+
+## [`./yamllint`](./yamllint)
+
+- lint rules for yaml
+
 ---
 
 ## Example Workflows
@@ -258,37 +320,31 @@ export SECRETS_ARRAY=++SECRETS_ARRAY++
 ### `preview-cleanup.yaml`
 
 - common to be used with any project that creates a PR environment.  This will remove the namespace
+- `++REPO_TYPE++` is equal to the sub directory
+
+  ```bash
+  ./setup_ci.sh ++REPO_TYPE++
+  ```
+
+### bpm
+
+- Camunda BPM
 
 ### flyway [./templates/flyway/ci.yaml](/templates/flyway/ci.yaml)
 
 - flyway (*-db)
-
-  ```bash
-  ./setup_ci.sh flyway
-  ```
 
 ### java-shared-lib [./templates/java-shared-lib/ci.yaml](/templates/java-shared-lib/ci.yaml)
 
 - java shared library
 - see [Google doc](https://cloud.google.com/artifact-registry/docs/java/store-java)
 
-  ```bash
-  ./setup_ci.sh java-shared-lib
-  ```
+### keycloak-themes
 
 ### maven [./templates/maven/ci.yaml](/templates/maven/ci.yaml)
 
-- Camunda BPM
 - Java
-
-  ```bash
-  ./setup_ci.sh maven
-  ```
 
 ### node [./templates/node/ci.yaml](/templates/node/ci.yaml)
 
 - front ends
-
-  ```bash
-  ./setup_ci.sh node
-  ```
