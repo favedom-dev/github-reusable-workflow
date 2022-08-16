@@ -65,6 +65,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      - name: "☁️ Checkout repository"
+        uses: actions/checkout@v3
+
       - name: "🔧 Google Auth"
         if: ${{ !env.ACT }}
         id: auth
@@ -83,8 +86,6 @@ jobs:
           password: '${{ steps.auth.outputs.access_token }}'
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
-      - name: "☁️ Checkout repository"
-        uses: actions/checkout@v3
 
       - name: "🔧 Setup node.js"
         uses: actions/setup-node@v3

@@ -46,6 +46,11 @@ jobs:
       DOCKER_BUILDKIT: 1
     steps:
 
+      - name: "☁️ Checkout repository"
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       - name: "🔧 Google Auth"
         if: ${{ !env.ACT }}
         id: auth
@@ -73,11 +78,6 @@ jobs:
       #     echo "GAR_LOCATION: ${{ inputs.GAR_LOCATION }}"
       #     echo "GCR_LOCATION: ${{ inputs.GCR_LOCATION }}"
       #     echo "DOCKER_REGISTRY: ${{ inputs.DOCKER_REGISTRY }}"
-
-      - name: "☁️ Checkout repository"
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: "🐳 Docker: build, tag, and push"
         uses: docker/build-push-action@v3
