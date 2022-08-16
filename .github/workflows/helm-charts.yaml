@@ -419,7 +419,7 @@ jobs:
           if [ ${#API_PATH}  -gt 0 ]; then
             echo "- 💓 healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_URL}${PREVIEW_API_HEALTHCHECK})" >> ${PR_BODY}
           fi
-          echo "- ☸ preview namespace: `${{ inputs.PREVIEW_NAMESPACE }}`" >> ${PR_BODY}
+          echo "- ☸ preview namespace: ${{ inputs.PREVIEW_NAMESPACE }}" >> ${PR_BODY}
           echo "===="
           cat ${PR_BODY}
           echo "===="
