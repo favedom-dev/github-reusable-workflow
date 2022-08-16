@@ -20,11 +20,12 @@ echo "ELEMENT_NAME_2: ${ELEMENT_NAME_2}"
 echo "--------------:--------------"
 
 
-if [[ $(grep ${SED_GCR_REPO} ${YAML_FILE}) ]]; then
-  echo "SED_GAR_REPO: ${SED_GAR_REPO}"
+echo "Using:"
+if [[ $(grep ${SED_GAR_REPO}${NAME} ${YAML_FILE}) ]]; then
+  echo "SED_GAR_REPO  : ${SED_GAR_REPO}"
   REPO_STR=${SED_GAR_REPO}
-if [[ $(grep ${SED_GCR_REPO} ${YAML_FILE}) ]]; then
-  echo "SED_GCR_REPO: ${SED_GCR_REPO}"
+elif [[ $(grep ${SED_GCR_REPO}${NAME} ${YAML_FILE}) ]]; then
+  echo "SED_GCR_REPO  : ${SED_GCR_REPO}"
   REPO_STR=${SED_GCR_REPO}
 else
   echo "ERROR: not found image.${ELEMENT_NAME_1}: ${NAME}"
