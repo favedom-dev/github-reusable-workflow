@@ -136,7 +136,7 @@ jobs:
       - name: "⬆️ Release: Upload to Google Storage"
         if: github.event_name != 'pull_request' && inputs.UPLOAD_GS == true
         run: |
-          gsutil -m -q rsync -R dist/${{ inputs.NAME }} gs://${{ inputs.GS_BUCKET }}/${{ inputs.NAME }}/\${{ inputs.VERSION }}
+          gsutil -m -q rsync -R dist/${{ inputs.NAME }} gs://${{ inputs.GS_BUCKET }}/${{ inputs.NAME }}/${{ inputs.VERSION }}
 
       - name: "🔧 Setup Docker tags"
         id: docker-tags
