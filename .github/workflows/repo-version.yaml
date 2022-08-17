@@ -50,11 +50,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: "☁️ Get auto-increment-version.sh"
+      - name: "☁️ Get auto_increment_version.sh"
         if: github.event_name != 'pull_request'
         run: |
-          wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/auto-increment-version.sh
-          chmod 777 ./auto-increment-version.sh
+          wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/auto_increment_version.sh
+          chmod 777 ./auto_increment_version.sh
 
       - name: "☑ Release version"
         id: version
@@ -65,7 +65,7 @@ jobs:
         run: |
           export GH_TOKEN=${{ secrets.GH_TOKEN }}
           export GITHUB_TOKEN=${{ secrets.GH_TOKEN }}
-          ./auto-increment-version.sh
+          ./auto_increment_version.sh
           VERSION=$(cat VERSION)
           echo "::set-output name=version::${VERSION}"
           # echo "::set-output name=version::$(gh release view -q ".name" --json name | sed 's/v//')"

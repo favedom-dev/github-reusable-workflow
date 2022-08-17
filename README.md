@@ -253,16 +253,16 @@ setup_branch_protection.sh ${REPO_TYPE}
 
 ## [`./scripts`](./scripts)
 
-### `auto-increment-version.sh`
+### `auto_increment_version.sh`
 
 - used within GH action to set the version and if a merge into master update the repo version
 
 ```yaml
-      - name: "☁️ Get auto-increment-version.sh"
+      - name: "☁️ Get auto_increment_version.sh"
         if: github.event_name != 'pull_request'
         run: |
-          wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/auto-increment-version.sh
-          chmod 777 ./auto-increment-version.sh
+          wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/auto_increment_version.sh
+          chmod 777 ./auto_increment_version.sh
 ```
 
 ### `helm_add_repos.sh`
