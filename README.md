@@ -197,6 +197,60 @@ setup_branch_protection.sh ${REPO_TYPE}
 
 ---
 
+## [`./.m2`](./.m2)
+
+### `settings.xml`
+
+- Used for maven builds
+
+**NOTE:** pom.xml may need to be updated to include shared libraries [example](https://github.com/favedom-dev/peeq-query/pull/756/files)
+
+```yaml
+<project>
+  <distributionManagement>
+    <snapshotRepository>
+      <id>artifact-registry</id>
+      <url>artifactregistry://us-central1-maven.pkg.dev/favedom-dev/peeq-java</url>
+    </snapshotRepository>
+    <repository>
+      <id>artifact-registry</id>
+      <url>artifactregistry://us-central1-maven.pkg.dev/favedom-dev/peeq-java</url>
+    </repository>
+  </distributionManagement>
+
+  <repositories>
+    <repository>
+      <id>artifact-registry</id>
+      <url>artifactregistry://us-central1-maven.pkg.dev/favedom-dev/peeq-java</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>true</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <build>
+    <extensions>
+      <extension>
+        <groupId>com.google.cloud.artifactregistry</groupId>
+        <artifactId>artifactregistry-maven-wagon</artifactId>
+        <version>2.1.0</version>
+      </extension>
+    </extensions>
+  </build>
+</project>
+```
+
+---
+
+## ['./samples'](./samples)
+
+- some sample files from GitHub actions for reference
+
+---
+
 ## [`./scripts`](./scripts)
 
 ### `auto-increment-version.sh`
