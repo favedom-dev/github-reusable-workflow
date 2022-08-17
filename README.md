@@ -205,7 +205,7 @@ setup_branch_protection.sh ${REPO_TYPE}
 
 **NOTE:** pom.xml may need to be updated to include shared libraries [example](https://github.com/favedom-dev/peeq-query/pull/756/files)
 
-```yaml
+```xml
 <project>
   <distributionManagement>
     <snapshotRepository>
