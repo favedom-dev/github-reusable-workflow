@@ -2,16 +2,9 @@
 
 ## TODO
 
-- add [stackhawk](https://docs.stackhawk.com/continuous-integration/github-actions.html)
-
-- create preview environment
-  - `preview-env.yaml`
-  - options
-    - ArgoCD
-    - scripts via GH Actions
-
 - update staging GitOps repo version on merge to master
   - `deploy-env.yaml`
+  - should be done, but will need to make sure it works with Argo CD
 
 ---
 
@@ -25,6 +18,29 @@
 1. Create ci workflow
     - See [`setup_ci.sh`](#setup_cish)
     - See [Example Workflows](#example-workflows)
+
+Example:
+
+```bash
+export REPO_TYPE= # bpm | flyway | java-shared-lib | keycloak-themes | maven | node
+REPO_NAME=$(basename `git rev-parse --show-toplevel`)
+
+# wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/setup_github_autolinks.sh
+wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/setup_repo.sh
+wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/setup_ci.sh
+
+# setup_github_autolinks.sh
+setup_repo.sh
+setup_ci.sh ${REPO_TYPE}
+
+git add .; git commit -a -m "feat: GitHub Actions CI"; git push
+```
+
+```bash
+wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/setup_branch_protection.sh
+
+setup_branch_protection.sh ${REPO_TYPE}
+```
 
 ---
 
