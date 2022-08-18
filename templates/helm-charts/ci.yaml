@@ -12,31 +12,35 @@ jobs:
 
   app-setup:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/app-setup.yaml@master
+    with:
+      OVERRIDE_NAME: ''  # set name
 
   repo-version:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-  docker:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/docker.yaml@master
+  helm-charts:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/helm-charts.yaml@master
     needs: [app-setup, repo-version]
     with:
       NAME: ${{ needs.app-setup.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
+      PREVIEW_NAMESPACE: ${{ needs.app-setup.outputs.PREVIEW_NAMESPACE }}
+      OVERRIDE_CHARTS_DIR: './charts/${{ needs.app-setup.outputs.NAME }}'
+      DO_PREVIEW_ENVIRONMENT: false
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+      CHARTMUSEUM_PASSWORD: '${{ secrets.JX_CHARTMUSEUM_PASSWORD }}'
 
   staging:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
-    needs: [app-setup, repo-version, docker]
+    needs: [app-setup, repo-version, helm-charts]
     if: github.ref == 'refs/heads/master'
     with:
       NAME: ${{ needs.app-setup.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
-      YAML_FILE:  # 'helm/values/identityx-v17.yaml'
-      VERSION_SCRIPT_NAME: 'update_themes.sh'
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
