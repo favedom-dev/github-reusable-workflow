@@ -51,8 +51,8 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: boolean
       HELM_DOCKER_REGISTRY:
-        # default: 'us-central1-docker.pkg.dev'  # GAR (oci://)
-        default: 'gcr.io'  # JX
+        default: 'us-central1-docker.pkg.dev'  # GAR (oci://)
+        # default: 'gcr.io'  # JX
         required: false
         type: string
       HELM_VERSION:
