@@ -12,6 +12,9 @@ on:  # yamllint disable-line rule:truthy
       PREVIEW_NAMESPACE:
         required: true
         type: string
+      OVERRIDE_CHARTS_DIR:
+        required: false
+        type: string
       DO_PREVIEW_ENVIRONMENT:
         default: true
         required: false
@@ -130,9 +133,12 @@ jobs:
           BASE_DIR: ./charts
           APP_NAME: ${{ inputs.NAME }}
           GH_REF: ${{ github.ref }}
+          OVERRIDE_CHARTS_DIR: ${{ inputs.OVERRIDE_CHARTS_DIR }}
         run: |
           CHARTS_DIR=${BASE_DIR}/preview
-          if [ "${GH_REF}" == "refs/heads/master" ]; then
+          if [ -n "${OVERRIDE_CHARTS_DIR}" ]; then
+            CHARTS_DIR=${{ inputs.OVERRIDE_CHARTS_DIR }}
+          elif [ "${GH_REF}" == "refs/heads/master" ]; then
             CHARTS_DIR=${BASE_DIR}/${APP_NAME}
           fi;
           echo "CHARTS_DIR: ${CHARTS_DIR}"
@@ -274,6 +280,9 @@ jobs:
           echo "=================================="
           echo "RUN: helm dependency build ${HELM_DEBUG_FLAG}"
           helm dependency build ${HELM_DEBUG_FLAG}
+          echo "=================================="
+          echo "RUN: helm lint . ${HELM_DEBUG_FLAG}"
+          helm lint .
           echo "=================================="
           echo "RUN: helm package . --version ${VERSION} ${HELM_DEBUG_FLAG}"
           helm package . --version ${VERSION} ${HELM_DEBUG_FLAG}
