@@ -22,7 +22,7 @@
 Example:
 
 ```bash
-export REPO_TYPE= # bpm | flyway | java-shared-lib | keycloak-themes | maven | node
+export REPO_TYPE= # bpm | flyway | helm-charts | java-shared-lib | keycloak-themes | maven | node
 REPO_NAME=$(basename `git rev-parse --show-toplevel`)
 
 # wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/setup_github_autolinks.sh
@@ -396,7 +396,7 @@ export SECRETS_ARRAY=++SECRETS_ARRAY++
   ./setup_ci.sh ++REPO_TYPE++
   ```
 
-### bpm
+### bpm [./templates/bpm/ci.yaml](/templates/bpm/ci.yaml)
 
 - Camunda BPM
 
@@ -404,12 +404,19 @@ export SECRETS_ARRAY=++SECRETS_ARRAY++
 
 - flyway (*-db)
 
+### helm-charts [./templates/helm-charts/ci.yaml](/templates/helm-charts/ci.yaml)
+
+- repos that just build helm charts
+  - examples:
+    - [jitsi-helm-chart](https://github.com/favedom-dev/jitsi-helm-chart)
+    - [nginx-rtmp-helm-chart](https://github.com/favedom-dev/nginx-rtmp-helm-chart)
+
 ### java-shared-lib [./templates/java-shared-lib/ci.yaml](/templates/java-shared-lib/ci.yaml)
 
 - java shared library
 - see [Google doc](https://cloud.google.com/artifact-registry/docs/java/store-java)
 
-### keycloak-themes
+### keycloak-themes [./templates/keycloak-themes/ci.yaml](/templates/keycloak-themes/ci.yaml)
 
 ### maven [./templates/maven/ci.yaml](/templates/maven/ci.yaml)
 
