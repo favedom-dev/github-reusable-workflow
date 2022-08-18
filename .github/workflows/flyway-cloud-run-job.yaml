@@ -79,8 +79,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - name: "🔧 Google Auth"
-        id: auth-gcp
+      - name: "🔧 Google Auth Token"
+        id: auth-gcp-token
         uses: 'google-github-actions/auth@v0'
         with:
           token_format: 'access_token'

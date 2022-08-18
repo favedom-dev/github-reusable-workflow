@@ -45,9 +45,9 @@ jobs:
       #     echo "==================================:=============================="
       #     echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
 
-      - name: "🔧 Google Auth"
+      - name: "🔧 Google Auth Token"
         if: ${{ !env.ACT }}
-        id: auth-gcp
+        id: auth-gcp-token
         uses: 'google-github-actions/auth@v0'
         with:
           token_format: 'access_token'

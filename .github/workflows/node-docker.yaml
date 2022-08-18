@@ -68,9 +68,9 @@ jobs:
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v3
 
-      - name: "🔧 Google Auth"
+      - name: "🔧 Google Auth Token"
         if: ${{ !env.ACT }}
-        id: auth-gcp
+        id: auth-gcp-token
         uses: 'google-github-actions/auth@v0'
         with:
           token_format: 'access_token'
@@ -83,7 +83,7 @@ jobs:
         uses: 'docker/login-action@v1'
         with:
           username: 'oauth2accesstoken'
-          password: '${{ steps.auth-gcp.outputs.access_token }}'
+          password: '${{ steps.auth-gcp-token.outputs.access_token }}'
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
 

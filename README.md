@@ -63,6 +63,9 @@ setup_branch_protection.sh ${REPO_TYPE}
   - Google credentials
   - **NOTE:** Not used in these workflows
 
+- `GCP_JSON_KEY`
+  - Google JSON Key used for "Google Auth JSON Key"
+
 - `GH_TOKEN`
   - GitHub Token
 

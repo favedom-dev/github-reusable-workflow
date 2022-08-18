@@ -39,6 +39,18 @@ on:  # yamllint disable-line rule:truthy
         default: 'peeq-docker'
         required: false
         type: string
+      CREATE_CREDENTIALS_FILE:
+        default: true
+        required: false
+        type: boolean
+      EXPORT_ENVIRONMENT_VARIABLES:
+        default: true
+        required: false
+        type: boolean
+      RUN_GCP_JSON_KEY:
+        default: false
+        required: false
+        type: boolean
 
     secrets:
       GH_TOKEN:
@@ -50,6 +62,8 @@ on:  # yamllint disable-line rule:truthy
       NEXUS_FAVEDOM_DEV_PASSWORD:
         required: true
       MVN_ARGS_SECRETS:
+        required: false
+      GCP_JSON_KEY:
         required: false
 
 jobs:
@@ -65,14 +79,26 @@ jobs:
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v3
 
-      - name: "🔧 Google Auth"
-        if: ${{ !env.ACT }}
-        id: auth-gcp
+      - name: "🔧 Google Auth Token"
+        id: auth-gcp-token
         uses: 'google-github-actions/auth@v0'
         with:
           token_format: 'access_token'
           workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
           service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+          create_credentials_file: ${{ inputs.CREATE_CREDENTIALS_FILE }}
+          export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
+
+      - name: "🔧 Google Auth JSON Key"
+        id: auth-gcp-key
+        if: inputs.RUN_GCP_JSON_KEY
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: '${{ secrets.GCP_JSON_KEY }}'
+
+      # https://github.com/google-github-actions/setup-gcloud
+      # - name: 'Set up Cloud SDK'
+      #   uses: 'google-github-actions/setup-gcloud@v0'
 
       - name: "🔧 Docker Auth"
         if: ${{ !env.ACT }}
@@ -80,7 +106,7 @@ jobs:
         uses: 'docker/login-action@v1'
         with:
           username: 'oauth2accesstoken'
-          password: '${{ steps.auth-gcp.outputs.access_token }}'
+          password: '${{ steps.auth-gcp-token.outputs.access_token }}'
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
       - name: "🔧 Set up JDK 11"
@@ -92,14 +118,9 @@ jobs:
       - name: "🔧 Maven ~/.m2/settings.xml"
         env:
           NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
-          GCP_ACCESS_TOKEN: '${{ steps.auth-gcp.outputs.access_token }}'
         run: |
           wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
           envsubst < ./settings.xml > ~/.m2/settings.xml
-
-      # - name: "DEBUG: Maven ~/.m2/settings.xml"
-      #   run: |
-      #     cat ~/.m2/settings.xml
 
       - name: "🔨 Maven set version"
         env:
@@ -107,6 +128,9 @@ jobs:
         run: mvn versions:set -DnewVersion=${VERSION}
 
       - name: "🔨 Build with Maven"
+        env:
+          GCP_ACCESS_TOKEN: '${{ steps.auth-gcp-token.outputs.access_token }}'
+          GCP_ACCESS_TOKEN_EXPIRATION: '${{ steps.auth-gcp-token.outputs.access_token_expiration }}'
         run: |
           echo "MVN_ARGS        : ${{ inputs.MVN_ARGS }}"
           echo "MVN_ENV_VARS    : ${{ inputs.MVN_ENV_VARS }}"
