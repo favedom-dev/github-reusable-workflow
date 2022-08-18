@@ -8,6 +8,14 @@
 
 ---
 
+## Helpful links
+
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+  - [Reusable workflows](https://docs.github.com/en/actions/using-workflows/reusing-workflows)
+- [Google GitHub Actions](https://github.com/google-github-actions/)
+
+---
+
 ## Setup repo to use GH Actions
 
 1. First time will need to:
@@ -245,7 +253,7 @@ setup_branch_protection.sh ${REPO_TYPE}
 
 ---
 
-## ['./samples'](./samples)
+## [`./samples`](./samples)
 
 - some sample files from GitHub actions for reference
 
