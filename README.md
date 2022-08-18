@@ -20,12 +20,17 @@
 
 1. First time will need to:
     - authenticate the repo with Google to use GitHub Actions
-    - create `./.github/workflows/ci.yaml`
     - See [`setup_repo.sh`](#setup_reposh)
 
 1. Create ci workflow
+    - create `./.github/workflows/ci.yaml`
     - See [`setup_ci.sh`](#setup_cish)
     - See [Example Workflows](#example-workflows)
+
+1. Update branch protection
+    - for each repo type there is a standard branch protection
+      - This may need to be tweaked for some repos
+    - See [`setup_branch_protection.sh`](#setup_branch_protectionsh)
 
 Example:
 
