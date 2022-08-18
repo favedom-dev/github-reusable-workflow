@@ -52,6 +52,45 @@ setup_branch_protection.sh ${REPO_TYPE}
 
 ---
 
+## Secrets setup in Github
+
+- GCP_CREDENTIALS
+  - Google credentials
+  - **NOTE:** Not used in these workflows
+
+- GH_TOKEN
+  - GitHub Token
+
+- HAWK_API_KEY
+  - Stackhawk API Key
+
+- JX_CHARTMUSEUM_PASSWORD
+  - Jenkins X Chartmuseum
+
+- KEYCLOAK_PEEQ_USERS
+  - Staging (favedom-dev)
+
+- NEXUS_AZOR_PASSWORD
+  - Nexus password for velocityz-azor (jx)
+  - **NOTE:** Not used in these workflows
+
+- NEXUS_FAVEDOM_DEV_PASSWORD
+  - Nexus password for favedom-dev (jx)
+
+- NPM_TOKEN
+  - token used to generate `.npmrc`
+
+- STACKHAWK_TEST_PASSWORD
+  - password for Stackhawk Peeq (favedom-dev) staging test user
+
+- WIF_PROVIDER
+  - Workload Identity Provider for GCP
+
+- WIF_SERVICE_ACCOUNT
+  - Service account for GCP
+
+---
+
 ## [`./.github/workflows`](./.github/workflows)
 
 ### `app-setup.yaml`
