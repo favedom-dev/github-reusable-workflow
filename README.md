@@ -157,13 +157,21 @@ setup_branch_protection.sh ${REPO_TYPE}
 
 ### `lint-sql.yaml`
 
-- Currently a **placeholder** for SQL linting (flyway projects)
+- SQL linting (flyway projects)
   - SQLFluff
     - [GitHub Actions](https://github.com/sqlfluff/sqlfluff-github-actions)
     - [Docs](https://docs.sqlfluff.com/en/stable/)
     - [Rules](https://docs.sqlfluff.com/en/stable/rules.html)
     - [cli](https://docs.sqlfluff.com/en/stable/cli.html)
     - repo [sqlfluff](https://github.com/sqlfluff/sqlfluff)
+
+```yaml
+  lint-sql:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/lint-sql.yaml@master
+    if: github.event_name == 'pull_request'
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+```
 
 ### `lint-yaml.yaml`
 
