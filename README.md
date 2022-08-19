@@ -424,7 +424,7 @@ export SECRETS_ARRAY=++SECRETS_ARRAY++
 
 - used by peeq-keycloak to update version in tag element
 
-### `update_themes.sh`
+### `update_image.sh`
 
 - used by Keycloak themes to update version in keycloak config yaml
 

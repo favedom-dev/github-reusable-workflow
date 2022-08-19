@@ -37,6 +37,6 @@ jobs:
       NAME: ${{ needs.app-setup.outputs.NAME }}
       VERSION: ${{ needs.repo-version.outputs.version }}
       YAML_FILE:  # 'helm/values/identityx-v17.yaml'
-      VERSION_SCRIPT_NAME: 'update_themes.sh'
+      VERSION_SCRIPT_NAME: 'update_image.sh'
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
