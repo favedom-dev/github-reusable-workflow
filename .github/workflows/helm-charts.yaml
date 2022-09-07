@@ -182,6 +182,7 @@ jobs:
           echo "VERSION             : ${VERSION}"
           echo "DOCKER_REGISTRY     : ${DOCKER_REGISTRY}"
           echo "DOCKER_REGISTRY_NAME: ${DOCKER_REGISTRY_NAME}"
+          echo "working-directory   : ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}"
           echo "=================================="
           sed -i -e "s/version:.*/version: ${VERSION}/" Chart.yaml
           sed -i -e "s/tag:.*/tag: ${VERSION}/" values.yaml
