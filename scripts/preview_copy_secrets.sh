@@ -18,8 +18,8 @@ fi
 
 # check that file exists
 if [ ! -f "$SECRET_FILENAME" ]; then
-  echo "ERROR: \"${SECRET_FILENAME}\" does not exists in: $(pwd)"
-  exit 1
+  echo "WARNING: \"${SECRET_FILENAME}\" does not exists in: $(pwd)"
+  exit 0
 fi
 
 # check that preview namespace exists
