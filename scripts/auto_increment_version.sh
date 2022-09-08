@@ -1,10 +1,32 @@
 #!/bin/bash
 
-# get highest tag number
-# https://stackoverflow.com/questions/62960533/how-to-use-git-commands-during-a-github-action
-# VERSION=`git describe --abbrev=0 --tags`
-# https://docs.github.com/en/actions/using-workflows/using-github-cli-in-workflows
-VERSION=`gh release view -q ".name" --json name`
+# if a monorepo pass the app name
+
+# may need to increase for monorepo if several versions between
+GH_LIMIT=100
+MONOREPO_APP_NAME=$1
+
+if [[ ! -z ${MONOREPO_APP_NAME} ]]; then
+  echo "MONOREPO: ${MONOREPO_APP_NAME}"
+  NEW_TAG_PREFIX="${MONOREPO_APP_NAME}/v"
+  FULL_VERSION=$(gh release list --limit ${GH_LIMIT} | grep "^${MONOREPO_APP_NAME}" | head -1 | awk '{print $1}')
+  VERSION=$(echo ${FULL_VERSION} | cut -f2 -d /)
+else
+  echo "SINGLE REPO"
+  NEW_TAG_PREFIX="v"
+  # get highest tag number
+  # https://stackoverflow.com/questions/62960533/how-to-use-git-commands-during-a-github-action
+  # VERSION=`git describe --abbrev=0 --tags`
+  # https://docs.github.com/en/actions/using-workflows/using-github-cli-in-workflows
+  VERSION=`gh release view -q ".name" --json name`
+  FULL_VERSION=${VERSION}
+fi
+
+echo "==============:======================="
+echo "NEW_TAG_PREFIX: ${NEW_TAG_PREFIX}"
+echo "FULL_VERSION  : ${FULL_VERSION}"
+echo "VERSION       : ${VERSION}"
+echo "==============:======================="
 
 # replace . with space so can split into an array
 VERSION_BITS=(${VERSION//./ })
@@ -19,6 +41,7 @@ VNUM1=`echo $VNUM1 | sed 's/v//'`
 MAJOR=`git log --format=%B -n 1 HEAD | grep '#major'`
 MINOR=`git log --format=%B -n 1 HEAD | grep '#minor'`
 
+echo ""
 if [ "$MAJOR" ]; then
     echo "Update major version"
     VNUM1=$((VNUM1+1))
@@ -35,10 +58,11 @@ fi
 
 # create new tag
 NEW_VERSION="$VNUM1.$VNUM2.$VNUM3"
-NEW_TAG="v$NEW_VERSION"
+NEW_TAG="${NEW_TAG_PREFIX}$NEW_VERSION"
 
-
-echo "Updating $VERSION to $NEW_TAG"
+echo ""
+echo "Updating \"${FULL_VERSION}\" to \"${NEW_TAG}\""
+echo ""
 
 # get current hash and see if it already has a tag
 GIT_COMMIT=`git rev-parse HEAD`
@@ -54,10 +78,10 @@ if [ -z "$NEEDS_TAG" ]; then
       exit ${rc}
     fi
     echo ${NEW_VERSION} > VERSION
-    echo ${NEW_TAG} > TAG_VERSION
+    # echo ${NEW_TAG} > TAG_VERSION
 else
     echo "Already a tag on this commit"
     echo $(echo ${VERSION} | sed 's/v//') > VERSION
-    echo ${VERSION} > TAG_VERSION
+    # echo ${VERSION} > TAG_VERSION
 fi
 exit 0

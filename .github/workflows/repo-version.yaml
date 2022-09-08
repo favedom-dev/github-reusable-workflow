@@ -2,6 +2,11 @@ name: Repo Version
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
+    inputs:
+      MONOREPO_APP:
+        default: ''
+        required: false
+        type: string
     secrets:
       GH_TOKEN:
         required: true
@@ -65,7 +70,7 @@ jobs:
         run: |
           export GH_TOKEN=${{ secrets.GH_TOKEN }}
           export GITHUB_TOKEN=${{ secrets.GH_TOKEN }}
-          ./auto_increment_version.sh
+          ./auto_increment_version.sh ${{ inputs.MONOREPO_APP }}
           VERSION=$(cat VERSION)
           echo "::set-output name=version::${VERSION}"
           # echo "::set-output name=version::$(gh release view -q ".name" --json name | sed 's/v//')"
