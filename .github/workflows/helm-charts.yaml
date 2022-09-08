@@ -184,7 +184,7 @@ jobs:
           DOCKER_REGISTRY_NAME: ${{ inputs.DOCKER_REGISTRY_NAME }}
           PROJECT_ID: ${{ inputs.PROJECT_ID }}
           GH_REF: ${{ github.ref }}
-# yamllint disable
+# yamllint disable rule:line-length
         run: |
           echo "APP_NAME            : ${APP_NAME}"
           echo "VERSION             : ${VERSION}"
@@ -207,7 +207,7 @@ jobs:
             sed -i -e "s/version:.*/version: ${VERSION}/" ../*/Chart.yaml
             echo "  version: ${VERSION}" >> requirements.yaml
           fi
-# yamllint enable
+# yamllint enable rule:line-length
 
       # - name: "DEBUG: helm charts Before"
       #   if: inputs.ENABLE_HELM_DEBUG == true
@@ -242,13 +242,13 @@ jobs:
         # if: inputs.IS_HELM_GAR_REPO == false
         env:
           CHARTMUSEUM_REPO: ${{ inputs.CHARTMUSEUM_REPO }}
-# yamllint disable
+# yamllint disable rule:line-length
         run: |
           helm repo add jenkins-x-chartmuseum http://${CHARTMUSEUM_REPO} ${HELM_DEBUG_FLAG}
           helm repo add jx https://jenkins-x-charts.github.io/v2/ ${HELM_DEBUG_FLAG}
           echo "=================================="
           helm repo list
-# yamllint enable
+# yamllint enable rule:line-length
 
       - name: "☸ Helm add repos"
         if: inputs.HELM_ADD_REPOS == true
@@ -343,13 +343,13 @@ jobs:
           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
           HELM_REGISTRY_NAME: ${{ inputs.HELM_REGISTRY_NAME }}
           PROJECT_ID: ${{ inputs.PROJECT_ID }}
-# yamllint disable
+# yamllint disable rule:line-length
         run: |
           helm push \
           ${APP_NAME}-${VERSION}.tgz \
           oci://${HELM_DOCKER_REGISTRY}/${PROJECT_ID}/${HELM_REGISTRY_NAME}/${APP_NAME} \
           ${HELM_DEBUG_FLAG}
-# yamllint enable
+# yamllint enable rule:line-length
 
       - name: "☸ RELEASE [JX]: Upload helm chart to chartmuseum"
         # if: github.ref == 'refs/heads/master' && inputs.IS_HELM_GAR_REPO == false
@@ -423,7 +423,7 @@ jobs:
         if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-# yamllint disable
+# yamllint disable rule:line-length
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           PREVIEW_URL: https://${{ inputs.PREVIEW_NAMESPACE }}.${{ inputs.PREVIEW_BASE_DOMAIN }}
           API_PATH: ${{ inputs.API_PATH }}
@@ -443,5 +443,5 @@ jobs:
           echo "===="
           # END: body message file
           gh pr comment ${{ github.event.number }} --body-file ${PR_BODY}
-# yamllint enable
+# yamllint enable rule:line-length
 # END: PR ONLY
