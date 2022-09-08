@@ -413,7 +413,7 @@ jobs:
         if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
         env:
           NAME: ${{ inputs.NAME }}
-        working-directory: ./charts/preview
+        working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
         run: |
           echo "NAME           : ${NAME}"
           echo "HELM_DEBUG_FLAG: ${HELM_DEBUG_FLAG}"
