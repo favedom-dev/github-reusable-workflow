@@ -95,7 +95,7 @@ jobs:
           # ELEMENT_NAME_2: ${{ inputs.ELEMENT_NAME_2 }}
           SED_GCR_REPO: ${{ inputs.SED_GCR_REPO }}
           SED_GAR_REPO: ${{ inputs.SED_GAR_REPO }}
-# yamllint disable
+# yamllint disable rule:line-length
         run: |
           if [ ${#VERSION_SCRIPT_NAME} -gt 0 ]; then
             wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/${VERSION_SCRIPT_NAME}
@@ -109,13 +109,12 @@ jobs:
             "(.${{ inputs.YAML_ELEMENT }}[] | select(has(\"name\")) | select(.name == \"${{ inputs.NAME }}\")).${{ inputs.YAML_UPDATE_ELEMENT }} = \"${{ inputs.VERSION }}\"" \
             -i ./${{ inputs.YAML_FILE }}
           fi
-# yamllint enable
+# yamllint enable rule:line-length
 
 #       - name: "DEBUG: ./${{ inputs.YAML_FILE }}"
 #         if: github.ref == 'refs/heads/master'
-# # yamllint disable
+# # yamllint disable-line
 #         working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ inputs.ENV_REPO_SUBDIR }}
-# # yamllint enable
 #         run: |
 #           cat ./${{ inputs.YAML_FILE }}
 
@@ -127,11 +126,11 @@ jobs:
           VERSION: ${{ inputs.VERSION }}
           BRANCH_NAME: gha_${{ inputs.NAME }}_${{ inputs.VERSION }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-# yamllint disable
+# yamllint disable rule:line-length
         run: |
           git checkout -b ${BRANCH_NAME}
           git commit -a -m "${NAME} ${VERSION}"
           git push -u origin ${BRANCH_NAME}
           gh pr create --label "approved" --title "chore: bump ${NAME} to ${VERSION}" --body "${NAME} ${VERSION}"
           # gh pr merge --auto
-# yamllint enable
+# yamllint enable rule:line-length

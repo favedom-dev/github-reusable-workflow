@@ -96,10 +96,10 @@ jobs:
       - name: "🌐 Link to Lib"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-# yamllint disable
+# yamllint disable rule:line-length
           # https://console.cloud.google.com/artifacts/maven/favedom-dev/us-central1/peeq-java/com.peeq:peeq-shared-lib/0.0.0-SNAPSHOT-PR-147-2?project=favedom-dev
           GAR_URL: ${{ inputs.GAR_MAVEN_URL }}${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.MAVEN_REGISTRY }}/${{ inputs.JAR_PATH }}:${{ inputs.NAME }}/${{ inputs.VERSION }}?project=${{ inputs.PROJECT_ID }}
-# yamllint enable
+# yamllint enable rule:line-length
         run: |-
           echo "${GAR_URL}"
           if [ "${{ github.event_name }}" = "pull_request" ]; then

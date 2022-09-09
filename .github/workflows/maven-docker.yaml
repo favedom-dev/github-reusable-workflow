@@ -166,7 +166,7 @@ jobs:
       - name: "🌐 Link to Container"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-# yamllint disable
+# yamllint disable rule:line-length
         run: |-
           echo "https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -174,4 +174,4 @@ jobs:
             --body "🐳 Container: [${{ inputs.NAME }} ${{ inputs.VERSION }}](https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/)"
           fi
 
-# yamllint enable
+# yamllint enable rule:line-length

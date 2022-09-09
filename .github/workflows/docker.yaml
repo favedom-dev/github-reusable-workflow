@@ -84,15 +84,14 @@ jobs:
         with:
           context: .
           push: true
-# yamllint disable
+# yamllint disable-line
           tags: ${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:${{ inputs.VERSION }},${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:latest
-# yamllint enable
 
       - name: "🌐 Link to Container"
-# yamllint disable
+# yamllint disable rule:line-length
         run: |-
           echo "https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             gh pr comment ${{ github.event.number }} --body "🐳 Container: [${{ inputs.NAME }} ${{ inputs.VERSION }}](https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/)"
           fi
-# yamllint enable
+# yamllint enable rule:line-length
