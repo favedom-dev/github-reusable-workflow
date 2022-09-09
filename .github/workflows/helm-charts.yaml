@@ -98,7 +98,7 @@ on:  # yamllint disable-line rule:truthy
         default: './scripts'
         required: false
         type: string
-      GIT_TRUNK_BRANCH:
+      GIT_TRUNK_NAME:
         default: 'master'
         required: false
         type: string
@@ -150,7 +150,7 @@ jobs:
           CHARTS_DIR=${BASE_CHARTS_DIR}/preview
           if [ -n "${OVERRIDE_CHARTS_DIR}" ]; then
             CHARTS_DIR=${{ inputs.OVERRIDE_CHARTS_DIR }}
-          elif [ "${GH_REF}" == "refs/heads/${{ inputs.GIT_TRUNK_BRANCH }}" ]; then
+          elif [ "${GH_REF}" == "refs/heads/${{ inputs.GIT_TRUNK_NAME }}" ]; then
             CHARTS_DIR=${BASE_CHARTS_DIR}/${APP_NAME}
           fi;
           echo "CHARTS_DIR: ${CHARTS_DIR}"
@@ -205,7 +205,7 @@ jobs:
           #   echo "JX: repository update"
           #   sed -i -e "s|repository:.*|repository: ${DOCKER_REGISTRY}\/${PROJECT_ID}\/${APP_NAME}|" values.yaml
           # fi
-          if [ "${GH_REF}" == "refs/heads/${{ inputs.GIT_TRUNK_BRANCH }}" ]; then
+          if [ "${GH_REF}" == "refs/heads/${{ inputs.GIT_TRUNK_NAME }}" ]; then
             echo "appVersion: ${VERSION}" >> Chart.yaml
           else
             sed -i -e "s/version:.*/version: ${VERSION}/" ../*/Chart.yaml
@@ -230,7 +230,7 @@ jobs:
       #     echo "values.yaml"
       #     cat values.yaml
       #     echo "=================================="
-      #     if [ "${GH_REF}" != "refs/heads/${{ inputs.GIT_TRUNK_BRANCH }}" ]; then
+      #     if [ "${GH_REF}" != "refs/heads/${{ inputs.GIT_TRUNK_NAME }}" ]; then
       #       echo "requirements.yaml"
       #       cat requirements.yaml
       #     fi
@@ -317,7 +317,7 @@ jobs:
       #     echo "values.yaml"
       #     cat values.yaml
       #     echo "=================================="
-      #     if [ "${GH_REF}" != "refs/heads/${{ inputs.GIT_TRUNK_BRANCH }}" ]; then
+      #     if [ "${GH_REF}" != "refs/heads/${{ inputs.GIT_TRUNK_NAME }}" ]; then
       #       echo "requirements.yaml"
       #       cat requirements.yaml
       #     fi
@@ -337,8 +337,8 @@ jobs:
       #     helm show chart ${CHARTMUSEUM}/${APP_NAME} ${HELM_DEBUG_FLAG}
 
       - name: "☸ RELEASE [GAR]: Upload helm chart to ocr://"
-        # if: github.ref == 'refs/heads/${{ inputs.GIT_TRUNK_BRANCH }}' && inputs.IS_HELM_GAR_REPO == true
-        if: github.ref == 'refs/heads/${{ inputs.GIT_TRUNK_BRANCH }}'
+        # if: github.ref == 'refs/heads/${{ inputs.GIT_TRUNK_NAME }}' && inputs.IS_HELM_GAR_REPO == true
+        if: github.ref == 'refs/heads/${{ inputs.GIT_TRUNK_NAME }}'
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
         env:
           APP_NAME: ${{ inputs.NAME }}
@@ -356,8 +356,8 @@ jobs:
 # yamllint enable rule:line-length
 
       - name: "☸ RELEASE [JX]: Upload helm chart to chartmuseum"
-        # if: github.ref == 'refs/heads/${{ inputs.GIT_TRUNK_BRANCH }}' && inputs.IS_HELM_GAR_REPO == false
-        if: github.ref == 'refs/heads/${{ inputs.GIT_TRUNK_BRANCH }}'
+        # if: github.ref == 'refs/heads/${{ inputs.GIT_TRUNK_NAME }}' && inputs.IS_HELM_GAR_REPO == false
+        if: github.ref == 'refs/heads/${{ inputs.GIT_TRUNK_NAME }}'
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
         env:
           APP_NAME: ${{ inputs.NAME }}
@@ -388,13 +388,13 @@ jobs:
 
 # START: PR ONLY
       # - name: "PREVIEW: Set Name for PR namespace"
-      #   if: github.ref != 'refs/heads/${{ inputs.GIT_TRUNK_BRANCH }}'
+      #   if: github.ref != 'refs/heads/${{ inputs.GIT_TRUNK_NAME }}'
       #   id: set-name-pr-namespace
       #   run: |
       #    echo "::set-output name=PREVIEW_NAMESPACE::pr-${{ inputs.NAME }}-${{ github.event.number }}"
 
       - name: "☸ PREVIEW: Create namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
-        if: github.ref != 'refs/heads/${{ inputs.GIT_TRUNK_BRANCH }}' && inputs.DO_PREVIEW_ENVIRONMENT == true
+        if: github.ref != 'refs/heads/${{ inputs.GIT_TRUNK_NAME }}' && inputs.DO_PREVIEW_ENVIRONMENT == true
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
         run: |
@@ -403,7 +403,7 @@ jobs:
           kubectl config set-context $(kubectl config current-context) --namespace ${PREVIEW_NAMESPACE}
 
       - name: "🔐 PREVIEW: Copy secrets"
-        if: github.ref != 'refs/heads/${{ inputs.GIT_TRUNK_BRANCH }}' && inputs.DO_PREVIEW_ENVIRONMENT == true
+        if: github.ref != 'refs/heads/${{ inputs.GIT_TRUNK_NAME }}' && inputs.DO_PREVIEW_ENVIRONMENT == true
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           SCRIPT_NAME: preview_copy_secrets.sh
@@ -414,7 +414,7 @@ jobs:
           ./${SCRIPT_NAME}
 
       - name: "☸ PREVIEW: Helm upgrade/install"
-        if: github.ref != 'refs/heads/${{ inputs.GIT_TRUNK_BRANCH }}' && inputs.DO_PREVIEW_ENVIRONMENT == true
+        if: github.ref != 'refs/heads/${{ inputs.GIT_TRUNK_NAME }}' && inputs.DO_PREVIEW_ENVIRONMENT == true
         env:
           NAME: ${{ inputs.NAME }}
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
@@ -424,7 +424,7 @@ jobs:
           helm upgrade --install ${NAME} . ${HELM_DEBUG_FLAG}
 
       - name: "🌐 PREVIEW: Link to Preview"
-        if: github.ref != 'refs/heads/${{ inputs.GIT_TRUNK_BRANCH }}' && inputs.DO_PREVIEW_ENVIRONMENT == true
+        if: github.ref != 'refs/heads/${{ inputs.GIT_TRUNK_NAME }}' && inputs.DO_PREVIEW_ENVIRONMENT == true
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 # yamllint disable rule:line-length
