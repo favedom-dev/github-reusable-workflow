@@ -29,6 +29,10 @@ on:  # yamllint disable-line rule:truthy
         default: './Dockerfile'
         required: false
         type: string
+      DOCKER_CONTEXT:
+        default: '.'
+        required: false
+        type: string
       TAG2:
         default: 'latest'
         required: false
@@ -45,6 +49,43 @@ on:  # yamllint disable-line rule:truthy
         default: 'peeq-docker'
         required: false
         type: string
+      INSTALL:
+        default: true
+        required: false
+        type: boolean
+      INSTALL_NAME:
+        default: 'NPM install'
+        required: false
+        type: string
+      INSTALL_CMD:
+        default: 'npm install --legacy-peer-deps'
+        required: false
+        type: string
+      TEST:
+        default: true
+        required: false
+        type: boolean
+      TEST_NAME:
+        default: 'NPM test'
+        required: false
+        type: string
+      TEST_CMD:
+        default: 'npm test'
+        required: false
+        type: string
+      BUILD:
+        default: true
+        required: false
+        type: boolean
+      BUILD_NAME:
+        default: 'NPM build'
+        required: false
+        type: string
+      BUILD_CMD:
+        default: 'npm run build'
+        required: false
+        type: string
+
     secrets:
       GH_TOKEN:  # GitHub token
         required: true
@@ -124,14 +165,17 @@ jobs:
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
 
-      - name: "🔨 NPM install"
-        run: npm install --legacy-peer-deps
+      - name: "🔨 ${{ inputs.INSTALL_NAME }}"
+        if: inputs.INSTALL == true
+        run: ${{ inputs.INSTALL_CMD }}
 
-      - name: "🔨 NPM test"
-        run: npm test
+      - name: "🔨 ${{ inputs.TEST_NAME }}"
+        if: inputs.TEST == true
+        run: ${{ inputs.TEST_CMD }}
 
-      - name: "🔨 NPM ui build"
-        run: npm run build
+      - name: "🔨 ${{ inputs.BUILD_NAME }}"
+        if: inputs.BUILD == true
+        run: ${{ inputs.BUILD_CMD }}
 
       # https://github.com/google-github-actions/upload-cloud-storage
       - name: "⬆️ Release: Upload to Google Storage"
@@ -159,7 +203,7 @@ jobs:
       - name: "🐳 Docker: build, tag, and push"
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ${{ inputs.DOCKER_CONTEXT }}
           file: ${{ env.DOCKERFILE_FILE }}
           push: true
           tags: ${{ steps.docker-tags.outputs.tags }}
@@ -167,10 +211,10 @@ jobs:
       - name: "🌐 Link to Container"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-# yamllint disable
+# yamllint disable rule:line-length
         run: |-
           echo "https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             gh pr comment ${{ github.event.number }} --body "🐳 Container: [${{ inputs.NAME }} ${{ inputs.VERSION }}](https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/)"
           fi
-# yamllint enable
+# yamllint enable rule:line-length
