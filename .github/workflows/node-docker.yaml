@@ -49,39 +49,39 @@ on:  # yamllint disable-line rule:truthy
         default: 'peeq-docker'
         required: false
         type: string
-      NPM_INSTALL:
+      INSTALL:
         default: true
         required: false
         type: boolean
-      NPM_INSTALL_NAME:
+      INSTALL_NAME:
         default: 'NPM install'
         required: false
         type: string
-      NPM_INSTALL_CMD:
+      INSTALL_CMD:
         default: 'npm install --legacy-peer-deps'
         required: false
         type: string
-      NPM_TEST:
+      TEST:
         default: true
         required: false
         type: boolean
-      NPM_TEST_NAME:
+      TEST_NAME:
         default: 'NPM test'
         required: false
         type: string
-      NPM_TEST_CMD:
+      TEST_CMD:
         default: 'npm test'
         required: false
         type: string
-      NPM_BUILD:
+      BUILD:
         default: true
         required: false
         type: boolean
-      NPM_BUILD_NAME:
+      BUILD_NAME:
         default: 'NPM build'
         required: false
         type: string
-      NPM_BUILD_CMD:
+      BUILD_CMD:
         default: 'npm run build'
         required: false
         type: string
@@ -165,17 +165,17 @@ jobs:
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
 
-      - name: "🔨 ${{ inputs.NPM_INSTALL_NAME }}"
-        if: inputs.NPM_INSTALL == true
-        run: ${{ inputs.NPM_INSTALL_CMD }}
+      - name: "🔨 ${{ inputs.INSTALL_NAME }}"
+        if: inputs.INSTALL == true
+        run: ${{ inputs.INSTALL_CMD }}
 
-      - name: "🔨 ${{ inputs.NPM_TEST_NAME }}"
-        if: inputs.NPM_TEST == true
-        run: ${{ inputs.NPM_TEST_CMD }}
+      - name: "🔨 ${{ inputs.TEST_NAME }}"
+        if: inputs.TEST == true
+        run: ${{ inputs.TEST_CMD }}
 
-      - name: "🔨 ${{ inputs.NPM_BUILD_NAME }}"
-        if: inputs.NPM_BUILD == true
-        run: ${{ inputs.NPM_BUILD_CMD }}
+      - name: "🔨 ${{ inputs.BUILD_NAME }}"
+        if: inputs.BUILD == true
+        run: ${{ inputs.BUILD_CMD }}
 
       # https://github.com/google-github-actions/upload-cloud-storage
       - name: "⬆️ Release: Upload to Google Storage"
