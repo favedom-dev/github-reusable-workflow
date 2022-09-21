@@ -83,9 +83,17 @@ jobs:
           ref: master
           path: ${{ inputs.ENV_REPO_PATH }}
 
+      - name: "DEBUG: ./${{ inputs.YAML_FILE }}"
+        if: github.ref == 'refs/heads/master'
+# yamllint disable-line
+        working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ inputs.ENV_REPO_SUBDIR }}
+        run: |
+          pwd
+          cat ./${{ inputs.YAML_FILE }}
+
       - name: "Update version in environment repo: ${{ inputs.YAML_FILE }}"
         if: github.ref == 'refs/heads/master'
-        working-directory: ${{ inputs.ENV_REPO_PATH }}
+        working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ inputs.ENV_REPO_SUBDIR }}
         env:
           VERSION_SCRIPT_NAME: ${{ inputs.VERSION_SCRIPT_NAME }}
           NAME: ${{ inputs.NAME }}
@@ -111,13 +119,6 @@ jobs:
           fi
 # yamllint enable rule:line-length
 
-#       - name: "DEBUG: ./${{ inputs.YAML_FILE }}"
-#         if: github.ref == 'refs/heads/master'
-# # yamllint disable-line
-#         working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ inputs.ENV_REPO_SUBDIR }}
-#         run: |
-#           cat ./${{ inputs.YAML_FILE }}
-
       - name: "Create environment PR"
         if: github.ref == 'refs/heads/master'
         working-directory: ${{ inputs.ENV_REPO_PATH }}
@@ -132,5 +133,5 @@ jobs:
           git commit -a -m "${NAME} ${VERSION}"
           git push -u origin ${BRANCH_NAME}
           gh pr create --label "approved" --title "chore: bump ${NAME} to ${VERSION}" --body "${NAME} ${VERSION}"
-          # gh pr merge --auto
+          gh pr merge ${BRANCH_NAME} --auto --squash
 # yamllint enable rule:line-length
