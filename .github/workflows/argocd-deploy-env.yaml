@@ -139,7 +139,7 @@ jobs:
           fi
 # yamllint enable rule:line-length
 
-      - name: "Create environment PR"
+      - name: "🌐 Create environment PR"
         if: github.ref == 'refs/heads/master'
         working-directory: ${{ inputs.ENV_REPO_PATH }}
         env:
