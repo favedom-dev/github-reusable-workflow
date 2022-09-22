@@ -17,10 +17,15 @@ on:  # yamllint disable-line rule:truthy
         default: 'env-repo'
         required: false
         type: string
-      ENV_REPO_SUBDIR:
-        default: 'favedom-dev/peeq/${{ inputs.NAME }}'
+      ENV_REPO_SUBDIR_BASE:
+        default: 'favedom-dev/peeq'
         required: false
         type: string
+      ENV_REPO_SUBDIR:
+        # default: 'favedom-dev/peeq/${{ inputs.NAME }}'
+        required: false
+        type: string
+
       VERSION_SCRIPT_NAME:
         default: ''  # 'update_component_version.sh'
         required: false
@@ -79,17 +84,36 @@ jobs:
           ref: master
           path: ${{ inputs.ENV_REPO_PATH }}
 
+      - name: "📜 Set ENV_REPO_SUBDIR"
+        id: set-env-repo-subdir
+        env:
+          OVERRIDE_NAME: ${{ inputs.OVERRIDE_NAME }}
+        run: |
+
+          if [ -n "${ENV_REPO_SUBDIR}" ]; then
+            ENV_REPO_SUBDIR=${{ inputs.ENV_REPO_SUBDIR }}
+            echo "if ENV_REPO_SUBDIR: ${ENV_REPO_SUBDIR}"
+          else
+            ENV_REPO_SUBDIR=${{ inputs.ENV_REPO_SUBDIR_BASE }}/${{ inputs.NAME }}
+            echo "else ENV_REPO_SUBDIR: ${ENV_REPO_SUBDIR}"
+          fi
+          echo "ENV_REPO_SUBDIR: ${ENV_REPO_SUBDIR}"
+          echo "::set-output name=ENV_REPO_SUBDIR::${ENV_REPO_SUBDIR}"
+
       - name: "DEBUG: ./${{ inputs.YAML_FILE }}"
         if: github.ref == 'refs/heads/master'
+        # working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ inputs.ENV_REPO_SUBDIR }}
 # yamllint disable-line
-        working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ inputs.ENV_REPO_SUBDIR }}
+        working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }}
         run: |
           pwd
           cat ./${{ inputs.YAML_FILE }}
 
       - name: "Update version in environment repo: ${{ inputs.YAML_FILE }}"
         if: github.ref == 'refs/heads/master'
-        working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ inputs.ENV_REPO_SUBDIR }}
+        # working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ inputs.ENV_REPO_SUBDIR }}
+# yamllint disable-line
+        working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }}
         env:
           VERSION_SCRIPT_NAME: ${{ inputs.VERSION_SCRIPT_NAME }}
           NAME: ${{ inputs.NAME }}
