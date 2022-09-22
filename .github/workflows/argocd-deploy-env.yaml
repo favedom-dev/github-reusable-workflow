@@ -1,0 +1,133 @@
+name: Deploy Environment
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      NAME:  # name of component, (ex: peeq-tracking)
+        required: true
+        type: string
+      VERSION:
+        required: true
+        type: string
+      ENV_REPO_NAME:
+        default: 'favedom-dev/argo-deployments'
+        required: false
+        type: string
+      ENV_REPO_PATH:
+        default: 'env-repo'
+        required: false
+        type: string
+      ENV_REPO_SUBDIR:
+        default: 'favedom-dev/peeq/${{ inputs.NAME }}'
+        required: false
+        type: string
+      VERSION_SCRIPT_NAME:
+        default: ''  # 'update_component_version.sh'
+        required: false
+        type: string
+      YAML_FILE:
+        default: 'requirements.yaml'
+        required: false
+        type: string
+      YAML_ELEMENT:
+        default: 'dependencies'
+        required: false
+        type: string
+      YAML_UPDATE_ELEMENT:
+        default: 'version'
+        required: false
+        type: string
+      # ELEMENT_NAME_1:
+      #   default: 'name'
+      #   required: false
+      #   type: string
+      # ELEMENT_NAME_2:
+      #   default: 'version'
+      #   required: false
+      #   type: string
+      SED_GCR_REPO:
+        default: 'gcr.io\/favedom-dev\/'
+        required: false
+        type: string
+      SED_GAR_REPO:
+        default: 'us-central1-docker.pkg.dev\/favedom-dev\/peeq-docker\/'
+        required: false
+        type: string
+    secrets:
+      GH_TOKEN:  # GitHub token
+        required: true
+
+jobs:
+
+  deploy-environment:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: "🔧 Git config"
+        if: github.ref == 'refs/heads/master'
+        run: |
+          git config --global user.email ""
+          git config --global user.name "velocityz-0x-pq-github"
+
+      - name: "☁️ Checkout environment repository: ${{ inputs.ENV_REPO_NAME }}"
+        if: github.ref == 'refs/heads/master'
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.ENV_REPO_NAME }}
+          token: ${{ secrets.GH_TOKEN }}
+          ref: master
+          path: ${{ inputs.ENV_REPO_PATH }}
+
+      - name: "DEBUG: ./${{ inputs.YAML_FILE }}"
+        if: github.ref == 'refs/heads/master'
+# yamllint disable-line
+        working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ inputs.ENV_REPO_SUBDIR }}
+        run: |
+          pwd
+          cat ./${{ inputs.YAML_FILE }}
+
+      - name: "Update version in environment repo: ${{ inputs.YAML_FILE }}"
+        if: github.ref == 'refs/heads/master'
+        working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ inputs.ENV_REPO_SUBDIR }}
+        env:
+          VERSION_SCRIPT_NAME: ${{ inputs.VERSION_SCRIPT_NAME }}
+          NAME: ${{ inputs.NAME }}
+          VERSION: ${{ inputs.VERSION }}
+          YAML_FILE: ${{ inputs.YAML_FILE }}
+          # ELEMENT_NAME_1: ${{ inputs.ELEMENT_NAME_1 }}
+          # ELEMENT_NAME_2: ${{ inputs.ELEMENT_NAME_2 }}
+          SED_GCR_REPO: ${{ inputs.SED_GCR_REPO }}
+          SED_GAR_REPO: ${{ inputs.SED_GAR_REPO }}
+# yamllint disable rule:line-length
+        run: |
+          if [ ${#VERSION_SCRIPT_NAME} -gt 0 ]; then
+            wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/${VERSION_SCRIPT_NAME}
+            chmod 777 ./${VERSION_SCRIPT_NAME}
+            ./${VERSION_SCRIPT_NAME}
+            rm ./${VERSION_SCRIPT_NAME}
+          else
+            yq \
+            eval \
+            --prettyPrint \
+            "(.${{ inputs.YAML_ELEMENT }}[] | select(has(\"name\")) | select(.name == \"${{ inputs.NAME }}\")).${{ inputs.YAML_UPDATE_ELEMENT }} = \"${{ inputs.VERSION }}\"" \
+            -i ./${{ inputs.YAML_FILE }}
+          fi
+# yamllint enable rule:line-length
+
+      - name: "Create environment PR"
+        if: github.ref == 'refs/heads/master'
+        working-directory: ${{ inputs.ENV_REPO_PATH }}
+        env:
+          NAME: ${{ inputs.NAME }}
+          VERSION: ${{ inputs.VERSION }}
+          BRANCH_NAME: gha_${{ inputs.NAME }}_${{ inputs.VERSION }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+# yamllint disable rule:line-length
+        run: |
+          git checkout -b ${BRANCH_NAME}
+          git commit -a -m "${NAME} ${VERSION}"
+          git push -u origin ${BRANCH_NAME}
+          gh pr create --label "approved" --title "chore: bump ${NAME} to ${VERSION}" --body "${NAME} ${VERSION}"
+          gh pr merge ${BRANCH_NAME} --auto --squash
+# yamllint enable rule:line-length
