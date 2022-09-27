@@ -286,7 +286,6 @@ jobs:
           wget -O ./${HELM_VALUES_GLOBALS} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/helm/preview/${HELM_VALUES_GLOBALS}
           chmod 777 ./${HELM_VALUES_GLOBALS}
           echo "::set-output name=HELM_VALUES_GLOBALS_ARG::-f ./${HELM_VALUES_GLOBALS}"
-          ls -la
 
       - name: "☸ Helm"
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
@@ -434,8 +433,9 @@ jobs:
           HELM_VALUES_GLOBALS_ARG: ${{ steps.preview-values-globals.outputs.HELM_VALUES_GLOBALS_ARG }}
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
         run: |
-          echo "NAME           : ${NAME}"
-          echo "HELM_DEBUG_FLAG: ${HELM_DEBUG_FLAG}"
+          echo "NAME                   : ${NAME}"
+          echo "HELM_VALUES_GLOBALS_ARG: ${HELM_VALUES_GLOBALS_ARG}"
+          echo "HELM_DEBUG_FLAG        : ${HELM_DEBUG_FLAG}"
           # helm upgrade --install ${NAME} . ${HELM_DEBUG_FLAG}
           # helm upgrade --install ${NAME} -f ./values.yaml -f ./${HELM_VALUES_GLOBALS} . ${HELM_DEBUG_FLAG}
           helm upgrade --install ${NAME} -f ./values.yaml ${HELM_VALUES_GLOBALS_ARG} . ${HELM_DEBUG_FLAG}
