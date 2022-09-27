@@ -102,10 +102,7 @@ jobs:
           FILE: ${{ inputs.STACKHAWK_TMPL_YML }}
           OVERRIDE_IS_STACKHAWK_READY: ${{ inputs.IS_STACKHAWK_READY }}
         run: |
-          if [ -n "${OVERRIDE_IS_STACKHAWK_READY}" ]; then
-            IS_STACKHAWK_READY=${{ inputs.IS_STACKHAWK_READY }}
-            echo "OVERRIDE_IS_STACKHAWK_READY with ${{ inputs.IS_STACKHAWK_READY }}"
-          else
+          if [ "${OVERRIDE_IS_STACKHAWK_READY}" = true ]; then
             if [ -f "${STACKHAWK_DIRECTORY}/${FILE}" ]; then
               echo "${FILE} exists"
               IS_STACKHAWK_READY=true
@@ -113,6 +110,9 @@ jobs:
               echo "${FILE} does not exists"
               IS_STACKHAWK_READY=false
             fi
+          else
+            IS_STACKHAWK_READY=${{ inputs.IS_STACKHAWK_READY }}
+            echo "OVERRIDE_IS_STACKHAWK_READY with ${{ inputs.IS_STACKHAWK_READY }}"
           fi
           echo "IS_STACKHAWK_READY: ${IS_STACKHAWK_READY}"
           echo "::set-output name=IS_STACKHAWK_READY::${IS_STACKHAWK_READY}"
