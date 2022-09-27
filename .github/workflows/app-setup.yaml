@@ -21,6 +21,9 @@ on:  # yamllint disable-line rule:truthy
         default: 'context-path:'
         required: false
         type: string
+      IS_STACKHAWK_READY:
+        required: false
+        type: boolean
       STACKHAWK_DIRECTORY:
         default: 'stackhawk'
         required: false
@@ -97,13 +100,19 @@ jobs:
         env:
           STACKHAWK_DIRECTORY: ${{ inputs.STACKHAWK_DIRECTORY }}
           FILE: ${{ inputs.STACKHAWK_TMPL_YML }}
+          OVERRIDE_IS_STACKHAWK_READY: ${{ inputs.IS_STACKHAWK_READY }}
         run: |
-          if [ -f "${STACKHAWK_DIRECTORY}/${FILE}" ]; then
-            echo "${FILE} exists"
-            IS_STACKHAWK_READY=true
+          if [ -n "${OVERRIDE_IS_STACKHAWK_READY}" ]; then
+            IS_STACKHAWK_READY=${{ inputs.IS_STACKHAWK_READY }}
+            echo "OVERRIDE_IS_STACKHAWK_READY with ${{ inputs.IS_STACKHAWK_READY }}"
           else
-            echo "${FILE} does not exists"
-            IS_STACKHAWK_READY=false
+            if [ -f "${STACKHAWK_DIRECTORY}/${FILE}" ]; then
+              echo "${FILE} exists"
+              IS_STACKHAWK_READY=true
+            else
+              echo "${FILE} does not exists"
+              IS_STACKHAWK_READY=false
+            fi
           fi
           echo "IS_STACKHAWK_READY: ${IS_STACKHAWK_READY}"
           echo "::set-output name=IS_STACKHAWK_READY::${IS_STACKHAWK_READY}"
