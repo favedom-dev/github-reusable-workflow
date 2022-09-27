@@ -67,7 +67,7 @@ for secret_namespace in ${NAMESPACE_SECRETS[@]}; do
     # kubectl get secret ${secret} --namespace=${secret_namespace} -o yaml | sed 's/namespace: '${secret_namespace}'/namespace: '${PREVIEW_NAMESPACE}'/g' | kubectl create --namespace=${PREVIEW_NAMESPACE} -f -
     kubectl get secret ${secret} --namespace=${secret_namespace} -o yaml | \
     sed 's/namespace: '${secret_namespace}'/namespace: '${PREVIEW_NAMESPACE}'/g' | \
-    sed 's/app.kubernetes.io\/instance: .*/app: '${PREVIEW_NAMESPACE}'/g'
+    sed 's/app.kubernetes.io\/instance: .*/app: '${PREVIEW_NAMESPACE}'/g' |
     kubectl create --namespace=${PREVIEW_NAMESPACE} -f -
     echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
   done
