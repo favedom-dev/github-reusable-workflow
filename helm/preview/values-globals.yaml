@@ -5,7 +5,7 @@ prGlobal:
   domain: staging.joinpeeq.com
   apm:
     uri: https://0463eb58fe47464780fd73cf7307eba4.apm.us-central1.gcp.cloud.es.io:443
-    env: '{{ tpl .Values.global.env $ }}'
+    env: '{{ tpl .Values.prGlobal.env $ }}'
     enabled: true
     transactionSampleRate: "0.5"
     agent: gcr.io/favedom-dev/apm-agent-java:1.25.2
@@ -15,24 +15,24 @@ prGlobal:
     base: "projects/863599699918/secrets"
     version: "latest"
   admin:
-    domain: admin.{{ tpl .Values.global.domain $ }}
-    url: https://{{ tpl .Values.global.admin.domain $ }}
+    domain: admin.{{ tpl .Values.prGlobal.domain $ }}
+    url: https://{{ tpl .Values.prGlobal.admin.domain $ }}
   celeb:
-    domain: celeb.{{ tpl .Values.global.domain $ }}
-    url: https://{{ tpl .Values.global.celeb.domain $ }}
+    domain: celeb.{{ tpl .Values.prGlobal.domain $ }}
+    url: https://{{ tpl .Values.prGlobal.celeb.domain $ }}
   fan:
-    domain: fan.{{ tpl .Values.global.domain $ }}
-    url: https://{{ tpl .Values.global.fan.domain $ }}
+    domain: fan.{{ tpl .Values.prGlobal.domain $ }}
+    url: https://{{ tpl .Values.prGlobal.fan.domain $ }}
   handler:
-    domain: handler.{{ tpl .Values.global.domain $ }}
-    url: https://{{ tpl .Values.global.handler.domain $ }}
+    domain: handler.{{ tpl .Values.prGlobal.domain $ }}
+    url: https://{{ tpl .Values.prGlobal.handler.domain $ }}
   keycloak:
-    domain: identity.{{ tpl .Values.global.domain $ }}
+    domain: identity.{{ tpl .Values.prGlobal.domain $ }}
     realm: peeq
-    url: https://{{ tpl .Values.global.keycloak.domain $ }}
+    url: https://{{ tpl .Values.prGlobal.keycloak.domain $ }}
   peeq:
-    domain: app.{{ tpl .Values.global.domain $ }}
-    url: https://{{ tpl .Values.global.peeq.domain $ }}
+    domain: app.{{ tpl .Values.prGlobal.domain $ }}
+    url: https://{{ tpl .Values.prGlobal.peeq.domain $ }}
   pixel:
     celeb:
       google: "G-28EJLG8FZM"
@@ -47,14 +47,14 @@ prGlobal:
   database:
     hostname: peeq-pgbouncer.jx-staging.svc.cluster.local
     port: 5432
-    host: '{{ tpl .Values.global.database.hostname $ }}:{{ tpl .Values.global.database.port $ }}'
+    host: '{{ tpl .Values.prGlobal.database.hostname $ }}:{{ tpl .Values.prGlobal.database.port $ }}'
   mysql:
     hostname: mysql
     port: 3306
-    host: '{{ tpl .Values.global.mysql.hostname $ }}:{{ tpl .Values.global.mysql.port $ }}'
+    host: '{{ tpl .Values.prGlobal.mysql.hostname $ }}:{{ tpl .Values.prGlobal.mysql.port $ }}'
   jitsi:
-    domain: jitsi.{{ tpl .Values.global.domain $ }}
-    url: https://{{ tpl .Values.global.jitsi.domain $ }}
+    domain: jitsi.{{ tpl .Values.prGlobal.domain $ }}
+    url: https://{{ tpl .Values.prGlobal.jitsi.domain $ }}
     env: stg
   hms:
     enabled: 'true'
@@ -75,8 +75,8 @@ prGlobal:
     ingest:
       domain: nginx-rtmp.nginx-rtmp.svc.cluster.local
     http:
-      domain: nginx-rtmp.{{ tpl .Values.global.domain $ }}
-      url: https://{{ tpl .Values.global.rtmp.http.domain $ }}
+      domain: nginx-rtmp.{{ tpl .Values.prGlobal.domain $ }}
+      url: https://{{ tpl .Values.prGlobal.rtmp.http.domain $ }}
   rabbitmq:
     # host: rabbitmq
     host: jx-staging-rabbitmq.jx-staging.svc.cluster.local
@@ -108,8 +108,8 @@ prGlobal:
     service:
       url: https://go.staging.joinpeeq.com
       create:
-        url: '{{ tpl .Values.global.tracking.service.url $ }}/links'
+        url: '{{ tpl .Values.prGlobal.tracking.service.url $ }}/links'
       update:
-        url: '{{ tpl .Values.global.tracking.service.url $ }}/links/metadata'
+        url: '{{ tpl .Values.prGlobal.tracking.service.url $ }}/links/metadata'
   facebook:
     appid: "409558513533385"
