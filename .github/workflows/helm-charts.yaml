@@ -82,6 +82,10 @@ on:  # yamllint disable-line rule:truthy
         default: 'admin'
         required: false
         type: string
+      HELM_VALUES_GLOBALS:
+        default: 'values-globals.yaml'
+        required: false
+        type: string
       PREVIEW_BASE_DOMAIN:
         default: 'staging.joinpeeq.com'
         required: false
@@ -256,7 +260,7 @@ jobs:
           SCRIPT_NAME: helm_add_repos.sh
         working-directory: ${{ inputs.SCRIPTS_DIR }}
         run: |
-          wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/${SCRIPT_NAME}
+          wget -O ./${SCRIPT_NAME} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/${SCRIPT_NAME}
           chmod 777 ./${SCRIPT_NAME}
           ./${SCRIPT_NAME}
 
@@ -272,12 +276,24 @@ jobs:
           helm registry login -u oauth2accesstoken \
           --password-stdin https://${HELM_DOCKER_REGISTRY}
 
+      - name: "☸ PREVIEW: wget ${{ inputs.HELM_VALUES_GLOBALS }}"
+        id: preview-values-globals
+        if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
+        env:
+          HELM_VALUES_GLOBALS: ${{ inputs.HELM_VALUES_GLOBALS }}
+        working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
+        run: |
+          wget -O ./${HELM_VALUES_GLOBALS} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/helm/preview/${HELM_VALUES_GLOBALS}
+          chmod 777 ./${HELM_VALUES_GLOBALS}
+          echo "::set-output name=HELM_VALUES_GLOBALS_ARG::-f ./${HELM_VALUES_GLOBALS}"
+
       - name: "☸ Helm"
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
         env:
           APP_NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
+          HELM_VALUES_GLOBALS_ARG: ${{ steps.preview-values-globals.outputs.HELM_VALUES_GLOBALS_ARG }}
         run: |
           echo "HELM_DEBUG_FLAG: ${HELM_DEBUG_FLAG}"
           echo "=================================="
@@ -290,8 +306,8 @@ jobs:
           echo "RUN: helm dependency build ${HELM_DEBUG_FLAG}"
           helm dependency build ${HELM_DEBUG_FLAG}
           echo "=================================="
-          echo "RUN: helm lint . ${HELM_DEBUG_FLAG}"
-          helm lint .
+          echo "RUN: helm lint -f ./values.yaml ${HELM_VALUES_GLOBALS_ARG} . ${HELM_DEBUG_FLAG}"
+          helm lint -f ./values.yaml ${HELM_VALUES_GLOBALS_ARG} .
           echo "=================================="
           echo "RUN: helm package . --version ${VERSION} ${HELM_DEBUG_FLAG}"
           helm package . --version ${VERSION} ${HELM_DEBUG_FLAG}
@@ -405,7 +421,7 @@ jobs:
           SCRIPT_NAME: preview_copy_secrets.sh
         working-directory: ${{ inputs.SCRIPTS_DIR }}
         run: |
-          wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/${SCRIPT_NAME}
+          wget -O ./${SCRIPT_NAME} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/${SCRIPT_NAME}
           chmod 777 ./${SCRIPT_NAME}
           ./${SCRIPT_NAME}
 
@@ -413,11 +429,15 @@ jobs:
         if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
         env:
           NAME: ${{ inputs.NAME }}
+          HELM_VALUES_GLOBALS: ${{ inputs.HELM_VALUES_GLOBALS }}
+          HELM_VALUES_GLOBALS_ARG: ${{ steps.preview-values-globals.outputs.HELM_VALUES_GLOBALS_ARG }}
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
         run: |
           echo "NAME           : ${NAME}"
           echo "HELM_DEBUG_FLAG: ${HELM_DEBUG_FLAG}"
-          helm upgrade --install ${NAME} . ${HELM_DEBUG_FLAG}
+          # helm upgrade --install ${NAME} . ${HELM_DEBUG_FLAG}
+          # helm upgrade --install ${NAME} -f ./values.yaml -f ./${HELM_VALUES_GLOBALS} . ${HELM_DEBUG_FLAG}
+          helm upgrade --install ${NAME} -f ./values.yaml ${HELM_VALUES_GLOBALS_ARG} . ${HELM_DEBUG_FLAG}
 
       - name: "🌐 PREVIEW: Link to Preview"
         if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
