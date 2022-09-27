@@ -1,4 +1,4 @@
-global:
+prGlobal:
   cluster: favedom-dev
   env: pr
   envFullName: preview
