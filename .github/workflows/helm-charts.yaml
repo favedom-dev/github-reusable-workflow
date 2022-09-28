@@ -235,12 +235,12 @@ jobs:
       #       cat requirements.yaml
       #     fi
 
-      # - name: "☸ [JX]: Port forward - chartmuseum"
-      #   # if: inputs.IS_HELM_GAR_REPO == false
-      #   run: |
-      #     kubectl -n jx port-forward svc/jenkins-x-chartmuseum 8080:8080 &
-      #     # need to wait to make sure a connection can be made
-      #     sleep 1
+      - name: "☸ [JX]: Port forward - chartmuseum"
+        # if: inputs.IS_HELM_GAR_REPO == false
+        run: |
+          kubectl -n jx port-forward svc/jenkins-x-chartmuseum 8080:8080 &
+          # need to wait to make sure a connection can be made
+          sleep 1
 
       - name: "☸ [JX]: Helm repo add"
         # if: inputs.IS_HELM_GAR_REPO == false
@@ -248,8 +248,8 @@ jobs:
           CHARTMUSEUM_REPO: ${{ inputs.CHARTMUSEUM_REPO }}
 # yamllint disable rule:line-length
         run: |
-          # helm repo add jenkins-x-chartmuseum http://${CHARTMUSEUM_REPO} ${HELM_DEBUG_FLAG}
-          helm repo add jenkins-x-chartmuseum https://chartmuseum-jx.favedom-dev.softcannery.com/ ${HELM_DEBUG_FLAG}
+          helm repo add jenkins-x-chartmuseum http://${CHARTMUSEUM_REPO} ${HELM_DEBUG_FLAG}
+          # helm repo add jenkins-x-chartmuseum https://chartmuseum-jx.favedom-dev.softcannery.com/ ${HELM_DEBUG_FLAG}
           helm repo add jx https://jenkins-x-charts.github.io/v2/ ${HELM_DEBUG_FLAG}
           echo "=================================="
           helm repo list
