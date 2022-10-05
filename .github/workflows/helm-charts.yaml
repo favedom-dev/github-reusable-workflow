@@ -245,7 +245,8 @@ jobs:
         run: |
           kubectl -n jx port-forward svc/jenkins-x-chartmuseum 8080:8080 &
           # need to wait to make sure a connection can be made
-          sleep 1
+          # sleep 1
+          sleep 3
 
       - name: "☸ [JX]: Helm repo add"
         # if: inputs.IS_HELM_GAR_REPO == false
