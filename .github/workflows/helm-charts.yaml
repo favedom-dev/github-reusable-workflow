@@ -305,9 +305,9 @@ jobs:
           HELM_VALUES_GLOBALS_ARG: ${{ steps.preview-values-globals.outputs.HELM_VALUES_GLOBALS_ARG }}
         run: |
           echo "HELM_DEBUG_FLAG: ${HELM_DEBUG_FLAG}"
-          echo "=================================="
-          echo "RUN: helm repo list"
-          helm repo list
+          # echo "=================================="
+          # echo "RUN: helm repo list"
+          # helm repo list
           echo "=================================="
           echo "RUN: helm dependency update ${HELM_DEBUG_FLAG}"
           helm dependency update ${HELM_DEBUG_FLAG}
