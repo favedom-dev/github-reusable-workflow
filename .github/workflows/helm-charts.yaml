@@ -49,6 +49,10 @@ on:  # yamllint disable-line rule:truthy
         default: false  # JX
         required: false
         type: boolean
+      SKIP_JX:  # false: do JX steps | true: skip JX steps
+        default: false
+        required: false
+        type: boolean
       HELM_REGISTRY_NAME:
         default: 'peeq-helm'
         required: false
@@ -237,6 +241,7 @@ jobs:
 
       - name: "☸ [JX]: Port forward - chartmuseum"
         # if: inputs.IS_HELM_GAR_REPO == false
+        if: inputs.SKIP_JX == false
         run: |
           kubectl -n jx port-forward svc/jenkins-x-chartmuseum 8080:8080 &
           # need to wait to make sure a connection can be made
@@ -244,6 +249,7 @@ jobs:
 
       - name: "☸ [JX]: Helm repo add"
         # if: inputs.IS_HELM_GAR_REPO == false
+        if: inputs.SKIP_JX == false
         env:
           CHARTMUSEUM_REPO: ${{ inputs.CHARTMUSEUM_REPO }}
 # yamllint disable rule:line-length
@@ -371,7 +377,8 @@ jobs:
 
       - name: "☸ RELEASE [JX]: Upload helm chart to chartmuseum"
         # if: github.ref == 'refs/heads/master' && inputs.IS_HELM_GAR_REPO == false
-        if: github.ref == 'refs/heads/master'
+        # if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' && inputs.SKIP_JX == false
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
         env:
           APP_NAME: ${{ inputs.NAME }}
