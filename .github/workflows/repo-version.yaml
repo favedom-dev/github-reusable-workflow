@@ -104,7 +104,7 @@ jobs:
 
       - name: "📜 Display version: ${{ steps.set-version.outputs.version }}"
         env:
-          PR_VERSION: ${{ steps.pr-version.outputs.version }
+          PR_VERSION: ${{ steps.pr-version.outputs.version }}
         run: |
           echo "set-version    : ${{ steps.set-version.outputs.version }}"
           if [ ${{ env.PR_VERSION }} ]; then
