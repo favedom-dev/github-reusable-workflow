@@ -14,9 +14,9 @@ on:  # yamllint disable-line rule:truthy
       version:
         description: "Repo Version"
         value: ${{ jobs.repo-version.outputs.version }}
-      pr-version:
-        description: "PR Version"
-        value: ${{ jobs.repo-version.outputs.pr-version }}
+      build-version:
+        description: "Build Version"
+        value: ${{ jobs.repo-version.outputs.build-version }}
 
 jobs:
 
@@ -27,7 +27,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     outputs:
       version: ${{ steps.set-version.outputs.version }}
-      pr-version: ${{ steps.set-version.outputs.pr-version }}
+      build-version: ${{ steps.set-version.outputs.build-version }}
     steps:
 
       # https://docs.github.com/en/actions/learn-github-actions/environment-variables
@@ -50,7 +50,7 @@ jobs:
           echo "PR Number      (github.event.number) : ${{ github.event.number }}"
           echo "PR Run Number  (github.run_number)   : ${{ github.run_number }}"
           echo "PR Run Attempt (github.run_attempt)  : ${{ github.run_attempt }}"
-          echo "::set-output name=pr-version::${{ github.event.number }}.${{ github.run_number }}.${{ github.run_attempt }}"
+          echo "::set-output name=build-version::${{ github.event.number }}.${{ github.run_number }}.${{ github.run_attempt }}"
           echo "::set-output name=version::0.0.0-SNAPSHOT-PR-${{ github.event.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
 
       - name: "☁️ Checkout repository"
@@ -87,9 +87,9 @@ jobs:
           # echo "PR_VERSION: ${{ env.PR_VERSION }}"
           if [ ${{ env.PR_VERSION }} ]; then
             echo "PR: VERSION   : ${{ steps.pr-version.outputs.version }}"
-            echo "PR: PR-VERSION: ${{ steps.pr-version.outputs.pr-version }}"
+            echo "PR: build-version: ${{ steps.pr-version.outputs.build-version }}"
             echo "::set-output name=version::${{ steps.pr-version.outputs.version }}"
-            echo "::set-output name=pr-version::${{ steps.pr-version.outputs.pr-version }}"
+            echo "::set-output name=build-version::${{ steps.pr-version.outputs.build-version }}"
             # gh pr comment ${{ github.event.number }} --body "PR Build Version: ${{ steps.set-version.outputs.version }}"
           else
             # RELEASE_VERSION=$(gh release view -q ".name" --json name | sed 's/v//')
@@ -97,7 +97,8 @@ jobs:
             # echo "::set-output name=version::${RELEASE_VERSION}"
             echo "RELEASE VERSION: ${{ steps.version.outputs.version }}"
             echo "::set-output name=version::${{ steps.version.outputs.version }}"
-            # echo "::set-output name=pr-version::"
+            # TODO: add logic for iOS and Android
+            echo "::set-output name=build-version::0.0.0"
           fi
           # echo "${{ steps.version.outputs.version }}"
 
@@ -107,5 +108,5 @@ jobs:
         run: |
           echo "set-version    : ${{ steps.set-version.outputs.version }}"
           if [ ${{ env.PR_VERSION }} ]; then
-            echo "set-version PR : ${{ steps.set-version.outputs.pr-version }}"
+            echo "set-version PR : ${{ steps.set-version.outputs.build-version }}"
           fi
