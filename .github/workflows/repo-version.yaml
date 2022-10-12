@@ -14,6 +14,9 @@ on:  # yamllint disable-line rule:truthy
       version:
         description: "Repo Version"
         value: ${{ jobs.repo-version.outputs.version }}
+      pr-version:
+        description: "PR Version"
+        value: ${{ jobs.repo-version.outputs.pr-version }}
 
 jobs:
 
@@ -23,8 +26,8 @@ jobs:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     outputs:
-      # version: ${{ steps.version.outputs.version  }}
-      version: ${{ steps.set-version.outputs.version  }}
+      version: ${{ steps.set-version.outputs.version }}
+      pr-version: ${{ steps.set-version.outputs.pr-version }}
     steps:
 
       # https://docs.github.com/en/actions/learn-github-actions/environment-variables
@@ -47,6 +50,7 @@ jobs:
           echo "PR Number      (github.event.number) : ${{ github.event.number }}"
           echo "PR Run Number  (github.run_number)   : ${{ github.run_number }}"
           echo "PR Run Attempt (github.run_attempt)  : ${{ github.run_attempt }}"
+          echo "::set-output name=pr-version::${{ github.event.number }}.${{ github.run_number }}.${{ github.run_attempt }}"
           echo "::set-output name=version::0.0.0-SNAPSHOT-PR-${{ github.event.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
 
       - name: "☁️ Checkout repository"
@@ -82,8 +86,10 @@ jobs:
         run: |
           # echo "PR_VERSION: ${{ env.PR_VERSION }}"
           if [ ${{ env.PR_VERSION }} ]; then
-            echo "PR VERSION: ${{ steps.pr-version.outputs.version }}"
+            echo "PR: VERSION   : ${{ steps.pr-version.outputs.version }}"
+            echo "PR: PR-VERSION: ${{ steps.pr-version.outputs.pr-version }}"
             echo "::set-output name=version::${{ steps.pr-version.outputs.version }}"
+            echo "::set-output name=pr-version::${{ steps.pr-version.outputs.pr-version }}"
             # gh pr comment ${{ github.event.number }} --body "PR Build Version: ${{ steps.set-version.outputs.version }}"
           else
             # RELEASE_VERSION=$(gh release view -q ".name" --json name | sed 's/v//')
@@ -91,9 +97,15 @@ jobs:
             # echo "::set-output name=version::${RELEASE_VERSION}"
             echo "RELEASE VERSION: ${{ steps.version.outputs.version }}"
             echo "::set-output name=version::${{ steps.version.outputs.version }}"
+            # echo "::set-output name=pr-version::"
           fi
           # echo "${{ steps.version.outputs.version }}"
 
       - name: "📜 Display version: ${{ steps.set-version.outputs.version }}"
+        env:
+          PR_VERSION: ${{ steps.pr-version.outputs.version }
         run: |
-          echo "set-version : ${{ steps.set-version.outputs.version }}"
+          echo "set-version    : ${{ steps.set-version.outputs.version }}"
+          if [ ${{ env.PR_VERSION }} ]; then
+            echo "set-version PR : ${{ steps.set-version.outputs.pr-version }}"
+          fi
