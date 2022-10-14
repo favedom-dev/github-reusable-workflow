@@ -78,10 +78,16 @@ if [ -z "$NEEDS_TAG" ]; then
       exit ${rc}
     fi
     echo ${NEW_VERSION} > VERSION
+    echo ${VNUM1} > VERSION_MAJOR
+    echo ${VNUM2} > VERSION_MINOR
+    echo ${VNUM3} > VERSION_PATCH
     # echo ${NEW_TAG} > TAG_VERSION
 else
     echo "Already a tag on this commit"
     echo $(echo ${VERSION} | sed 's/v//') > VERSION
+    echo $(echo ${VERSION} | sed 's/v//' | cut -f1 -d .) > VERSION_MAJOR
+    echo $(echo ${VERSION} | sed 's/v//' | cut -f2 -d .) > VERSION_MINOR
+    echo $(echo ${VERSION} | sed 's/v//' | cut -f3 -d .) > VERSION_PATCH
     # echo ${VERSION} > TAG_VERSION
 fi
 exit 0
