@@ -160,6 +160,12 @@ jobs:
           git checkout -b ${BRANCH_NAME}
           git commit -a -m "${NAME} ${VERSION}"
           git push -u origin ${BRANCH_NAME}
-          gh pr create --label "approved" --title "chore: bump ${NAME} to ${VERSION}" --body "${NAME} ${VERSION}"
+          gh release view v${VERSION} -R ${{ github.repository }} --json author,tagName,url,body --template \
+          'Version: [{{.tagName}}]({{.url}})
+
+          {{.body}}
+          ' >> ./GH_RELEASE_NOTES.txt
+          GH_BODY=$(cat ./GH_RELEASE_NOTES.txt)
+          gh pr create --label "approved" --title "chore: bump ${NAME} to ${VERSION}" --body "${GH_BODY}"
           gh pr merge ${BRANCH_NAME} --auto --squash
 # yamllint enable rule:line-length
