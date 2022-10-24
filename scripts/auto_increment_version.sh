@@ -3,7 +3,7 @@
 # if a monorepo pass the app name
 
 # may need to increase for monorepo if several versions between
-GH_LIMIT=100
+GH_LIMIT=200
 MONOREPO_APP_NAME=$1
 
 if [[ ! -z ${MONOREPO_APP_NAME} ]]; then
