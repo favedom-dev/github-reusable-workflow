@@ -36,7 +36,7 @@ jobs:
       CHARTMUSEUM_PASSWORD: '${{ secrets.JX_CHARTMUSEUM_PASSWORD }}'
 
   staging:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/argocd-deploy-env.yaml@master
     needs: [app-setup, repo-version, helm-charts]
     if: github.ref == 'refs/heads/master'
     with:

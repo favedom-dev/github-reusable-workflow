@@ -120,7 +120,7 @@ setup_branch_protection.sh ${REPO_TYPE}
 
 ```yaml
   deploy-staging:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/argocd-deploy-env.yaml@master
     needs: [workaround-env, maven-docker]
     if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
     with:

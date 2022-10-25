@@ -58,7 +58,7 @@ jobs:
       TEST_PASSWORD: ${{ secrets.STACKHAWK_TEST_PASSWORD }}
 
   staging:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/argocd-deploy-env.yaml@master
     needs: [app-setup, repo-version, node-docker, helm-charts]
     if: github.ref == 'refs/heads/master'
     with:

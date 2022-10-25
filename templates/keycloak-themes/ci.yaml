@@ -30,7 +30,7 @@ jobs:
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
   staging:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-env.yaml@master
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/argocd-deploy-env.yaml@master
     needs: [app-setup, repo-version, docker]
     if: github.ref == 'refs/heads/master'
     with:
