@@ -14,9 +14,27 @@ on:  # yamllint disable-line rule:truthy
       version:
         description: "Repo Version"
         value: ${{ jobs.repo-version.outputs.version }}
+      version-major:
+        description: "Repo Version Major Version"
+        value: ${{ jobs.repo-version.outputs.version-major }}
+      version-minor:
+        description: "Repo Version Minor Version"
+        value: ${{ jobs.repo-version.outputs.version-minor }}
+      version-patch:
+        description: "Repo Version Patch Version"
+        value: ${{ jobs.repo-version.outputs.version-patch }}
       build-version:
         description: "Build Version"
         value: ${{ jobs.repo-version.outputs.build-version }}
+      build-major:
+        description: "Build Version Major"
+        value: ${{ jobs.repo-version.outputs.build-major }}
+      build-minor:
+        description: "Build Version Minor"
+        value: ${{ jobs.repo-version.outputs.build-minor }}
+      build-patch:
+        description: "Build Version Patch"
+        value: ${{ jobs.repo-version.outputs.build-patch }}
 
 jobs:
 
@@ -27,7 +45,13 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     outputs:
       version: ${{ steps.set-version.outputs.version }}
+      version-major: ${{ steps.set-version.outputs.version-major }}
+      version-minor: ${{ steps.set-version.outputs.version-minor }}
+      version-patch: ${{ steps.set-version.outputs.version-patch }}
       build-version: ${{ steps.set-version.outputs.build-version }}
+      build-major: ${{ steps.set-version.outputs.build-major }}
+      build-minor: ${{ steps.set-version.outputs.build-minor }}
+      build-patch: ${{ steps.set-version.outputs.build-patch }}
     steps:
 
       # https://docs.github.com/en/actions/learn-github-actions/environment-variables
@@ -51,6 +75,9 @@ jobs:
           echo "PR Run Number  (github.run_number)   : ${{ github.run_number }}"
           echo "PR Run Attempt (github.run_attempt)  : ${{ github.run_attempt }}"
           echo "::set-output name=build-version::${{ github.event.number }}.${{ github.run_number }}.${{ github.run_attempt }}"
+          echo "::set-output name=build-major::${{ github.event.number }}"
+          echo "::set-output name=build-minor::${{ github.run_number }}"
+          echo "::set-output name=build-patch::${{ github.run_attempt }}"
           echo "::set-output name=version::0.0.0-SNAPSHOT-PR-${{ github.event.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
 
       - name: "☁️ Checkout repository"
@@ -76,7 +103,13 @@ jobs:
           export GITHUB_TOKEN=${{ secrets.GH_TOKEN }}
           ./auto_increment_version.sh ${{ inputs.MONOREPO_APP }}
           VERSION=$(cat VERSION)
+          VERSION_MAJOR=$(cat VERSION_MAJOR)
+          VERSION_MINOR=$(cat VERSION_MINOR)
+          VERSION_PATCH=$(cat VERSION_PATCH)
           echo "::set-output name=version::${VERSION}"
+          echo "::set-output name=version-major::${VERSION_MAJOR}"
+          echo "::set-output name=version-minor::${VERSION_MINOR}"
+          echo "::set-output name=version-patch::${VERSION_PATCH}"
           # echo "::set-output name=version::$(gh release view -q ".name" --json name | sed 's/v//')"
 
       - name: "📜 Set version"
@@ -86,17 +119,29 @@ jobs:
         run: |
           # echo "PR_VERSION: ${{ env.PR_VERSION }}"
           if [ ${{ env.PR_VERSION }} ]; then
-            echo "PR: VERSION   : ${{ steps.pr-version.outputs.version }}"
+            echo "PR: version      : ${{ steps.pr-version.outputs.version }}"
             echo "PR: build-version: ${{ steps.pr-version.outputs.build-version }}"
+            echo "PR: build-major  : ${{ steps.pr-version.outputs.build-major }}"
+            echo "PR: build-minor  : ${{ steps.pr-version.outputs.build-minor }}"
+            echo "PR: build-patch  : ${{ steps.pr-version.outputs.build-patch }}"
             echo "::set-output name=version::${{ steps.pr-version.outputs.version }}"
             echo "::set-output name=build-version::${{ steps.pr-version.outputs.build-version }}"
+            echo "::set-output name=build-major::${{ steps.pr-version.outputs.build-major }}"
+            echo "::set-output name=build-minor::${{ steps.pr-version.outputs.build-minor }}"
+            echo "::set-output name=build-patch::${{ steps.pr-version.outputs.build-patch }}"
             # gh pr comment ${{ github.event.number }} --body "PR Build Version: ${{ steps.set-version.outputs.version }}"
           else
             # RELEASE_VERSION=$(gh release view -q ".name" --json name | sed 's/v//')
             # echo "RELEASE VERSION: ${RELEASE_VERSION}"
             # echo "::set-output name=version::${RELEASE_VERSION}"
-            echo "RELEASE VERSION: ${{ steps.version.outputs.version }}"
+            echo "RELEASE: version    : ${{ steps.version.outputs.version }}"
+            echo "RELEASE: build-major: ${{ steps.version.outputs.build-major }}"
+            echo "RELEASE: build-minor: ${{ steps.version.outputs.build-minor }}"
+            echo "RELEASE: build-patch: ${{ steps.version.outputs.build-patch }}"
             echo "::set-output name=version::${{ steps.version.outputs.version }}"
+            echo "::set-output name=version-major::${{ steps.version.outputs.build-major }}"
+            echo "::set-output name=version-minor::${{ steps.version.outputs.build-minor }}"
+            echo "::set-output name=version-patch::${{ steps.version.outputs.build-patch }}"
             # TODO: add logic for iOS and Android
             echo "::set-output name=build-version::0.0.0"
           fi
@@ -106,7 +151,18 @@ jobs:
         env:
           PR_VERSION: ${{ steps.pr-version.outputs.version }}
         run: |
-          echo "set-version    : ${{ steps.set-version.outputs.version }}"
+          echo "set-version  REPO : ${{ steps.set-version.outputs.version }}"
+          echo "set-version-major : ${{ steps.set-version.outputs.version-major }}""
+          echo "set-version-minor : ${{ steps.set-version.outputs.version-minor }}"
+          echo "set-version-patch : ${{ steps.set-version.outputs.version-patch }}"
           if [ ${{ env.PR_VERSION }} ]; then
-            echo "set-version PR : ${{ steps.set-version.outputs.build-version }}"
+            echo "set-version BUILD : ${{ steps.set-version.outputs.build-version }}"
+            echo "set-build-major : ${{ steps.set-version.outputs.build-major }}""
+            echo "set-build-minor : ${{ steps.set-version.outputs.build-minor }}"
+            echo "set-build-patch : ${{ steps.set-version.outputs.build-patch }}"
+          else
+            echo "set-version BUILD : ${{ steps.set-version.outputs.build-version }}"
+            # echo "set-build-major : ${{ steps.set-version.outputs.build-major }}""
+            # echo "set-build-minor : ${{ steps.set-version.outputs.build-minor }}"
+            # echo "set-build-patch : ${{ steps.set-version.outputs.build-patch }}"
           fi
