@@ -9,6 +9,10 @@ on:  # yamllint disable-line rule:truthy
       VERSION:
         required: true
         type: string
+      MONOREPO_APP:
+        default: ''
+        required: false
+        type: string
       ENV_REPO_NAME:
         default: 'favedom-dev/argo-deployments'
         required: false
@@ -155,12 +159,17 @@ jobs:
           VERSION: ${{ inputs.VERSION }}
           BRANCH_NAME: gha_${{ inputs.NAME }}_${{ inputs.VERSION }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          MONOREPO_APP: ${{ inputs.MONOREPO_APP }}
 # yamllint disable rule:line-length
         run: |
           git checkout -b ${BRANCH_NAME}
           git commit -a -m "${NAME} ${VERSION}"
           git push -u origin ${BRANCH_NAME}
-          gh release view v${VERSION} -R ${{ github.repository }} --json author,tagName,url,body --template \
+          FULL_VERSION=v${VERSION}
+          if [ ${#MONOREPO_APP} -gt 0 ]; then
+            FULL_VERSION=${MONOREPO_APP}/${FULL_VERSION}
+          fi
+          gh release view ${FULL_VERSION} -R ${{ github.repository }} --json author,tagName,url,body --template \
           'Version: [{{.tagName}}]({{.url}})
 
           {{.body}}
