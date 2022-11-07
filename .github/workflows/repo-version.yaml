@@ -50,8 +50,8 @@ jobs:
           echo "PR Number      (github.event.number) : ${{ github.event.number }}"
           echo "PR Run Number  (github.run_number)   : ${{ github.run_number }}"
           echo "PR Run Attempt (github.run_attempt)  : ${{ github.run_attempt }}"
-          echo "::set-output name=build-version::${{ github.event.number }}.${{ github.run_number }}.${{ github.run_attempt }}"
-          echo "::set-output name=version::0.0.0-SNAPSHOT-PR-${{ github.event.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
+          echo "build-version=${{ github.event.number }}.${{ github.run_number }}.${{ github.run_attempt }}"  >> $GITHUB_OUTPUT
+          echo "version=0.0.0-SNAPSHOT-PR-${{ github.event.number }}-${{ github.run_number }}-${{ github.run_attempt }}"  >> $GITHUB_OUTPUT
 
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v3
@@ -76,8 +76,7 @@ jobs:
           export GITHUB_TOKEN=${{ secrets.GH_TOKEN }}
           ./auto_increment_version.sh ${{ inputs.MONOREPO_APP }}
           VERSION=$(cat VERSION)
-          echo "::set-output name=version::${VERSION}"
-          # echo "::set-output name=version::$(gh release view -q ".name" --json name | sed 's/v//')"
+          echo "name=version::${VERSION}" >> $GITHUB_OUTPUT
 
       - name: "📜 Set version"
         id: set-version
@@ -88,17 +87,16 @@ jobs:
           if [ ${{ env.PR_VERSION }} ]; then
             echo "PR: VERSION   : ${{ steps.pr-version.outputs.version }}"
             echo "PR: build-version: ${{ steps.pr-version.outputs.build-version }}"
-            echo "::set-output name=version::${{ steps.pr-version.outputs.version }}"
-            echo "::set-output name=build-version::${{ steps.pr-version.outputs.build-version }}"
+            echo "version=${{ steps.pr-version.outputs.version }}" >> $GITHUB_OUTPUT
+            echo "build-version=${{ steps.pr-version.outputs.build-version }}" >> $GITHUB_OUTPUT
             # gh pr comment ${{ github.event.number }} --body "PR Build Version: ${{ steps.set-version.outputs.version }}"
           else
             # RELEASE_VERSION=$(gh release view -q ".name" --json name | sed 's/v//')
             # echo "RELEASE VERSION: ${RELEASE_VERSION}"
-            # echo "::set-output name=version::${RELEASE_VERSION}"
             echo "RELEASE VERSION: ${{ steps.version.outputs.version }}"
-            echo "::set-output name=version::${{ steps.version.outputs.version }}"
+            echo "version=${{ steps.version.outputs.version }}" >> $GITHUB_OUTPUT
             # TODO: add logic for iOS and Android
-            echo "::set-output name=build-version::0.0.0"
+            echo "build-version=0.0.0" >> $GITHUB_OUTPUT
           fi
           # echo "${{ steps.version.outputs.version }}"
 
