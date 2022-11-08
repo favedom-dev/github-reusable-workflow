@@ -110,7 +110,7 @@ jobs:
             echo "else ENV_REPO_SUBDIR: ${ENV_REPO_SUBDIR}"
           fi
           echo "ENV_REPO_SUBDIR: ${ENV_REPO_SUBDIR}"
-          echo "ENV_REPO_SUBDIR=${ENV_REPO_SUBDIR}" >> $GITHUB_OUTPUT
+          echo "::set-output name=ENV_REPO_SUBDIR::${ENV_REPO_SUBDIR}"
 
       - name: "DEBUG: ./${{ inputs.YAML_FILE }}"
         if: github.ref == 'refs/heads/master'

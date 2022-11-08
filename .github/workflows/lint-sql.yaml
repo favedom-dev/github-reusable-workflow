@@ -39,7 +39,7 @@ jobs:
         run: |
           echo "SQL_DIR: ${{ inputs.SQL_DIR }}"
           # Set the command in the $() brackets as an output to use in later steps
-          echo "lintees=$(
+          echo "::set-output name=lintees::$(
           # Issue where grep regular expressions don't work as expected on the
           # Github Actions shell, check folder
           echo \
@@ -51,7 +51,7 @@ jobs:
           tr -s ' ' '\n' |
           grep -E '^.*/public/.*[.]sql$' |
           tr -s '\n' ' ')
-          )" >> $GITHUB_OUTPUT
+          )"
 
       - name: Lint sql
         id: sqlfluff_json
