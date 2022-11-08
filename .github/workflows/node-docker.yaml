@@ -147,7 +147,7 @@ jobs:
           fi
           echo "DEPLOY_URL: ${DEPLOY_URL}"
           echo ${DEPLOY_URL} > DEPLOY_URL
-          echo "deploy-url=${DEPLOY_URL}" >> $GITHUB_OUTPUT
+          echo "::set-output name=deploy-url::${DEPLOY_URL}"
 
       - name: "🔧 Update base Url"
         if: inputs.UPLOAD_GS == true
@@ -198,7 +198,7 @@ jobs:
             # echo "IF: DOCKER_TAGS: $DOCKER_TAGS"
           fi
           echo "DOCKER_TAGS: $DOCKER_TAGS"
-          echo "tags=$DOCKER_TAGS" >> $GITHUB_OUTPUT
+          echo "::set-output name=tags::$DOCKER_TAGS"
 
       - name: "🐳 Docker: build, tag, and push"
         uses: docker/build-push-action@v3
