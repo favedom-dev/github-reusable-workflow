@@ -153,7 +153,7 @@ jobs:
             # echo "IF: DOCKER_TAGS: $DOCKER_TAGS"
           fi
           echo "DOCKER_TAGS: $DOCKER_TAGS"
-          echo "::set-output name=tags::$DOCKER_TAGS"
+          echo "tags=$DOCKER_TAGS" >> $GITHUB_OUTPUT
 
       - name: "🐳 Docker: build, tag, and push"
         uses: docker/build-push-action@v3

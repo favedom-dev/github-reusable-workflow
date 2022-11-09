@@ -17,4 +17,5 @@ if [ ${COMMIT_CHANGES_COUNT} -eq 1 ]; then
 fi
 
 echo ${IS_NORMAL_PIPELINE}
-echo "::set-output name=IS_NORMAL_PIPELINE::${IS_NORMAL_PIPELINE}"
+# echo "::set-output name=IS_NORMAL_PIPELINE::${IS_NORMAL_PIPELINE}"
+echo "IS_NORMAL_PIPELINE=${IS_NORMAL_PIPELINE}" >> $GITHUB_OUTPUT

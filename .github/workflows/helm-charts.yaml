@@ -159,7 +159,7 @@ jobs:
           fi;
           echo "CHARTS_DIR: ${CHARTS_DIR}"
           echo "CHARTS_DIR=${CHARTS_DIR}" >> $GITHUB_ENV
-          echo "::set-output name=CHARTS_DIR::${CHARTS_DIR}"
+          echo "CHARTS_DIR=${CHARTS_DIR}" >> $GITHUB_OUTPUT
 
       - name: "🔧 Setup helm"
         uses: azure/setup-helm@v3
@@ -293,7 +293,6 @@ jobs:
         run: |
           wget -O ./${HELM_VALUES_GLOBALS} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/helm/preview/${HELM_VALUES_GLOBALS}
           chmod 777 ./${HELM_VALUES_GLOBALS}
-          # echo "::set-output name=HELM_VALUES_GLOBALS_ARG::-f ./${HELM_VALUES_GLOBALS}"
           echo "SKIPPING FOR NOW: -f ./${HELM_VALUES_GLOBALS}"
 
       - name: "☸ Helm"
@@ -409,12 +408,6 @@ jobs:
       #     helm show chart ${CHARTMUSEUM}/${APP_NAME} ${HELM_DEBUG_FLAG}
 
 # START: PR ONLY
-      # - name: "PREVIEW: Set Name for PR namespace"
-      #   if: github.ref != 'refs/heads/master'
-      #   id: set-name-pr-namespace
-      #   run: |
-      #    echo "::set-output name=PREVIEW_NAMESPACE::pr-${{ inputs.NAME }}-${{ github.event.number }}"
-
       - name: "☸ PREVIEW: Create namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
         if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
         env:

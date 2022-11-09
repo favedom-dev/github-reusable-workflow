@@ -66,15 +66,14 @@ jobs:
             NAME=${{ inputs.OVERRIDE_NAME }}
           fi
           echo "NAME: ${NAME}"
-          echo "::set-output name=NAME::${NAME}"
+          echo "NAME=${NAME}" >> $GITHUB_OUTPUT
 
       - name: "📜 Set Name for Preview Namespace"
         id: set-name-pr-namespace
         run: |
           PREVIEW_NAMESPACE=pr-${{ steps.set-name.outputs.NAME }}-${{ github.event.number }}
           echo "PREVIEW_NAMESPACE: ${PREVIEW_NAMESPACE}"
-          # echo "::set-output name=PREVIEW_NAMESPACE::pr-${{ steps.set-name.outputs.NAME }}-${{ github.event.number }}"
-          echo "::set-output name=PREVIEW_NAMESPACE::${PREVIEW_NAMESPACE}"
+          echo "PREVIEW_NAMESPACE=${PREVIEW_NAMESPACE}" >> $GITHUB_OUTPUT
 
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v3
@@ -94,7 +93,7 @@ jobs:
             API_PATH=$(grep "${API_SEARCH}" ${API_FILE} | awk '{print $2}'  | head -1)
           fi
           echo "API_PATH: ${API_PATH}"
-          echo "::set-output name=API_PATH::${API_PATH}/"
+          echo "API_PATH=${API_PATH}/" >> $GITHUB_OUTPUT
 
       - name: "🦅 Stackhawk ready repo"
         id: stackhawk-ready-repo
@@ -116,4 +115,4 @@ jobs:
             echo "OVERRIDE_IS_STACKHAWK_READY with ${{ inputs.IS_STACKHAWK_READY }}"
           fi
           echo "IS_STACKHAWK_READY: ${IS_STACKHAWK_READY}"
-          echo "::set-output name=IS_STACKHAWK_READY::${IS_STACKHAWK_READY}"
+          echo "IS_STACKHAWK_READY=${IS_STACKHAWK_READY}" >> $GITHUB_OUTPUT
