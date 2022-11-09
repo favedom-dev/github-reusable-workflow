@@ -76,7 +76,7 @@ jobs:
           export GITHUB_TOKEN=${{ secrets.GH_TOKEN }}
           ./auto_increment_version.sh ${{ inputs.MONOREPO_APP }}
           VERSION=$(cat VERSION)
-          echo "name=version::${VERSION}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
 
       - name: "📜 Set version"
         id: set-version
