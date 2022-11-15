@@ -13,6 +13,10 @@ on:  # yamllint disable-line rule:truthy
         default: 'clean deploy'
         required: false
         type: string
+      MAVEN_WORKING_DIR:
+        default: '.'
+        required: false
+        type: string
       DOCKERFILE_FILE:
         default: './Dockerfile'
         required: false
@@ -87,10 +91,12 @@ jobs:
           envsubst < ./settings.xml > ~/.m2/settings.xml
 
       - name: "🔨 Maven set version"
+        working-directory: ${{ inputs.MAVEN_WORKING_DIR }}
         run: |
           mvn versions:set -DnewVersion=${{ inputs.VERSION }}
 
       - name: "🔨 Build with Maven"
+        working-directory: ${{ inputs.MAVEN_WORKING_DIR }}
         run: mvn ${{ inputs.MVN_ARGS }}
 
       - name: "🌐 Link to Lib"
