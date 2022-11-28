@@ -28,6 +28,14 @@ on:  # yamllint disable-line rule:truthy
         default: 'actuator/health'
         required: false
         type: string
+      HEALTH_RETRIES:
+        default: 3
+        required: false
+        type: number
+      HEALTH_RETRY_DELAY:
+        default: 10
+        required: false
+        type: number
       STACKHAWK_SETUP_SCRIPT_NAME:
         default: 'setup-stackhawk.sh'
         required: false
@@ -108,9 +116,11 @@ jobs:
           APP_HOST: https://${{ inputs.NAMESPACE }}.${{ inputs.BASE_DOMAIN }}
           API_PATH: ${{ inputs.API_PATH }}
           HEALTH_PATH: ${{ inputs.HEALTH_PATH }}
+          HEALTH_RETRIES: ${{ inputs.HEALTH_RETRIES }}
+          HEALTH_RETRY_DELAY: ${{ inputs.HEALTH_RETRY_DELAY }}
         run: |
           echo "CHECKING: ${APP_HOST}${API_PATH}${HEALTH_PATH}"
-          curl ${APP_HOST}${API_PATH}${HEALTH_PATH}
+          curl --fail --retry ${HEALTH_RETRIES} --retry-delay ${HEALTH_RETRY_DELAY} --retry-all-errors ${APP_HOST}${API_PATH}${HEALTH_PATH}
 
       - name: "🦅 Run Stackhawk (timeout ${{ inputs.JOBS_TIMEOUT }} minutes)"
         env:
