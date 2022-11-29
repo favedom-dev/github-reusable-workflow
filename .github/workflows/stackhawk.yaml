@@ -120,7 +120,7 @@ jobs:
           HEALTH_RETRY_DELAY: ${{ inputs.HEALTH_RETRY_DELAY }}
         run: |
           echo "CHECKING: ${APP_HOST}${API_PATH}${HEALTH_PATH}"
-          curl --fail --retry ${HEALTH_RETRIES} --retry-delay ${HEALTH_RETRY_DELAY} --retry-all-errors ${APP_HOST}${API_PATH}${HEALTH_PATH}
+          curl --fail --retry ${HEALTH_RETRIES} --retry-delay ${HEALTH_RETRY_DELAY} ${APP_HOST}${API_PATH}${HEALTH_PATH}
 
       - name: "🦅 Run Stackhawk (timeout ${{ inputs.JOBS_TIMEOUT }} minutes)"
         env:
