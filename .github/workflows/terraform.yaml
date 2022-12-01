@@ -10,6 +10,10 @@ on:
         default: '1.3.5'
         required: false
         type: string
+      DO_TERRAFORM_APPLY:
+        default: true  # true do terraform apply | false skip terraform apply
+        required: false
+        type: boolean
       PROJECT_ID:
         default: 'favedom-dev'
         required: false
@@ -84,5 +88,5 @@ jobs:
 
       - name: "Terraform apply"
         id: terraform-apply
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && inputs.DO_TERRAFORM_APPLY == true
         run: terraform apply -auto-approve
