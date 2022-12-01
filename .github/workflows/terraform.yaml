@@ -1,0 +1,88 @@
+name: Terraform Kubernetes Cluster
+
+on:
+  workflow_call:
+    inputs:
+      NAME:  # name of cluster
+        required: true
+        type: string
+      TERRAFORM_VERSION:
+        default: '1.3.5'
+        required: false
+        type: string
+      PROJECT_ID:
+        default: 'favedom-dev'
+        required: false
+        type: string
+      GH_ORG:
+        default: 'favedom-dev'
+        required: false
+        type: string
+      GH_USER:
+        default: 'velocityz-0x-pq-github'
+        required: false  # true
+        type: string
+
+    secrets:
+      GH_TOKEN:
+        required: true
+      WIF_PROVIDER:  # Workload Identity Federation Provider
+        required: true
+      WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
+        required: true
+
+jobs:
+  terraform:
+    # timeout-minutes: 15
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+
+        # Required for modules.source git
+      - name: "🔧 Git config"
+        run: |
+          git config --global user.email ""
+          git config --global user.name "${{ inputs.GH_USER }}"
+          git config --global url."https://${{ inputs.GH_USER }}:${{ secrets.GH_TOKEN }}@github.com/${{ inputs.GH_ORG }}".insteadOf "https://github.com/${{ inputs.GH_ORG }}"
+
+      - name: "☁️ Checkout repository"
+        uses: actions/checkout@v3
+
+      # Required for backend tfstate files in google bucket
+      - name: "🔧 Google Auth Token"
+        if: ${{ !env.ACT }}
+        id: auth-gcp-token
+        uses: 'google-github-actions/auth@v0'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
+          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+
+      - name: "🔧 Install Terraform"
+        id: install-terraform
+        run: |
+          wget -O terraform.zip https://releases.hashicorp.com/terraform/${{ inputs.TERRAFORM_VERSION }}/terraform_${{ inputs.TERRAFORM_VERSION }}_linux_amd64.zip \
+          && \
+          unzip terraform.zip && chmod +x terraform && sudo mv terraform /usr/local/bin
+
+      - name: "Terraform version"
+        run: terraform -version
+
+      - name: "Terraform init"
+        id: terraform-init
+        run: terraform init
+
+      - name: "Terraform validate"
+        id: terraform-validate
+        # if: github.event_name == 'pull_request'
+        run: terraform validate
+
+      - name: "Terraform apply"
+        id: terraform-apply
+        if: github.event_name != 'pull_request'
+        run: terraform apply -auto-approve"
