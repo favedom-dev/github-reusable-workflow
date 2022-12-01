@@ -49,7 +49,6 @@ list_service_accounts() {
 #   --file="custom-roles/cloud-run-writer.yaml"
 # }
 
-# https://cloud.google.com/storage/docs/access-control/iam-roles
 set_service_account_roles() {
   gcloud projects add-iam-policy-binding ${PROJECT_ID} \
   --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
@@ -66,10 +65,18 @@ set_service_account_roles() {
 #   --role="projects/${PROJECT_ID}/roles/run.writer"
 }
 
+# https://cloud.google.com/storage/docs/access-control/iam-roles
 set_service_account_roles_storage() {
   gcloud projects add-iam-policy-binding ${PROJECT_ID} \
   --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
   --role="roles/storage.objectAdmin"
+}
+
+# https://cloud.google.com/compute/docs/access/iam
+set_service_account_roles_compute() {
+  gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+  --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
+  --role="roles/compute.viewer"
 }
 
 remove_roles() {
