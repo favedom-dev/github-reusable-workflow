@@ -1,0 +1,31 @@
+name: Terraform Create Kubernetes Cluster
+
+on:  # yamllint disable-line rule:truthy
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+
+  app-setup:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/app-setup.yaml@master
+
+  repo-version:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  terraform:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/terraform.yaml@master
+    # uses: ./.github/workflows/terraform.yaml
+    needs: [app-setup, repo-version]
+    with:
+      NAME: ${{ needs.app-setup.outputs.NAME }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
+      WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+
