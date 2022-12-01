@@ -20,10 +20,10 @@ jobs:
 
   terraform:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/terraform.yaml@master
-    # uses: ./.github/workflows/terraform.yaml
     needs: [app-setup, repo-version]
     with:
       NAME: ${{ needs.app-setup.outputs.NAME }}
+      # DO_TERRAFORM_APPLY: false
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
