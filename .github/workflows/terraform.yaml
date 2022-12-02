@@ -10,6 +10,10 @@ on:
         default: '1.3.5'
         required: false
         type: string
+      DO_TERRAFORM_FORMAT:
+        default: true  # true do terraform apply | false skip terraform apply
+        required: false
+        type: boolean
       DO_TERRAFORM_APPLY:
         default: true  # true do terraform apply | false skip terraform apply
         required: false
@@ -83,8 +87,11 @@ jobs:
       - name: "Terraform version"
         run: terraform -version
 
-      - name: Terraform Format
+      - name: "Terraform Format"
+        id: terraform-format
+        if: inputs.DO_TERRAFORM_FORMAT == true
         run: terraform fmt -check
+        # run: terraform fmt -check -diff
 
       - name: "Terraform init"
         id: terraform-init
