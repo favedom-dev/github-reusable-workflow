@@ -34,6 +34,10 @@ on:
         default: 'velocityz-0x-pq-github'
         required: false  # true
         type: string
+      JOBS_TIMEOUT:
+        default: 15
+        required: false
+        type: number
 
     secrets:
       GH_TOKEN:
@@ -42,10 +46,12 @@ on:
         required: true
       WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
         required: true
+      CASTAI_API_TOKEN:
+        required: false
 
 jobs:
   terraform:
-    # timeout-minutes: 15
+    timeout-minutes: ${{ inputs.JOBS_TIMEOUT }}
     permissions:
       contents: 'read'
       id-token: 'write'
@@ -91,6 +97,20 @@ jobs:
       - name: "Terraform version"
         run: terraform -version
 
+      - name: "Terraform tfvars file"
+        id: tfvars-arg
+        run: |
+          # file names should be *.tfvars.tmpl
+          if [ ${rc} -eq 0 ]; then
+            for f in $(ls *.tfvars.tmpl); do
+              envsubst < ${f} > ${f%.*}
+            done
+            for f in $(ls *.tfvars); do
+              TFVARS_ARG="-var-file=\"${f}\" ${TFVARS_ARG}"
+            done
+          fi
+          echo "TFVARS_ARG=${TFVARS_ARG}" >> $GITHUB_OUTPUT
+
       # https://developer.hashicorp.com/terraform/cli/commands/fmt
       # if step fails user should run `terraform fmt -diff`` locally and commit updates
       - name: "Terraform Format"
@@ -110,14 +130,19 @@ jobs:
         run: terraform validate
 
       # https://developer.hashicorp.com/terraform/cli/commands/plan
-      - name: "Terraform plan"
-        id: terraform-plan
-        # if: github.event_name == 'pull_request' && inputs.DO_TERRAFORM_PLAN == true
-        if: inputs.DO_TERRAFORM_PLAN == true
-        run: terraform plan
+      # - name: "Terraform plan"
+      #   id: terraform-plan
+      #   # if: github.event_name == 'pull_request' && inputs.DO_TERRAFORM_PLAN == true
+      #   if: inputs.DO_TERRAFORM_PLAN == true
+      #   env:
+      #     TFVARS_ARG: ${{ steps.tfvars-arg.outputs.TFVARS_ARG }}
+      #   # run: terraform plan ${TFVARS_ARG} -out=tfplan
+      #   run: terraform plan ${TFVARS_ARG}
 
       # https://developer.hashicorp.com/terraform/cli/commands/apply
       - name: "Terraform apply"
         id: terraform-apply
         if: github.event_name != 'pull_request' && inputs.DO_TERRAFORM_APPLY == true
-        run: terraform apply -auto-approve
+        env:
+          TFVARS_ARG: ${{ steps.tfvars-arg.outputs.TFVARS_ARG }}
+        run: terraform apply -auto-approve ${TFVARS_ARG}
