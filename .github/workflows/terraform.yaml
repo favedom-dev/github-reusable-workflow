@@ -55,7 +55,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
 
-        # Required for modules.source git
+      # Required for modules.source git
       - name: "🔧 Git config"
         run: |
           git config --global user.email ""
@@ -91,27 +91,32 @@ jobs:
       - name: "Terraform version"
         run: terraform -version
 
+      # https://developer.hashicorp.com/terraform/cli/commands/fmt
+      # if step fails user should run `terraform fmt -diff`` locally and commit updates
       - name: "Terraform Format"
         id: terraform-format
         if: inputs.DO_TERRAFORM_FORMAT == true
         run: terraform fmt -check
-        # run: terraform fmt -check -diff
 
+      # https://developer.hashicorp.com/terraform/cli/commands/init
       - name: "Terraform init"
         id: terraform-init
         run: terraform init
 
+      # https://developer.hashicorp.com/terraform/cli/commands/validate
       - name: "Terraform validate"
         id: terraform-validate
         # if: github.event_name == 'pull_request'
         run: terraform validate
 
+      # https://developer.hashicorp.com/terraform/cli/commands/plan
       - name: "Terraform plan"
         id: terraform-plan
         # if: github.event_name == 'pull_request' && inputs.DO_TERRAFORM_PLAN == true
         if: inputs.DO_TERRAFORM_PLAN == true
         run: terraform plan
 
+      # https://developer.hashicorp.com/terraform/cli/commands/apply
       - name: "Terraform apply"
         id: terraform-apply
         if: github.event_name != 'pull_request' && inputs.DO_TERRAFORM_APPLY == true
