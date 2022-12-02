@@ -67,15 +67,24 @@ jobs:
           workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
           service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
-      - name: "🔧 Install Terraform"
-        id: install-terraform
-        run: |
-          wget -O terraform.zip https://releases.hashicorp.com/terraform/${{ inputs.TERRAFORM_VERSION }}/terraform_${{ inputs.TERRAFORM_VERSION }}_linux_amd64.zip \
-          && \
-          unzip terraform.zip && chmod +x terraform && sudo mv terraform /usr/local/bin
+      # - name: "🔧 Install Terraform"
+      #   id: install-terraform
+      #   run: |
+      #     wget -O terraform.zip https://releases.hashicorp.com/terraform/${{ inputs.TERRAFORM_VERSION }}/terraform_${{ inputs.TERRAFORM_VERSION }}_linux_amd64.zip \
+      #     && \
+      #     unzip terraform.zip && chmod +x terraform && sudo mv terraform /usr/local/bin
+
+      # https://github.com/hashicorp/setup-terraform
+      - name: "🔧 Setup Terraform"
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ inputs.TERRAFORM_VERSION }}
 
       - name: "Terraform version"
         run: terraform -version
+
+      - name: Terraform Format
+        run: terraform fmt -check
 
       - name: "Terraform init"
         id: terraform-init
