@@ -111,6 +111,7 @@ jobs:
               TFVARS_ARG="-var-file=\"${f}\" ${TFVARS_ARG}"
             done
           fi
+          echo "TFVARS_ARG: ${TFVARS_ARG}"
           echo "TFVARS_ARG=${TFVARS_ARG}" >> $GITHUB_OUTPUT
 
       # https://developer.hashicorp.com/terraform/cli/commands/fmt
