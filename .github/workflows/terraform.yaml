@@ -107,10 +107,10 @@ jobs:
 
       - name: "🔧 Terraform tfvars file"
         id: tfvars-arg
-        # continue-on-error: true
+        continue-on-error: true
         run: |
-          # file names should be *.tfvars.tmpl
           TFVARS_ARG=""
+          # file names should be *.tfvars.tmpl
           ls *.tfvars.tmpl
           rc=$?
           if [ ${rc} -eq 0 ]; then
@@ -123,7 +123,6 @@ jobs:
           fi
           echo "TFVARS_ARG: ${TFVARS_ARG}"
           echo "TFVARS_ARG=${TFVARS_ARG}" >> $GITHUB_OUTPUT
-          exit 0
 
       # - name: "🔧 Terraform lock arg"
       #   id: tflock-arg
