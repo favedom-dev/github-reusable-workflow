@@ -107,11 +107,11 @@ jobs:
 
       - name: "🔧 Terraform tfvars file"
         id: tfvars-arg
-        continue-on-error: true
         run: |
+          set +e
           TFVARS_ARG=""
           # file names should be *.tfvars.tmpl
-          ls *.tfvars.tmpl
+          ls *.tfvars.tmpl 2>/dev/null
           rc=$?
           if [ ${rc} -eq 0 ]; then
             for f in $(ls *.tfvars.tmpl); do
