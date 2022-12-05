@@ -101,6 +101,8 @@ jobs:
         id: tfvars-arg
         run: |
           # file names should be *.tfvars.tmpl
+          ls *.tfvars.tmpl
+          rc=$?
           if [ ${rc} -eq 0 ]; then
             for f in $(ls *.tfvars.tmpl); do
               envsubst < ${f} > ${f%.*}
