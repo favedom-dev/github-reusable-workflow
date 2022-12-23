@@ -133,7 +133,7 @@ jobs:
         run: |
           pwd
           ls -la
-          mvn versions:set -DnewVersion=${VERSION}
+          mvn -B versions:set -DnewVersion=${VERSION}
 
       - name: "🔨 Build with Maven"
         working-directory: ${{ inputs.APP_WORKING_DIR }}
@@ -145,7 +145,7 @@ jobs:
           echo "MVN_ENV_VARS    : ${{ inputs.MVN_ENV_VARS }}"
           echo "MVN_ARGS_EXTRA  : ${{ inputs.MVN_ARGS_EXTRA }}"
           echo "MVN_ARGS_SECRETS: ${{ secrets.MVN_ARGS_SECRETS }}"
-          mvn \
+          mvn -B \
           ${{ secrets.MVN_ARGS_SECRETS }} \
           ${{ inputs.MVN_ENV_VARS }} \
           ${{ inputs.MVN_ARGS }} \
