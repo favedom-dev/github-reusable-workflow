@@ -93,11 +93,11 @@ jobs:
       - name: "🔨 Maven set version"
         working-directory: ${{ inputs.MAVEN_WORKING_DIR }}
         run: |
-          mvn versions:set -DnewVersion=${{ inputs.VERSION }}
+          mvn -B versions:set -DnewVersion=${{ inputs.VERSION }}
 
       - name: "🔨 Build with Maven"
         working-directory: ${{ inputs.MAVEN_WORKING_DIR }}
-        run: mvn ${{ inputs.MVN_ARGS }}
+        run: mvn -B ${{ inputs.MVN_ARGS }}
 
       - name: "🌐 Link to Lib"
         env:
