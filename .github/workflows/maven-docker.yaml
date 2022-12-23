@@ -127,13 +127,13 @@ jobs:
           envsubst < ./settings.xml > ~/.m2/settings.xml
 
       - name: "🔨 Maven set version"
-        working-directory: inputs.APP_WORKING_DIR
+        working-directory: ${{ inputs.APP_WORKING_DIR }}
         env:
           VERSION: ${{ inputs.VERSION }}
         run: mvn versions:set -DnewVersion=${VERSION}
 
       - name: "🔨 Build with Maven"
-        working-directory: inputs.APP_WORKING_DIR
+        working-directory: ${{ inputs.APP_WORKING_DIR }}
         env:
           GCP_ACCESS_TOKEN: '${{ steps.auth-gcp-token.outputs.access_token }}'
           GCP_ACCESS_TOKEN_EXPIRATION: '${{ steps.auth-gcp-token.outputs.access_token_expiration }}'
@@ -150,7 +150,7 @@ jobs:
 
       - name: "🔧 Setup Docker tags"
         id: docker-tags
-        working-directory: inputs.APP_WORKING_DIR
+        working-directory: ${{ inputs.APP_WORKING_DIR }}
         env:
           DOCKER_LOCATION: ${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}
         run: |-
