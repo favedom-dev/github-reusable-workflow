@@ -130,7 +130,10 @@ jobs:
         working-directory: ${{ inputs.APP_WORKING_DIR }}
         env:
           VERSION: ${{ inputs.VERSION }}
-        run: mvn versions:set -DnewVersion=${VERSION}
+        run: |
+          pwd
+          ls -la
+          mvn versions:set -DnewVersion=${VERSION}
 
       - name: "🔨 Build with Maven"
         working-directory: ${{ inputs.APP_WORKING_DIR }}
