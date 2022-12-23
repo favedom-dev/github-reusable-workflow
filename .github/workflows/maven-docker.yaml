@@ -64,7 +64,7 @@ on:  # yamllint disable-line rule:truthy
       WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
         required: true
       NEXUS_FAVEDOM_DEV_PASSWORD:
-        required: true
+        required: false
       MVN_ARGS_SECRETS:
         required: false
       GCP_JSON_KEY:
@@ -165,7 +165,7 @@ jobs:
       - name: "🐳 Docker: build, tag, and push"
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ${{ inputs.APP_WORKING_DIR }}
           file: ${{ env.DOCKERFILE_FILE }}
           push: true
           tags: ${{ steps.docker-tags.outputs.tags }}
