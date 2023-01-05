@@ -95,8 +95,8 @@ jobs:
         id: set-env-repo-subdir
         env:
           OVERRIDE_SUBDIR_NAME: ${{ inputs.OVERRIDE_SUBDIR_NAME }}
-          SUBDIR_NAME: ${{ inputs.NAME }}
         run: |
+          SUBDIR_NAME=$(echo ${{ inputs.NAME }} | sed -e 's/peeq-//')
           echo "SUBDIR_NAME         : ${SUBDIR_NAME}"
           echo "OVERRIDE_SUBDIR_NAME: ${OVERRIDE_SUBDIR_NAME}"
           if [ -n "${ENV_REPO_SUBDIR}" ]; then
