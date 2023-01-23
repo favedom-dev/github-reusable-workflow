@@ -79,6 +79,15 @@ set_service_account_roles_compute() {
   --role="roles/compute.viewer"
 }
 
+# https://cloud.google.com/secret-manager/docs/access-control
+set_service_account_roles_secret_accessor() {
+  echo "PROJECT_ID           : ${PROJECT_ID}"
+  echo "SERVICE_ACCOUNT_EMAIL: ${SERVICE_ACCOUNT_EMAIL}"
+  gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+  --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
+  --role="roles/secretmanager.secretAccessor"
+}
+
 remove_roles() {
     gcloud projects remove-iam-policy-binding ${PROJECT_ID} \
   --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
