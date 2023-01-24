@@ -17,11 +17,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       REMOVE_PEEQ_PREFIX:
-        default: false  # true removes "peeq-" | false keeps input.NAME
+        default: true  # true removes "peeq-" | false keeps input.NAME
         required: false
         type: boolean
       ENV_REPO_NAME:
-        default: 'favedom-dev/argo-deployments'
+        default: 'favedom-dev/argocd-deployments'
         required: false
         type: string
       ENV_REPO_PATH:
@@ -29,7 +29,7 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       ENV_REPO_SUBDIR_BASE:
-        default: 'favedom-dev/peeq'
+        default: 'dev/fanfuzenil'
         required: false
         type: string
       ENV_REPO_SUBDIR:
@@ -89,8 +89,7 @@ jobs:
           REMOVE_PEEQ_PREFIX: ${{ inputs.REMOVE_PEEQ_PREFIX }}
         run: |
           ARGOCD_APP_NAME=${{ inputs.ARGOCD_APP_NAME }}
-          echo "ARGOCD_APP_NAME: ${ARGOCD_APP_NAME}"
-          if [ -n "${OVERRIDE_NAME}" ]; then
+          if [ ! -n "${ARGOCD_APP_NAME}" ]; then
             ARGOCD_APP_NAME=$(echo ${{ inputs.name }} | sed 's/peeq-//')
           fi
           echo "ARGOCD_APP_NAME=${ARGOCD_APP_NAME}" >> $GITHUB_OUTPUT
@@ -177,10 +176,8 @@ jobs:
         if: github.ref == 'refs/heads/master'
         working-directory: ${{ inputs.ENV_REPO_PATH }}
         env:
-          # NAME: ${{ inputs.NAME }}
           NAME: ${{ steps.set-argocd-app-name.outputs.ARGOCD_APP_NAME }}
           VERSION: ${{ inputs.VERSION }}
-          # BRANCH_NAME: gha_${{ inputs.NAME }}_${{ inputs.VERSION }}
           BRANCH_NAME: gha_${{ steps.set-argocd-app-name.outputs.ARGOCD_APP_NAME }}_${{ inputs.VERSION }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           MONOREPO_APP: ${{ inputs.MONOREPO_APP }}
