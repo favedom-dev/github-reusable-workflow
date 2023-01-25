@@ -23,12 +23,16 @@ on:  # yamllint disable-line rule:truthy
         default: true
         required: false
         type: boolean
-      PROJECT_ID:
+      GAR_PROJECT_ID:
         default: 'favedom-dev'
         required: false
         type: string
+      CLUSTER_PROJECT_ID:
+        default: 'development-375017'
+        required: false
+        type: string
       CLUSTER_NAME:
-        default: 'favedom-dev'
+        default: 'fanfuzenil'
         required: false
         type: string
       LOCATION:
@@ -37,22 +41,23 @@ on:  # yamllint disable-line rule:truthy
         type: string
       DOCKER_REGISTRY:
         default: 'us-central1-docker.pkg.dev'  # GAR
-        # default: 'gcr.io'  # JX
         required: false
         type: string
       DOCKER_REGISTRY_NAME:
         default: 'peeq-docker'
         required: false
         type: string
-      IS_HELM_GAR_REPO:
-        # default: true  # GAR
-        default: false  # JX
-        required: false
-        type: boolean
-      SKIP_JX:  # false: do JX steps | true: skip JX steps
-        default: false
-        required: false
-        type: boolean
+      # TODO: remove
+      # IS_HELM_GAR_REPO:
+      #   # default: true  # GAR
+      #   default: false  # JX
+      #   required: false
+      #   type: boolean
+      # TODO: remove
+      # SKIP_JX:  # TODO: remove false: do JX steps | true: skip JX steps
+      #   default: false
+      #   required: false
+      #   type: boolean
       HELM_REGISTRY_NAME:
         default: 'peeq-helm'
         required: false
@@ -63,7 +68,6 @@ on:  # yamllint disable-line rule:truthy
         type: boolean
       HELM_DOCKER_REGISTRY:
         default: 'us-central1-docker.pkg.dev'  # GAR (oci://)
-        # default: 'gcr.io'  # JX
         required: false
         type: string
       HELM_VERSION:
@@ -74,24 +78,25 @@ on:  # yamllint disable-line rule:truthy
         default: false
         required: false
         type: boolean
-      CHARTMUSEUM:
-        default: 'jenkins-x-chartmuseum'
-        required: false
-        type: string
-      CHARTMUSEUM_REPO:
-        default: 'localhost:8080'
-        required: false
-        type: string
-      CHARTMUSEUM_USER:
-        default: 'admin'
-        required: false
-        type: string
+      # TODO: remove
+      # CHARTMUSEUM:
+      #   default: 'jenkins-x-chartmuseum'
+      #   required: false
+      #   type: string
+      # CHARTMUSEUM_REPO:
+      #   default: 'localhost:8080'
+      #   required: false
+      #   type: string
+      # CHARTMUSEUM_USER:
+      #   default: 'admin'
+      #   required: false
+      #   type: string
       HELM_VALUES_GLOBALS:
         default: 'values-globals.yaml'
         required: false
         type: string
       PREVIEW_BASE_DOMAIN:
-        default: 'staging.joinpeeq.com'
+        default: 'dev.fanfuzenil.com'
         required: false
         type: string
       API_PATH:
@@ -113,8 +118,9 @@ on:  # yamllint disable-line rule:truthy
         required: true
       WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
         required: true
+      # TODO: remove
       CHARTMUSEUM_PASSWORD:  # JX
-        required: true
+        required: false
 
 jobs:
 
@@ -182,6 +188,7 @@ jobs:
         with:
           cluster_name: ${{ inputs.CLUSTER_NAME }}
           location: ${{ inputs.LOCATION }}
+          project_id: ${{ inputs.CLUSTER_PROJECT_ID }}
 
       - name: "🔧 Update helm charts"
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
@@ -190,7 +197,7 @@ jobs:
           VERSION: ${{ inputs.VERSION }}
           DOCKER_REGISTRY: ${{ inputs.DOCKER_REGISTRY }}
           DOCKER_REGISTRY_NAME: ${{ inputs.DOCKER_REGISTRY_NAME }}
-          PROJECT_ID: ${{ inputs.PROJECT_ID }}
+          PROJECT_ID: ${{ inputs.GAR_PROJECT_ID }}
           GH_REF: ${{ github.ref }}
 # yamllint disable rule:line-length
         run: |
@@ -202,13 +209,8 @@ jobs:
           echo "=================================="
           sed -i -e "s/version:.*/version: ${VERSION}/" Chart.yaml
           sed -i -e "s/tag:.*/tag: ${VERSION}/" values.yaml
-          # if [ ${{ inputs.IS_HELM_GAR_REPO }} = true ]; then
-            echo "GAR: repository update"
-            sed -i -e "s|repository:.*|repository: ${DOCKER_REGISTRY}\/${PROJECT_ID}\/${DOCKER_REGISTRY_NAME}\/${APP_NAME}|" values.yaml
-          # else
-          #   echo "JX: repository update"
-          #   sed -i -e "s|repository:.*|repository: ${DOCKER_REGISTRY}\/${PROJECT_ID}\/${APP_NAME}|" values.yaml
-          # fi
+          echo "GAR: repository update"
+          sed -i -e "s|repository:.*|repository: ${DOCKER_REGISTRY}\/${PROJECT_ID}\/${DOCKER_REGISTRY_NAME}\/${APP_NAME}|" values.yaml
           if [ "${GH_REF}" == "refs/heads/master" ]; then
             echo "appVersion: ${VERSION}" >> Chart.yaml
           else
@@ -239,29 +241,6 @@ jobs:
       #       cat requirements.yaml
       #     fi
 
-      - name: "☸ [JX]: Port forward - chartmuseum"
-        # if: inputs.IS_HELM_GAR_REPO == false
-        if: inputs.SKIP_JX == false
-        run: |
-          kubectl -n jx port-forward svc/jenkins-x-chartmuseum 8080:8080 &
-          # need to wait to make sure a connection can be made
-          # sleep 1
-          sleep 3
-
-      - name: "☸ [JX]: Helm repo add"
-        # if: inputs.IS_HELM_GAR_REPO == false
-        if: inputs.SKIP_JX == false
-        env:
-          CHARTMUSEUM_REPO: ${{ inputs.CHARTMUSEUM_REPO }}
-# yamllint disable rule:line-length
-        run: |
-          helm repo add jenkins-x-chartmuseum http://${CHARTMUSEUM_REPO} ${HELM_DEBUG_FLAG}
-          # helm repo add jenkins-x-chartmuseum https://chartmuseum-jx.favedom-dev.softcannery.com/ ${HELM_DEBUG_FLAG}
-          helm repo add jx https://jenkins-x-charts.github.io/v2/ ${HELM_DEBUG_FLAG}
-          echo "=================================="
-          helm repo list
-# yamllint enable rule:line-length
-
       - name: "☸ Helm add repos"
         if: inputs.HELM_ADD_REPOS == true
         env:
@@ -274,7 +253,6 @@ jobs:
 
       - name: "🔧 [GAR] (oci://): Helm login"
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
-        # if: inputs.IS_HELM_GAR_REPO == true
         env:
           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
           HELM_REGISTRY_NAME: ${{ inputs.HELM_REGISTRY_NAME }}
@@ -357,7 +335,6 @@ jobs:
       #     helm show chart ${CHARTMUSEUM}/${APP_NAME} ${HELM_DEBUG_FLAG}
 
       - name: "☸ RELEASE [GAR]: Upload helm chart to ocr://"
-        # if: github.ref == 'refs/heads/master' && inputs.IS_HELM_GAR_REPO == true
         if: github.ref == 'refs/heads/master'
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
         env:
@@ -366,7 +343,7 @@ jobs:
           HELM_EXPERIMENTAL_OCI: 1  # needed for oci://
           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
           HELM_REGISTRY_NAME: ${{ inputs.HELM_REGISTRY_NAME }}
-          PROJECT_ID: ${{ inputs.PROJECT_ID }}
+          PROJECT_ID: ${{ inputs.GAR_PROJECT_ID }}
 # yamllint disable rule:line-length
         run: |
           helm push \
@@ -374,24 +351,6 @@ jobs:
           oci://${HELM_DOCKER_REGISTRY}/${PROJECT_ID}/${HELM_REGISTRY_NAME}/${APP_NAME} \
           ${HELM_DEBUG_FLAG}
 # yamllint enable rule:line-length
-
-      - name: "☸ RELEASE [JX]: Upload helm chart to chartmuseum"
-        # if: github.ref == 'refs/heads/master' && inputs.IS_HELM_GAR_REPO == false
-        # if: github.ref == 'refs/heads/master'
-        if: github.ref == 'refs/heads/master' && inputs.SKIP_JX == false
-        working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
-        env:
-          APP_NAME: ${{ inputs.NAME }}
-          VERSION: ${{ inputs.VERSION }}
-          HELM_REGISTRY_NAME: ${{ inputs.HELM_REGISTRY_NAME }}
-          CHARTMUSEUM_USER: ${{ inputs.CHARTMUSEUM_USER }}
-          CHARTMUSEUM_PASSWORD: ${{ secrets.CHARTMUSEUM_PASSWORD }}
-          CHARTMUSEUM_REPO: ${{ inputs.CHARTMUSEUM_REPO }}
-        run: |
-          curl --fail \
-          -u ${CHARTMUSEUM_USER}:${CHARTMUSEUM_PASSWORD} \
-          --data-binary "@${APP_NAME}-${VERSION}.tgz" \
-          ${CHARTMUSEUM_REPO}/api/charts
 
       # - name: "DEBUG: Helm show After"
       #   if: inputs.ENABLE_HELM_DEBUG == true
@@ -439,8 +398,6 @@ jobs:
           echo "NAME                   : ${NAME}"
           echo "HELM_VALUES_GLOBALS_ARG: ${HELM_VALUES_GLOBALS_ARG}"
           echo "HELM_DEBUG_FLAG        : ${HELM_DEBUG_FLAG}"
-          # helm upgrade --install ${NAME} . ${HELM_DEBUG_FLAG}
-          # helm upgrade --install ${NAME} -f ./values.yaml -f ./${HELM_VALUES_GLOBALS} . ${HELM_DEBUG_FLAG}
           helm upgrade --install ${NAME} -f ./values.yaml ${HELM_VALUES_GLOBALS_ARG} . ${HELM_DEBUG_FLAG}
 
       - name: "🌐 PREVIEW: Link to Preview"
