@@ -74,6 +74,9 @@ for secret_namespace in ${NAMESPACE_SECRETS[@]}; do
     sed 's/namespace: .*/namespace: '${PREVIEW_NAMESPACE}'/' | \
     kubectl apply --force -f -
     echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+    echo "START: DEBUG"
+    kubectl get secrets --namespace=${secret_namespace}
+    echo "END: DEBUG"
   done
 
 done
