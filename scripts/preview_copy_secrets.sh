@@ -51,6 +51,7 @@ for secret_namespace in ${NAMESPACE_SECRETS[@]}; do
   echo ""
   echo "======:==================:================"
   echo "START : secret namespace : ${secret_namespace}"
+  echo "START : k8s context      : $(kubectl config current-context)"
   echo "======:==================:================"
 
   # get secrets
@@ -63,12 +64,15 @@ for secret_namespace in ${NAMESPACE_SECRETS[@]}; do
     echo "Secret Namespace  : ${secret_namespace}"
     echo "Secret            : ${secret}"
     echo "---------------------------------------------"
-    kubectl delete secret --namespace=${PREVIEW_NAMESPACE} ${secret} --ignore-not-found
-    # kubectl get secret ${secret} --namespace=${secret_namespace} -o yaml | sed 's/namespace: '${secret_namespace}'/namespace: '${PREVIEW_NAMESPACE}'/g' | kubectl create --namespace=${PREVIEW_NAMESPACE} -f -
+    # kubectl delete secret --namespace=${PREVIEW_NAMESPACE} ${secret} --ignore-not-found
+    # # kubectl get secret ${secret} --namespace=${secret_namespace} -o yaml | sed 's/namespace: '${secret_namespace}'/namespace: '${PREVIEW_NAMESPACE}'/g' | kubectl create --namespace=${PREVIEW_NAMESPACE} -f -
+    # kubectl get secret ${secret} --namespace=${secret_namespace} -o yaml | \
+    # sed 's/namespace: '${secret_namespace}'/namespace: '${PREVIEW_NAMESPACE}'/g' | \
+    # sed 's/app.kubernetes.io\/instance: .*/app: '${PREVIEW_NAMESPACE}'/g' | \
+    # kubectl create --namespace=${PREVIEW_NAMESPACE} -f -
     kubectl get secret ${secret} --namespace=${secret_namespace} -o yaml | \
-    sed 's/namespace: '${secret_namespace}'/namespace: '${PREVIEW_NAMESPACE}'/g' | \
-    sed 's/app.kubernetes.io\/instance: .*/app: '${PREVIEW_NAMESPACE}'/g' | \
-    kubectl create --namespace=${PREVIEW_NAMESPACE} -f -
+    sed 's/namespace: .*/namespace: '${PREVIEW_NAMESPACE}'/' | \
+    kubectl apply --force -f -
     echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
   done
 
