@@ -51,6 +51,7 @@ for secret_namespace in ${NAMESPACE_SECRETS[@]}; do
   echo ""
   echo "======:==================:================"
   echo "START : secret namespace : ${secret_namespace}"
+  echo "START : k8s context      : $(kubectl config current-context)"
   echo "======:==================:================"
 
   # get secrets
