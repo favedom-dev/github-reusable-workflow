@@ -121,7 +121,7 @@ jobs:
       - name: "🔧 Docker Auth"
         if: ${{ !env.ACT }}
         id: auth-docker
-        uses: 'docker/login-action@v1'
+        uses: 'docker/login-action@v2'
         with:
           username: 'oauth2accesstoken'
           password: '${{ steps.auth-gcp-token.outputs.access_token }}'
