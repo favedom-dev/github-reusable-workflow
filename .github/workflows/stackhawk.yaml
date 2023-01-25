@@ -17,11 +17,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       BASE_DOMAIN:
-        default: 'staging.joinpeeq.com'
+        default: 'dev.fanfuzenil.com'
         required: false
         type: string
       KEYCLOAK_REALM:
-        default: 'peeq'
+        default: 'fanfuzenil'
         required: false
         type: string
       HEALTH_PATH:
