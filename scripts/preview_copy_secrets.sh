@@ -72,11 +72,13 @@ for secret_namespace in ${NAMESPACE_SECRETS[@]}; do
     # kubectl create --namespace=${PREVIEW_NAMESPACE} -f -
     kubectl get secret ${secret} --namespace=${secret_namespace} -o yaml | \
     sed 's/namespace: .*/namespace: '${PREVIEW_NAMESPACE}'/' | \
+    sed 's/argocd.argoproj.io\/instance: .*/prinstance: '${PREVIEW_NAMESPACE}'/' | \
     kubectl apply --force --namespace=${PREVIEW_NAMESPACE} -f -
     echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
     echo "START: DEBUG"
     kubectl get secret ${secret} --namespace=${secret_namespace} -o yaml | \
-    sed 's/namespace: .*/namespace: '${PREVIEW_NAMESPACE}'/'
+    sed 's/namespace: .*/namespace: '${PREVIEW_NAMESPACE}'/' | \
+    sed 's/argocd.argoproj.io\/instance: .*/prinstance: '${PREVIEW_NAMESPACE}'/'
     echo "-----"
     kubectl get secrets --namespace=${PREVIEW_NAMESPACE}
     echo "END: DEBUG"
