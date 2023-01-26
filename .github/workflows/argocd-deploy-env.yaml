@@ -166,9 +166,8 @@ jobs:
             yq \
             eval \
             --prettyPrint \
-            "(.${{ inputs.YAML_ELEMENT }}[] | select(has(\"name\")) | select(.name == \"${{ steps.set-argocd-app-name.outputs.ARGOCD_APP_NAME }}\")).${{ inputs.YAML_UPDATE_ELEMENT }} = \"${{ inputs.VERSION }}\"" \
+            "(.${{ inputs.YAML_ELEMENT }}[] | select(has(\"name\")) | select(.name == \"${{ inputs.NAME }}\")).${{ inputs.YAML_UPDATE_ELEMENT }} = \"${{ inputs.VERSION }}\"" \
             -i ./${{ inputs.YAML_FILE }}
-            # "(.${{ inputs.YAML_ELEMENT }}[] | select(has(\"name\")) | select(.name == \"${{ inputs.NAME }}\")).${{ inputs.YAML_UPDATE_ELEMENT }} = \"${{ inputs.VERSION }}\"" \
           fi
 # yamllint enable rule:line-length
 
