@@ -13,8 +13,15 @@ on:  # yamllint disable-line rule:truthy
         default: ''
         required: false
         type: string
+      ARGOCD_APP_NAME:
+        required: false
+        type: string
+      REMOVE_PEEQ_PREFIX:
+        default: true  # true removes "peeq-" | false keeps input.NAME
+        required: false
+        type: boolean
       ENV_REPO_NAME:
-        default: 'favedom-dev/argo-deployments'
+        default: 'favedom-dev/argocd-deployments'
         required: false
         type: string
       ENV_REPO_PATH:
@@ -22,7 +29,7 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       ENV_REPO_SUBDIR_BASE:
-        default: 'favedom-dev/peeq'
+        default: 'dev/fanfuzenil'
         required: false
         type: string
       ENV_REPO_SUBDIR:
@@ -76,6 +83,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      - name: "Set ARGOCD_APP_NAME"
+        id: set-argocd-app-name
+        env:
+          REMOVE_PEEQ_PREFIX: ${{ inputs.REMOVE_PEEQ_PREFIX }}
+        run: |
+          ARGOCD_APP_NAME=${{ inputs.ARGOCD_APP_NAME }}
+          if [ ! -n "${ARGOCD_APP_NAME}" ]; then
+            ARGOCD_APP_NAME=$(echo ${{ inputs.name }} | sed 's/peeq-//')
+          fi
+          echo "ARGOCD_APP_NAME=${ARGOCD_APP_NAME}" >> $GITHUB_OUTPUT
+
       - name: "🔧 Git config"
         if: github.ref == 'refs/heads/master'
         run: |
@@ -95,7 +113,8 @@ jobs:
         id: set-env-repo-subdir
         env:
           OVERRIDE_SUBDIR_NAME: ${{ inputs.OVERRIDE_SUBDIR_NAME }}
-          SUBDIR_NAME: ${{ inputs.NAME }}
+          # SUBDIR_NAME: ${{ inputs.NAME }}
+          SUBDIR_NAME: ${{ steps.set-argocd-app-name.outputs.ARGOCD_APP_NAME }}
         run: |
           echo "SUBDIR_NAME         : ${SUBDIR_NAME}"
           echo "OVERRIDE_SUBDIR_NAME: ${OVERRIDE_SUBDIR_NAME}"
@@ -128,7 +147,8 @@ jobs:
         working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }}
         env:
           VERSION_SCRIPT_NAME: ${{ inputs.VERSION_SCRIPT_NAME }}
-          NAME: ${{ inputs.NAME }}
+          # NAME: ${{ inputs.NAME }}
+          NAME: ${{ steps.set-argocd-app-name.outputs.ARGOCD_APP_NAME }}
           VERSION: ${{ inputs.VERSION }}
           YAML_FILE: ${{ inputs.YAML_FILE }}
           # ELEMENT_NAME_1: ${{ inputs.ELEMENT_NAME_1 }}
@@ -155,9 +175,9 @@ jobs:
         if: github.ref == 'refs/heads/master'
         working-directory: ${{ inputs.ENV_REPO_PATH }}
         env:
-          NAME: ${{ inputs.NAME }}
+          NAME: ${{ steps.set-argocd-app-name.outputs.ARGOCD_APP_NAME }}
           VERSION: ${{ inputs.VERSION }}
-          BRANCH_NAME: gha_${{ inputs.NAME }}_${{ inputs.VERSION }}
+          BRANCH_NAME: gha_${{ steps.set-argocd-app-name.outputs.ARGOCD_APP_NAME }}_${{ inputs.VERSION }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           MONOREPO_APP: ${{ inputs.MONOREPO_APP }}
 # yamllint disable rule:line-length

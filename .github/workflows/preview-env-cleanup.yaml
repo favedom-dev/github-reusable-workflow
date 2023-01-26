@@ -10,7 +10,12 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
       CLUSTER_NAME:
-        default: 'favedom-dev'
+        default: 'fanfuzenil'
+        # default: 'favedom-dev'
+        required: false
+        type: string
+      CLUSTER_PROJECT_ID:
+        default: 'development-375017'
         required: false
         type: string
       LOCATION:
@@ -59,6 +64,7 @@ jobs:
         with:
           cluster_name: ${{ inputs.CLUSTER_NAME }}
           location: ${{ inputs.LOCATION }}
+          project_id: ${{ inputs.CLUSTER_PROJECT_ID }}
 
       - name: "Delete namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
         env:
