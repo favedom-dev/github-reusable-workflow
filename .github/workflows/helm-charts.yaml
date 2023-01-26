@@ -381,8 +381,7 @@ jobs:
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           SCRIPT_NAME: preview_copy_secrets.sh
-          # BRANCH_NAME: master
-          BRANCH_NAME: dev_env
+          BRANCH_NAME: master
         working-directory: ${{ inputs.SCRIPTS_DIR }}
         run: |
           wget -O ./${SCRIPT_NAME} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/${BRANCH_NAME}/scripts/${SCRIPT_NAME}
