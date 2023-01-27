@@ -53,7 +53,7 @@ on:  # yamllint disable-line rule:truthy
       WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
         required: true
       NEXUS_FAVEDOM_DEV_PASSWORD:
-        required: true
+        required: false
 
 jobs:
 
