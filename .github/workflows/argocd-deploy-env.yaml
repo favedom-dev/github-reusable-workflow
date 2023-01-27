@@ -140,7 +140,7 @@ jobs:
           pwd
           cat ./${{ inputs.YAML_FILE }}
 
-      - name: "Update version in environment repo: ${{ inputs.YAML_FILE }}"
+      - name: "Update ${{ steps.set-argocd-app-name.outputs.ARGOCD_APP_NAME }} version ${{ inputs.VERSION }} in environment repo: ${{ inputs.YAML_FILE }}"
         if: github.ref == 'refs/heads/master'
         # working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ inputs.ENV_REPO_SUBDIR }}
 # yamllint disable-line
@@ -171,7 +171,7 @@ jobs:
           fi
 # yamllint enable rule:line-length
 
-      - name: "🌐 Create environment PR"
+      - name: "🌐 Create environment PR in ${{ inputs.ENV_REPO_NAME }}"
         if: github.ref == 'refs/heads/master'
         working-directory: ${{ inputs.ENV_REPO_PATH }}
         env:
