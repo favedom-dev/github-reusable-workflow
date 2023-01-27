@@ -80,6 +80,7 @@ jobs:
           export GITHUB_TOKEN=${{ secrets.GH_TOKEN }}
           ./auto_increment_version.sh ${{ inputs.MONOREPO_APP }}
           VERSION=$(cat VERSION)
+          TAG=$(cat TAG)
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
