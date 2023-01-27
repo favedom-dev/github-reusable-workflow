@@ -14,6 +14,9 @@ on:  # yamllint disable-line rule:truthy
       version:
         description: "Repo Version"
         value: ${{ jobs.repo-version.outputs.version }}
+      tag:
+        description: "Repo Tag"
+        value: ${{ jobs.repo-version.outputs.tag }}
       build-version:
         description: "Build Version"
         value: ${{ jobs.repo-version.outputs.build-version }}
@@ -27,6 +30,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     outputs:
       version: ${{ steps.set-version.outputs.version }}
+      tag: ${{ steps.set-version.outputs.tag }}
       build-version: ${{ steps.set-version.outputs.build-version }}
     steps:
 
@@ -77,6 +81,7 @@ jobs:
           ./auto_increment_version.sh ${{ inputs.MONOREPO_APP }}
           VERSION=$(cat VERSION)
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
       - name: "📜 Set version"
         id: set-version

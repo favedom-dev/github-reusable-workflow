@@ -3,7 +3,7 @@
 # if a monorepo pass the app name
 
 # may need to increase for monorepo if several versions between
-GH_LIMIT=200
+GH_LIMIT=400
 MONOREPO_APP_NAME=$1
 
 if [[ ! -z ${MONOREPO_APP_NAME} ]]; then
@@ -81,13 +81,13 @@ if [ -z "$NEEDS_TAG" ]; then
     echo ${VNUM1} > VERSION_MAJOR
     echo ${VNUM2} > VERSION_MINOR
     echo ${VNUM3} > VERSION_PATCH
-    # echo ${NEW_TAG} > TAG_VERSION
+    echo ${NEW_TAG} > TAG
 else
     echo "Already a tag on this commit"
     echo $(echo ${VERSION} | sed 's/v//') > VERSION
     echo $(echo ${VERSION} | sed 's/v//' | cut -f1 -d .) > VERSION_MAJOR
     echo $(echo ${VERSION} | sed 's/v//' | cut -f2 -d .) > VERSION_MINOR
     echo $(echo ${VERSION} | sed 's/v//' | cut -f3 -d .) > VERSION_PATCH
-    # echo ${VERSION} > TAG_VERSION
+    echo ${NEW_TAG_PREFIX}${VERSION} > TAG
 fi
 exit 0
