@@ -72,18 +72,8 @@ setup_branch_protection.sh ${REPO_TYPE}
 - `HAWK_API_KEY`
   - Stackhawk API Key
 
-- `JX_CHARTMUSEUM_PASSWORD`
-  - Jenkins X Chartmuseum
-
 - `KEYCLOAK_PEEQ_USERS`
   - Staging (favedom-dev)
-
-- `NEXUS_AZOR_PASSWORD`
-  - Nexus password for velocityz-azor (jx)
-  - **NOTE:** Not used in these workflows
-
-- `NEXUS_FAVEDOM_DEV_PASSWORD`
-  - Nexus password for favedom-dev (jx)
 
 - `NPM_TOKEN`
   - token used to generate `.npmrc`
@@ -160,7 +150,6 @@ setup_branch_protection.sh ${REPO_TYPE}
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-      CHARTMUSEUM_PASSWORD: '${{ secrets.JX_CHARTMUSEUM_PASSWORD }}'
 ```
 
 ### `lint-sql.yaml`
@@ -204,7 +193,6 @@ setup_branch_protection.sh ${REPO_TYPE}
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-      NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
 ```
 
 ### `node-docker.yaml`
@@ -343,7 +331,7 @@ setup_branch_protection.sh ${REPO_TYPE}
   - `++PR_NUM++` with PR number `${{ github.event.number }}`
   - `++NAME++` with the app name (example `peeq-sms`)
   - `++SECRET_NAMESPACE++` the namespace the secrets in the array reside in
-  - `++SECRETS_ARRAY++` array of secrets (example: `("rabbitmq" "peeq-users" "peeq-sms-twilio" "jx-staging-peeq-sms-pg")`)
+  - `++SECRETS_ARRAY++` array of secrets (example: `("rabbitmq" "keycloak-clients" "twilio" "postgres-sms")`)
 
 ```bash
 export PR_NUM=++PR_NUM++

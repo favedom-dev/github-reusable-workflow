@@ -4,7 +4,6 @@
 #    namespace + ":" + secret names "," separated
 # Examples:
 # namespace1:secretA,secretB namespace2:secretX,secretY,secretZ
-# jx-staging:rabbitmq jx:stackhawk-fan,stackhawk-preview
 DEFAULT_SECRET_FILENAME="./preview_secrets.txt"
 # 1st arg can override the SECRET_FILENAM name
 SECRET_FILENAME="${1:-$DEFAULT_SECRET_FILENAME}"

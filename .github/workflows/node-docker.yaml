@@ -153,8 +153,6 @@ jobs:
         if: inputs.UPLOAD_GS == true
         run: sed -i "s/++DEPLOY_URL++/$(sed -e 's/\//\\\//g' DEPLOY_URL)/g" ./docker/environment.tpl.json
 
-# https://github.com/favedom-dev/jenkins-x-kubernetes/blob/master/packs/javascript-ui-nginx-helmfile/pipeline.yaml
-
       # - name: "🔧 helm init"
       #   run: |
       #     helm init --client-only --stable-repo-url ${{ inputs.HELM_REPO }}

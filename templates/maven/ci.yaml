@@ -28,7 +28,6 @@ jobs:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-      NEXUS_FAVEDOM_DEV_PASSWORD: ${{ secrets.NEXUS_FAVEDOM_DEV_PASSWORD }}
 
   helm-charts:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/helm-charts.yaml@master
@@ -42,7 +41,6 @@ jobs:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-      CHARTMUSEUM_PASSWORD: '${{ secrets.JX_CHARTMUSEUM_PASSWORD }}'
 
   stackhawk:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/stackhawk.yaml@master
@@ -55,7 +53,7 @@ jobs:
     secrets:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       HAWK_API_KEY: ${{ secrets.HAWK_API_KEY }}
-      TEST_PASSWORD: ${{ secrets.STACKHAWK_TEST_PASSWORD }}
+      TEST_PASSWORD: ${{ secrets.STACKHAWK_USER_PASSWORD }}
 
   staging:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/argocd-deploy-env.yaml@master

@@ -33,7 +33,6 @@ jobs:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-      CHARTMUSEUM_PASSWORD: '${{ secrets.JX_CHARTMUSEUM_PASSWORD }}'
 
   staging:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/argocd-deploy-env.yaml@master
