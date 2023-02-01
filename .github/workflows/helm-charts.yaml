@@ -326,6 +326,7 @@ jobs:
         env:
           NAME: ${{ inputs.NAME }}
           HELM_VALUES_GLOBALS: ${{ inputs.HELM_VALUES_GLOBALS }}
+          HELM_PREVIEW_ARGS: ${{ inputs.HELM_PREVIEW_ARGS }}
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
         run: |
           echo "NAME                   : ${NAME}"
