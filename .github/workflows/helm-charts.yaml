@@ -129,9 +129,10 @@ jobs:
         id: set-chart-app-name
         env:
           CHART_APP_NAME: ${{ inputs.NAME }}
+          OVERRIDE_CHART_APP_NAME: ${{ inputs.OVERRIDE_CHART_APP_NAME }}
         run: |
-          OVERRIDE_CHART_APP_NAME=${{ inputs.OVERRIDE_CHART_APP_NAME }}
-          if [ -n ${OVERRIDE_CHART_APP_NAME} ]; then
+          echo "OVERRIDE_CHART_APP_NAME: ${OVERRIDE_CHART_APP_NAME}"
+          if [ -n "${OVERRIDE_CHART_APP_NAME}" ]; then
             CHART_APP_NAME=${OVERRIDE_CHART_APP_NAME}
           fi
           echo "CHART_APP_NAME : ${CHART_APP_NAME}"
@@ -156,7 +157,7 @@ jobs:
               CHARTS_DIR=${BASE_CHARTS_DIR}/${APP_NAME}
             fi
           fi;
-          echo "CHARTS_DIR: ${CHARTS_DIR}"
+          echo "CHARTS_DIR : ${CHARTS_DIR}"
           echo "CHARTS_DIR=${CHARTS_DIR}" >> $GITHUB_ENV
           echo "CHARTS_DIR=${CHARTS_DIR}" >> $GITHUB_OUTPUT
 
