@@ -146,6 +146,7 @@ jobs:
           APP_NAME: ${{ inputs.NAME }}
           GH_REF: ${{ github.ref }}
           OVERRIDE_CHARTS_DIR: ${{ inputs.OVERRIDE_CHARTS_DIR }}
+          OVERRIDE_CHART_APP_NAME: ${{ inputs.OVERRIDE_CHART_APP_NAME }}
         run: |
           CHARTS_DIR=${BASE_CHARTS_DIR}/preview
           if [ -n "${OVERRIDE_CHARTS_DIR}" ]; then
