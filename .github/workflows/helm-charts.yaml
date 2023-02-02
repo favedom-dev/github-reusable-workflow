@@ -125,6 +125,19 @@ jobs:
         run: |
           echo "HELM_DEBUG_FLAG=--debug" >> $GITHUB_ENV
 
+      - name: "🔧 Set chart app name"
+        id: set-chart-app-name
+        env:
+          CHART_APP_NAME: ${{ inputs.NAME }}
+        run: |
+          OVERRIDE_CHART_APP_NAME=${{ inputs.OVERRIDE_CHART_APP_NAME }}
+          if [ -n ${OVERRIDE_CHART_APP_NAME} ]; then
+            CHART_APP_NAME=${OVERRIDE_CHART_APP_NAME}
+          fi
+          echo "CHART_APP_NAME : ${CHART_APP_NAME}"
+          echo "CHART_APP_NAME=${CHART_APP_NAME}" >> $GITHUB_ENV
+          echo "CHART_APP_NAME=${CHART_APP_NAME}" >> $GITHUB_OUTPUT
+
       - name: "🔧 Set charts dir"
         id: set-charts-dir
         env:
@@ -173,7 +186,7 @@ jobs:
       - name: "🔧 Update helm charts"
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
         env:
-          APP_NAME: ${{ inputs.NAME }}
+          CHART_APP_NAME: ${{ steps.set-chart-app-name.outputs.CHART_APP_NAME }}
           VERSION: ${{ inputs.VERSION }}
           DOCKER_REGISTRY: ${{ inputs.DOCKER_REGISTRY }}
           DOCKER_REGISTRY_NAME: ${{ inputs.DOCKER_REGISTRY_NAME }}
@@ -181,7 +194,7 @@ jobs:
           GH_REF: ${{ github.ref }}
 # yamllint disable rule:line-length
         run: |
-          echo "APP_NAME            : ${APP_NAME}"
+          echo "CHART_APP_NAME      : ${CHART_APP_NAME}"
           echo "VERSION             : ${VERSION}"
           echo "DOCKER_REGISTRY     : ${DOCKER_REGISTRY}"
           echo "DOCKER_REGISTRY_NAME: ${DOCKER_REGISTRY_NAME}"
@@ -190,7 +203,7 @@ jobs:
           sed -i -e "s/version:.*/version: ${VERSION}/" Chart.yaml
           sed -i -e "s/tag:.*/tag: ${VERSION}/" values.yaml
           echo "GAR: repository update"
-          sed -i -e "s|repository:.*|repository: ${DOCKER_REGISTRY}\/${PROJECT_ID}\/${DOCKER_REGISTRY_NAME}\/${APP_NAME}|" values.yaml
+          sed -i -e "s|repository:.*|repository: ${DOCKER_REGISTRY}\/${PROJECT_ID}\/${DOCKER_REGISTRY_NAME}\/${CHART_APP_NAME}|" values.yaml
           if [ "${GH_REF}" == "refs/heads/master" ]; then
             echo "appVersion: ${VERSION}" >> Chart.yaml
           else
@@ -292,7 +305,7 @@ jobs:
         if: github.ref == 'refs/heads/master'
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
         env:
-          APP_NAME: ${{ inputs.NAME }}
+          CHART_APP_NAME: ${{ steps.set-chart-app-name.outputs.CHART_APP_NAME }}
           VERSION: ${{ inputs.VERSION }}
           HELM_EXPERIMENTAL_OCI: 1  # needed for oci://
           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
@@ -301,8 +314,8 @@ jobs:
 # yamllint disable rule:line-length
         run: |
           helm push \
-          ${APP_NAME}-${VERSION}.tgz \
-          oci://${HELM_DOCKER_REGISTRY}/${PROJECT_ID}/${HELM_REGISTRY_NAME}/${APP_NAME} \
+          ${CHART_APP_NAME}-${VERSION}.tgz \
+          oci://${HELM_DOCKER_REGISTRY}/${PROJECT_ID}/${HELM_REGISTRY_NAME}/${CHART_APP_NAME} \
           ${HELM_DEBUG_FLAG}
 # yamllint enable rule:line-length
 
