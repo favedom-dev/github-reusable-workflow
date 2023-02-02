@@ -215,6 +215,10 @@ jobs:
             sed -i -e "s/version:.*/version: ${VERSION}/" ../*/Chart.yaml
             echo "  version: ${VERSION}" >> requirements.yaml
           fi
+          if [ "${{ inputs.OVERRIDE_CHART_APP_NAME }}" != "${{ inputs.OVERRIDE_CHART_APP_DIR }}" ]; then
+            echo "Updating requirements.yaml with: name: ${CHART_APP_NAME}"
+            sed -i -e "s|name:.*|name: ${CHART_APP_NAME}|" requirements.yaml
+          fi
 # yamllint enable rule:line-length
 
       # - name: "DEBUG: helm charts Before"
