@@ -19,6 +19,9 @@ on:  # yamllint disable-line rule:truthy
       OVERRIDE_CHARTS_DIR:
         required: false
         type: string
+      OVERRIDE_CHART_APP_NAME:
+        required: false
+        type: string
       DO_PREVIEW_ENVIRONMENT:
         default: true
         required: false
@@ -134,7 +137,11 @@ jobs:
           if [ -n "${OVERRIDE_CHARTS_DIR}" ]; then
             CHARTS_DIR=${{ inputs.OVERRIDE_CHARTS_DIR }}
           elif [ "${GH_REF}" == "refs/heads/master" ]; then
-            CHARTS_DIR=${BASE_CHARTS_DIR}/${APP_NAME}
+            if [ -n ${OVERRIDE_CHART_APP_NAME} ]; then
+              CHARTS_DIR=${BASE_CHARTS_DIR}/${OVERRIDE_CHART_APP_NAME}
+            else
+              CHARTS_DIR=${BASE_CHARTS_DIR}/${APP_NAME}
+            fi
           fi;
           echo "CHARTS_DIR: ${CHARTS_DIR}"
           echo "CHARTS_DIR=${CHARTS_DIR}" >> $GITHUB_ENV
