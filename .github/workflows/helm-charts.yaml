@@ -216,8 +216,13 @@ jobs:
             echo "  version: ${VERSION}" >> requirements.yaml
           fi
           if [ "${{ inputs.OVERRIDE_CHART_APP_NAME }}" != "${{ inputs.OVERRIDE_CHART_APP_DIR }}" ]; then
-            echo "Updating requirements.yaml with: name: ${CHART_APP_NAME}"
-            sed -i -e "s|name:.*|name: ${CHART_APP_NAME}|" requirements.yaml
+            if [ "${GH_REF}" == "refs/heads/master" ]; then
+              YAML_FILE="Chart.yaml"
+            else
+              YAML_FILE="requirements.yaml"
+            fi
+            echo "Updating ${YAML_FILE} with: name: ${CHART_APP_NAME}"
+            sed -i -e "s|name:.*|name: ${CHART_APP_NAME}|" ${YAML_FILE}
           fi
 # yamllint enable rule:line-length
 
