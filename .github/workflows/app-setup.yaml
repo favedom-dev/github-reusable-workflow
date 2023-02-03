@@ -132,3 +132,13 @@ jobs:
           echo "IS_STACKHAWK_READY: ${IS_STACKHAWK_READY}"
           echo "IS_STACKHAWK_READY=${IS_STACKHAWK_READY}" >> $GITHUB_OUTPUT
           echo "STACKHAWK_DIRECTORY=${STACKHAWK_DIRECTORY}" >> $GITHUB_OUTPUT
+
+      - name: "📜 Display values: ${{ steps.set-name.outputs.NAME }} "
+        env:
+          PR_VERSION: ${{ steps.pr-version.outputs.version }}
+        run: |
+          echo "NAME                : ${{ steps.set-name.outputs.NAME }}"
+          echo "PREVIEW_NAMESPACE   : ${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}"
+          echo "API_PATH            : ${{ steps.get-api-path.outputs.API_PATH }}"
+          echo "IS_STACKHAWK_READY  : ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}"
+          echo "STACKHAWK_DIRECTORY : ${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}"

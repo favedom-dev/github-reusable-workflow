@@ -40,6 +40,10 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      VERSION_SCRIPT_BASE_URL:
+        default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts'
+        required: false
+        type: string
       VERSION_SCRIPT_NAME:
         default: ''  # 'update_component_version.sh'
         required: false
@@ -158,7 +162,7 @@ jobs:
 # yamllint disable rule:line-length
         run: |
           if [ ${#VERSION_SCRIPT_NAME} -gt 0 ]; then
-            wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts/${VERSION_SCRIPT_NAME}
+            wget ${{ inputs.VERSION_SCRIPT_BASE_URL }}/${VERSION_SCRIPT_NAME}
             chmod 777 ./${VERSION_SCRIPT_NAME}
             ./${VERSION_SCRIPT_NAME}
             rm ./${VERSION_SCRIPT_NAME}
