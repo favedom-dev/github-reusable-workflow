@@ -17,12 +17,8 @@ on:  # yamllint disable-line rule:truthy
         default: '.'
         required: false
         type: string
-      DOCKERFILE_FILE:
-        default: './Dockerfile'
-        required: false
-        type: string
-      TAG2:
-        default: 'latest'
+      MAVEN_SETTINGS_URL:
+        default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2'
         required: false
         type: string
       PROJECT_ID:
@@ -63,6 +59,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      - name: "🔧 Setup variables"
+        id: setup-variables
+        run: |
+          GAR_URL="${{ inputs.GAR_MAVEN_URL }}${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.MAVEN_REGISTRY }}/${{ inputs.JAR_PATH }}:${{ inputs.NAME }}/${{ inputs.VERSION }}?project=${{ inputs.PROJECT_ID }}"
+          echo "GAR_URL : ${GAR_URL}"
+          echo "GAR_URL=${GAR_URL}" >> $GITHUB_ENV
+          echo "GAR_URL=${GAR_URL}" >> $GITHUB_OUTPUT
+
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v3
 
@@ -83,7 +87,7 @@ jobs:
 
       - name: "🔧 Maven ~/.m2/settings.xml"
         run: |
-          wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
+          wget ${{ inputs.MAVEN_SETTINGS_URL }}/settings.xml
           envsubst < ./settings.xml > ~/.m2/settings.xml
 
       - name: "🔨 Maven set version"
@@ -100,7 +104,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 # yamllint disable rule:line-length
           # https://console.cloud.google.com/artifacts/maven/favedom-dev/us-central1/peeq-java/com.peeq:peeq-shared-lib/0.0.0-SNAPSHOT-PR-147-2?project=favedom-dev
-          GAR_URL: ${{ inputs.GAR_MAVEN_URL }}${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.MAVEN_REGISTRY }}/${{ inputs.JAR_PATH }}:${{ inputs.NAME }}/${{ inputs.VERSION }}?project=${{ inputs.PROJECT_ID }}
+          GAR_URL: ${{ steps.setup-variables.outputs.GAR_URL }}
 # yamllint enable rule:line-length
         run: |-
           echo "${GAR_URL}"

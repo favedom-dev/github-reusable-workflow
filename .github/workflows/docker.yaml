@@ -46,6 +46,18 @@ jobs:
       DOCKER_BUILDKIT: 1
     steps:
 
+      - name: "🔧 Setup variables"
+        id: setup-variables
+        run: |
+          DOCKER_LOCATION=${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}
+          echo "DOCKER_LOCATION : ${DOCKER_LOCATION}"
+          echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_ENV
+          echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_OUTPUT
+          DOCKER_URL="https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
+          echo "DOCKER_URL : ${DOCKER_URL}"
+          echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_ENV
+          echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_OUTPUT
+
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v3
         with:
@@ -85,13 +97,17 @@ jobs:
           context: .
           push: true
 # yamllint disable-line
-          tags: ${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:${{ inputs.VERSION }},${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}:latest
+          tags: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}:latest
 
       - name: "🌐 Link to Container"
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
 # yamllint disable rule:line-length
         run: |-
-          echo "https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
+          echo "${DOCKER_URL}"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            gh pr comment ${{ github.event.number }} --body "🐳 Container: [${{ inputs.NAME }} ${{ inputs.VERSION }}](https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/peeq-docker/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/)"
+            gh pr comment ${{ github.event.number }} \
+            --body "🐳 Container: [${{ inputs.NAME }} ${{ inputs.VERSION }}](${DOCKER_URL})"
           fi
 # yamllint enable rule:line-length
