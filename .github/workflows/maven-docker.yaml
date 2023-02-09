@@ -104,12 +104,13 @@ jobs:
           create_credentials_file: ${{ inputs.CREATE_CREDENTIALS_FILE }}
           export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
 
-      - name: "🔧 Google Auth JSON Key"
-        id: auth-gcp-key
-        if: inputs.RUN_GCP_JSON_KEY
-        uses: 'google-github-actions/auth@v0'
-        with:
-          credentials_json: '${{ secrets.GCP_JSON_KEY }}'
+# TODO: Uncomment and fix for ACT
+      # - name: "🔧 Google Auth JSON Key"
+      #   id: auth-gcp-key
+      #   if: inputs.RUN_GCP_JSON_KEY
+      #   uses: 'google-github-actions/auth@v0'
+      #   with:
+      #     credentials_json: '${{ secrets.GCP_JSON_KEY }}'
 
       # https://github.com/google-github-actions/setup-gcloud
       # - name: 'Set up Cloud SDK'
