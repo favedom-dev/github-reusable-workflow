@@ -106,7 +106,7 @@ jobs:
 
       - name: "🔧 Google Auth JSON Key"
         id: auth-gcp-key
-        if: inputs.RUN_GCP_JSON_KEY
+        if: inputs.RUN_GCP_JSON_KEY && ${{ !env.ACT }}
         uses: 'google-github-actions/auth@v0'
         with:
           credentials_json: '${{ secrets.GCP_JSON_KEY }}'
