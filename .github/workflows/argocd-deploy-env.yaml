@@ -176,7 +176,7 @@ jobs:
 # yamllint enable rule:line-length
 
       - name: "🌐 Create environment PR in ${{ inputs.ENV_REPO_NAME }}"
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' && ${{ !env.ACT }}
         working-directory: ${{ inputs.ENV_REPO_PATH }}
         env:
           NAME: ${{ steps.set-argocd-app-name.outputs.ARGOCD_APP_NAME }}

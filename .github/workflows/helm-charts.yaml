@@ -326,7 +326,7 @@ jobs:
       #     fi
 
       - name: "☸ RELEASE [GAR]: Upload helm chart to ocr://"
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/master' && {{ !env.ACT }}
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
         env:
           CHART_APP_NAME: ${{ steps.set-chart-app-name.outputs.CHART_APP_NAME }}
@@ -345,7 +345,7 @@ jobs:
 
 # START: PR ONLY
       - name: "☸ PREVIEW: Create namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
-        if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
+        if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true && {{ !env.ACT }}
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
         run: |
@@ -354,7 +354,7 @@ jobs:
           kubectl config set-context $(kubectl config current-context) --namespace ${PREVIEW_NAMESPACE}
 
       - name: "🔐 PREVIEW: Copy secrets"
-        if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
+        if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true && {{ !env.ACT }}
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           SCRIPT_NAME: ${{ inputs.SECRETS_SCRIPT_NAME }}
@@ -366,7 +366,7 @@ jobs:
           ./${SCRIPT_NAME}
 
       - name: "☸ PREVIEW: Helm upgrade/install"
-        if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
+        if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true && {{ !env.ACT }}
         env:
           NAME: ${{ inputs.NAME }}
           HELM_VALUES_GLOBALS: ${{ inputs.HELM_VALUES_GLOBALS }}
@@ -378,7 +378,7 @@ jobs:
           helm upgrade --install ${NAME} -f ./values.yaml . ${HELM_PREVIEW_ARGS} ${HELM_DEBUG_FLAG}
 
       - name: "🌐 PREVIEW: Link to Preview"
-        if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
+        if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true && {{ !env.ACT }}
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 # yamllint disable rule:line-length
