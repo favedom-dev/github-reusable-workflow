@@ -184,6 +184,8 @@ jobs:
 
       - name: "🔨 ${{ inputs.BUILD_NAME }}"
         if: inputs.BUILD == true
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
         run: ${{ inputs.BUILD_CMD }}
 
       # https://github.com/google-github-actions/upload-cloud-storage
