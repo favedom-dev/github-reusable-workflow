@@ -97,7 +97,7 @@ jobs:
           context: .
           push: true
 # yamllint disable-line
-          tags: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}:latest
+          tags: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}:${{ inputs.VERSION }},${{ steps.setup-variables.outputs.DOCKER_LOCATION }}:latest
 
       - name: "🌐 Link to Container"
         env:
