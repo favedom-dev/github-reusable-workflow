@@ -84,65 +84,65 @@ on:  # yamllint disable-line rule:truthy
 jobs:
 
   stackhawk:
-#     timeout-minutes: ${{ inputs.JOBS_TIMEOUT }}
-    timeout-minutes: 1
+    timeout-minutes: ${{ inputs.JOBS_TIMEOUT }}
+#     timeout-minutes: 1
     permissions:
       contents: 'read'
       id-token: 'write'
     runs-on: ubuntu-latest
     steps:
     
-      - name: "SKIPPING Stackhawk"
+#       - name: "SKIPPING Stackhawk"
+#         run: |
+#           echo "TODO: re-enable"
+
+      - name: "☁️ Checkout repository"
+        uses: actions/checkout@v3
+
+      - name: "🔧 Setup stackhawk"
+        working-directory: ${{ inputs.STACKHAWK_DIRECTORY }}
+        env:
+          SCRIPT_NAME: ${{ inputs.STACKHAWK_SETUP_SCRIPT_NAME }}
+          APP_NAME: ${{ inputs.NAME }}
+          APP_HOST: https://${{ inputs.NAMESPACE }}.${{ inputs.BASE_DOMAIN }}
+          NAMESPACE: ${{ inputs.NAMESPACE }}
+          API_PATH: ${{ inputs.API_PATH }}
+          TEST_USERNAME: ${{ inputs.TEST_USERNAME }}
+          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+          KEYCLOAK_AUTH: https://identity.${{ inputs.BASE_DOMAIN }}/auth/realms/${{ inputs.KEYCLOAK_REALM }}/protocol/openid-connect/token
         run: |
-          echo "TODO: re-enable"
+          wget -O ${SCRIPT_NAME} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/stackhawk/${SCRIPT_NAME}
+          chmod 777 ./${SCRIPT_NAME}
+          ./${SCRIPT_NAME}
 
-#       - name: "☁️ Checkout repository"
-#         uses: actions/checkout@v3
+      - name: "DEBUG: setup stackhawk"
+        working-directory: ${{ inputs.STACKHAWK_DIRECTORY }}
+        run: |
+          cat ./stackhawk.yml
 
-#       - name: "🔧 Setup stackhawk"
-#         working-directory: ${{ inputs.STACKHAWK_DIRECTORY }}
-#         env:
-#           SCRIPT_NAME: ${{ inputs.STACKHAWK_SETUP_SCRIPT_NAME }}
-#           APP_NAME: ${{ inputs.NAME }}
-#           APP_HOST: https://${{ inputs.NAMESPACE }}.${{ inputs.BASE_DOMAIN }}
-#           NAMESPACE: ${{ inputs.NAMESPACE }}
-#           API_PATH: ${{ inputs.API_PATH }}
-#           TEST_USERNAME: ${{ inputs.TEST_USERNAME }}
-#           TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
-#           KEYCLOAK_AUTH: https://identity.${{ inputs.BASE_DOMAIN }}/auth/realms/${{ inputs.KEYCLOAK_REALM }}/protocol/openid-connect/token
-#         run: |
-#           wget -O ${SCRIPT_NAME} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/stackhawk/${SCRIPT_NAME}
-#           chmod 777 ./${SCRIPT_NAME}
-#           ./${SCRIPT_NAME}
+      - name: "💓 Check that service is alive"
+        env:
+          APP_HOST: https://${{ inputs.NAMESPACE }}.${{ inputs.BASE_DOMAIN }}
+          API_PATH: ${{ inputs.API_PATH }}
+          HEALTH_PATH: ${{ inputs.HEALTH_PATH }}
+          HEALTH_RETRIES: ${{ inputs.HEALTH_RETRIES }}
+          HEALTH_RETRY_DELAY: ${{ inputs.HEALTH_RETRY_DELAY }}
+        run: |
+          echo "CHECKING: ${APP_HOST}${API_PATH}${HEALTH_PATH}"
+          curl --fail --retry ${HEALTH_RETRIES} --retry-delay ${HEALTH_RETRY_DELAY} ${{ inputs.CURL_ARGS }} ${APP_HOST}${API_PATH}${HEALTH_PATH}
 
-#       - name: "DEBUG: setup stackhawk"
-#         working-directory: ${{ inputs.STACKHAWK_DIRECTORY }}
-#         run: |
-#           cat ./stackhawk.yml
-
-#       - name: "💓 Check that service is alive"
-#         env:
-#           APP_HOST: https://${{ inputs.NAMESPACE }}.${{ inputs.BASE_DOMAIN }}
-#           API_PATH: ${{ inputs.API_PATH }}
-#           HEALTH_PATH: ${{ inputs.HEALTH_PATH }}
-#           HEALTH_RETRIES: ${{ inputs.HEALTH_RETRIES }}
-#           HEALTH_RETRY_DELAY: ${{ inputs.HEALTH_RETRY_DELAY }}
-#         run: |
-#           echo "CHECKING: ${APP_HOST}${API_PATH}${HEALTH_PATH}"
-#           curl --fail --retry ${HEALTH_RETRIES} --retry-delay ${HEALTH_RETRY_DELAY} ${{ inputs.CURL_ARGS }} ${APP_HOST}${API_PATH}${HEALTH_PATH}
-
-#       - name: "🦅 Run Stackhawk (timeout ${{ inputs.JOBS_TIMEOUT }} minutes)"
-#         env:
-#           APP_HOST: https://${{ inputs.NAMESPACE }}.${{ inputs.BASE_DOMAIN }}
-#           # APP_ID: ${{ inputs.STACKHAWK_APP_ID }}
-#           APP_ENV: ${{ inputs.STACKHAWK_APP_ENV }}
-#         uses: stackhawk/hawkscan-action@v2.0.0
-#         with:
-#           apiKey: ${{ secrets.HAWK_API_KEY }}
-#           dryRun: ${{ inputs.STACKHAWK_DRYRUN }}
-#           workspace: ./${{ inputs.STACKHAWK_DIRECTORY }}
-#           debug: ${{ inputs.STACKHAWK_DEBUG }}
-#           # codeScanningAlerts: ${{ inputs.STACKHAWK_CODESCANNINGALERTS }}
-#           githubToken: ${{ secrets.GH_TOKEN }}
-#           configurationFiles: |
-#             stackhawk.yml
+      - name: "🦅 Run Stackhawk (timeout ${{ inputs.JOBS_TIMEOUT }} minutes)"
+        env:
+          APP_HOST: https://${{ inputs.NAMESPACE }}.${{ inputs.BASE_DOMAIN }}
+          # APP_ID: ${{ inputs.STACKHAWK_APP_ID }}
+          APP_ENV: ${{ inputs.STACKHAWK_APP_ENV }}
+        uses: stackhawk/hawkscan-action@v2.0.0
+        with:
+          apiKey: ${{ secrets.HAWK_API_KEY }}
+          dryRun: ${{ inputs.STACKHAWK_DRYRUN }}
+          workspace: ./${{ inputs.STACKHAWK_DIRECTORY }}
+          debug: ${{ inputs.STACKHAWK_DEBUG }}
+          # codeScanningAlerts: ${{ inputs.STACKHAWK_CODESCANNINGALERTS }}
+          githubToken: ${{ secrets.GH_TOKEN }}
+          configurationFiles: |
+            stackhawk.yml
