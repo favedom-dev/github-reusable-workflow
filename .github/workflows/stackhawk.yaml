@@ -29,7 +29,7 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       HEALTH_RETRIES:
-        default: 3
+        default: 6
         required: false
         type: number
       HEALTH_RETRY_DELAY:
