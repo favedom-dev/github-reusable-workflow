@@ -87,6 +87,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      - name: "DEBUG: inputs"
+        run: |
+          echo "NAME                    : ${{ inputs.NAME }}"
+          echo "VERSION                 : ${{ inputs.VERSION }}"
+          echo "MONOREPO_APP            : ${{ inputs.MONOREPO_APP }}"
+          echo "ARGOCD_APP_NAME         : ${{ inputs.ARGOCD_APP_NAME }}"
+          echo "REMOVE_PEEQ_PREFIX      : ${{ inputs.REMOVE_PEEQ_PREFIX }}"
+          echo "ENV_REPO_NAME           : ${{ inputs.ENV_REPO_NAME }}"
+          echo "ENV_REPO_PATH           : ${{ inputs.ENV_REPO_PATH }}"
+          echo "ENV_REPO_SUBDIR_BASE    : ${{ inputs.ENV_REPO_SUBDIR_BASE }}"
+          echo "ENV_REPO_SUBDIR         : ${{ inputs.ENV_REPO_SUBDIR }}"
+          echo "OVERRIDE_SUBDIR_NAME    : ${{ inputs.OVERRIDE_SUBDIR_NAME }}"
+          echo "VERSION_SCRIPT_BASE_URL : ${{ inputs.VERSION_SCRIPT_BASE_URL }}"
+          echo "VERSION_SCRIPT_NAME     : ${{ inputs.VERSION_SCRIPT_NAME }}"
+          echo "YAML_FILE               : ${{ inputs.YAML_FILE }}"
+          echo "YAML_ELEMENT            : ${{ inputs.YAML_ELEMENT }}"
+          echo "YAML_UPDATE_ELEMENT     : ${{ inputs.YAML_UPDATE_ELEMENT }}"
+          echo "SED_GCR_REPO            : ${{ inputs.SED_GCR_REPO }}"
+          echo "SED_GAR_REPO            : ${{ inputs.SED_GAR_REPO }}"
+
       - name: "Set ARGOCD_APP_NAME"
         id: set-argocd-app-name
         env:
