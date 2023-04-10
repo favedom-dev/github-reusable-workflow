@@ -135,7 +135,7 @@ jobs:
           echo "ENV_REPO_SUBDIR: ${ENV_REPO_SUBDIR}"
           echo "ENV_REPO_SUBDIR=${ENV_REPO_SUBDIR}" >> $GITHUB_OUTPUT
 
-      - name: "DEBUG: ./${{ inputs.YAML_FILE }}"
+      - name: "DEBUG: PRE ./${{ inputs.YAML_FILE }}"
         if: github.ref == 'refs/heads/master'
         # working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ inputs.ENV_REPO_SUBDIR }}
 # yamllint disable-line
@@ -175,6 +175,15 @@ jobs:
           fi
 # yamllint enable rule:line-length
 
+      - name: "DEBUG: POST ./${{ inputs.YAML_FILE }}"
+        if: github.ref == 'refs/heads/master'
+        # working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ inputs.ENV_REPO_SUBDIR }}
+        # yamllint disable-line
+        working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }}
+        run: |
+          pwd
+          cat ./${{ inputs.YAML_FILE }}
+
       - name: "🌐 Create environment PR in ${{ inputs.ENV_REPO_NAME }}"
         if: github.ref == 'refs/heads/master'
         working-directory: ${{ inputs.ENV_REPO_PATH }}
@@ -187,6 +196,7 @@ jobs:
 # yamllint disable rule:line-length
         run: |
           git checkout -b ${BRANCH_NAME}
+          git status
           git commit -a -m "${NAME} ${VERSION}"
           git push -u origin ${BRANCH_NAME}
           FULL_VERSION=v${VERSION}
