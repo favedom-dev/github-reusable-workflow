@@ -1,25 +1,20 @@
 #!/bin/bash
 
 # if a monorepo pass the app name
-
-# may need to increase for monorepo if several versions between
-GH_LIMIT=400
 MONOREPO_APP_NAME=$1
 
 if [[ ! -z ${MONOREPO_APP_NAME} ]]; then
   echo "MONOREPO: ${MONOREPO_APP_NAME}"
   NEW_TAG_PREFIX="${MONOREPO_APP_NAME}/v"
-  FULL_VERSION=$(gh release list --limit ${GH_LIMIT} | grep "^${MONOREPO_APP_NAME}" | head -1 | awk '{print $1}')
-  VERSION=$(echo ${FULL_VERSION} | cut -f2 -d /)
+  # get highest tag number
+  FULL_VERSION=$(git tag -l "${MONOREPO_APP_NAME}/*" --sort=-version:refname | head -1)
+  VERSION=$(echo ${FULL_VERSION//$MONOREPO_APP_NAME\//})
 else
   echo "SINGLE REPO"
   NEW_TAG_PREFIX="v"
   # get highest tag number
-  # https://stackoverflow.com/questions/62960533/how-to-use-git-commands-during-a-github-action
-  # VERSION=`git describe --abbrev=0 --tags`
-  # https://docs.github.com/en/actions/using-workflows/using-github-cli-in-workflows
-  VERSION=`gh release view -q ".name" --json name`
-  FULL_VERSION=${VERSION}
+  FULL_VERSION=$(git tag --sort=-version:refname | head -1)
+  VERSION=${FULL_VERSION}
 fi
 
 echo "==============:======================="
