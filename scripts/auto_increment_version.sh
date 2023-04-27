@@ -60,12 +60,12 @@ echo "Updating \"${FULL_VERSION}\" to \"${NEW_TAG}\""
 echo ""
 
 # get current hash and see if it already has a tag
-GIT_COMMIT=`git rev-parse HEAD`
-NEEDS_TAG=`git describe --contains $GIT_COMMIT`
+# GIT_COMMIT=`git rev-parse HEAD`
+# NEEDS_TAG=`git describe --contains $GIT_COMMIT`
 
 # only tag if no tag already (would be better if the git describe command above could have a silent option)
-if [ -z "$NEEDS_TAG" ]; then
-    echo "Tagged with $NEW_TAG (Ignoring fatal:cannot describe - this means commit is untagged) "
+# if [ -z "$NEEDS_TAG" ]; then
+    # echo "Tagged with $NEW_TAG (Ignoring fatal:cannot describe - this means commit is untagged) "
     # env | sort
     gh release create $NEW_TAG --generate-notes
     rc=$?
@@ -77,12 +77,12 @@ if [ -z "$NEEDS_TAG" ]; then
     echo ${VNUM2} > VERSION_MINOR
     echo ${VNUM3} > VERSION_PATCH
     echo ${NEW_TAG} > TAG
-else
-    echo "Already a tag on this commit"
-    echo $(echo ${VERSION} | sed 's/v//') > VERSION
-    echo $(echo ${VERSION} | sed 's/v//' | cut -f1 -d .) > VERSION_MAJOR
-    echo $(echo ${VERSION} | sed 's/v//' | cut -f2 -d .) > VERSION_MINOR
-    echo $(echo ${VERSION} | sed 's/v//' | cut -f3 -d .) > VERSION_PATCH
-    echo ${NEW_TAG_PREFIX}${VERSION} > TAG
-fi
+# else
+#     echo "Already a tag on this commit"
+#     echo $(echo ${VERSION} | sed 's/v//') > VERSION
+#     echo $(echo ${VERSION} | sed 's/v//' | cut -f1 -d .) > VERSION_MAJOR
+#     echo $(echo ${VERSION} | sed 's/v//' | cut -f2 -d .) > VERSION_MINOR
+#     echo $(echo ${VERSION} | sed 's/v//' | cut -f3 -d .) > VERSION_PATCH
+#     echo ${NEW_TAG_PREFIX}${VERSION} > TAG
+# fi
 exit 0
