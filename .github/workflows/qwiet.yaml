@@ -1,0 +1,51 @@
+name: Qwiet
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+
+    inputs:
+      NAME:  # name of service, (ex: peeq-tracking)
+        required: true
+        type: string
+      ARG_LANGUAGE:
+        default: '--js'
+        required: false
+        type: string
+      SCAN_DIR:
+        default: './'
+        required: false
+        type: string
+
+    secrets:
+      GH_TOKEN:  # GitHub token
+        required: true
+      SHIFTLEFT_ACCESS_TOKEN:
+        required: true
+
+jobs:
+
+  qwiet:
+    # timeout-minutes: 15
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: "☁️ Checkout repository"
+        uses: actions/checkout@v3
+
+      - name: Download Qwiet CLI
+        run: |
+          curl https://cdn.shiftleft.io/download/sl > $HOME/sl && chmod a+rx $HOME/sl
+
+      # https://docs.shiftleft.io/cli/reference/analyze
+      - name: Qwiet Analyze with NextGen Static Analysis
+        env:
+          SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+        run: |
+          $HOME/sl analyze \
+          --app ${{ inputs.NAME }} \
+          ${{ inputs.ARG_LANGUAGE }} \
+          --cpg \
+          ${{ inputs.SCAN_DIR }}
