@@ -19,6 +19,10 @@ on:  # yamllint disable-line rule:truthy
         default: './'
         required: false
         type: string
+      VCS_PREFIX_CORRECTION:
+        default: ''
+        required: false
+        type: string
 
     secrets:
       GH_TOKEN:  # GitHub token
@@ -52,4 +56,5 @@ jobs:
           --app ${{ inputs.NAME }} \
           ${{ inputs.ARG_LANGUAGE }} \
           ${{ inputs.ARG_STANDARD }} \
+          ${{ inputs.VCS_PREFIX_CORRECTION }} \
           ${{ inputs.SCAN_DIR }}
