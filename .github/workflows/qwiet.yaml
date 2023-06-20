@@ -11,6 +11,10 @@ on:  # yamllint disable-line rule:truthy
         default: '--js'
         required: false
         type: string
+      ARG_STANDARD:
+        default: '--cpg'
+        required: false
+        type: string
       SCAN_DIR:
         default: './'
         required: false
@@ -47,5 +51,5 @@ jobs:
           $HOME/sl analyze \
           --app ${{ inputs.NAME }} \
           ${{ inputs.ARG_LANGUAGE }} \
-          --cpg \
+          ${{ inputs.ARG_STANDARD }} \
           ${{ inputs.SCAN_DIR }}
