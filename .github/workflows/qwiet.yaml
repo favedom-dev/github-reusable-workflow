@@ -59,8 +59,7 @@ jobs:
           ${{ inputs.VCS_PREFIX_CORRECTION }} \
           ${{ inputs.SCAN_DIR }} | tee analyze.txt
 
-          cat analyze.txt
-          SCAN_ID=$(grep -im 1 -E 'The Scan ID for application ' analyze.txt | grep -om 1 -E '\d+$')
+          SCAN_ID=$(grep -im 1 -E 'The Scan ID for application ' analyze.txt | grep -om 1 -E '[0-9]+$')
           echo "Scan ID: $SCAN_ID"
 
           if [[ "${SCAN_ID}" =~ ^[0-9]+$ ]]; then
