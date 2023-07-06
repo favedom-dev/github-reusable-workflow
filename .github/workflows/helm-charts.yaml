@@ -27,7 +27,8 @@ on:  # yamllint disable-line rule:truthy
         type: string
       DO_RELEASE_BUILD:
         required: false
-        type: boolean
+        type: string
+        # type: boolean
       DO_PREVIEW_ENVIRONMENT:
         default: true
         required: false
