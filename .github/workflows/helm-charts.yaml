@@ -147,19 +147,21 @@ jobs:
           INPUT_DO_RELEASE_BUILD: ${{ inputs.DO_RELEASE_BUILD }}
           INPUT_DO_PREVIEW_ENVIRONMENT: ${{ inputs.DO_PREVIEW_ENVIRONMENT }}
         run: |
-          if [ "${GH_REF}" = "refs/heads/master" ]; then
+          if [ "${GH_REF}" = "refs/heads/master" ] || [ "${INPUT_DO_RELEASE_BUILD}" = "true" ]; then
             DO_RELEASE_BUILD="true"
             DO_PREVIEW_ENVIRONMENT="false"
+            echo "DEBUG: IF - INPUT_DO_RELEASE_BUILD : ${INPUT_DO_RELEASE_BUILD}"
+            echo "DEBUG: IF - DO_RELEASE_BUILD : ${DO_RELEASE_BUILD}"
           else
             DO_RELEASE_BUILD="false"
             DO_PREVIEW_ENVIRONMENT="true"
-            echo "DEBUG: INPUT_DO_RELEASE_BUILD : ${INPUT_DO_RELEASE_BUILD}"
-            echo "DEBUG: DO_RELEASE_BUILD : ${DO_RELEASE_BUILD}"
-            if [ -n "${INPUT_DO_RELEASE_BUILD}" ]; then
-              DO_RELEASE_BUILD="true"
-              DO_PREVIEW_ENVIRONMENT="false"
-              echo "DEBUG: IF - DO_RELEASE_BUILD : ${DO_RELEASE_BUILD}"
-            fi
+            echo "DEBUG: ELSE - INPUT_DO_RELEASE_BUILD : ${INPUT_DO_RELEASE_BUILD}"
+            echo "DEBUG: ELSE - DO_RELEASE_BUILD : ${DO_RELEASE_BUILD}"
+            # if [ "${INPUT_DO_RELEASE_BUILD}" = "true" ]; then
+            #   DO_RELEASE_BUILD="true"
+            #   DO_PREVIEW_ENVIRONMENT="false"
+            #   echo "DEBUG: IF - DO_RELEASE_BUILD : ${DO_RELEASE_BUILD}"
+            # fi
           fi
           echo "DO_RELEASE_BUILD : ${DO_RELEASE_BUILD}"
           echo "DO_RELEASE_BUILD=${DO_RELEASE_BUILD}" >> $GITHUB_ENV
