@@ -98,7 +98,7 @@ jobs:
           CREATION_DATE=$(date '+%Y-%m-%d 12:00:00.000000')
 
           # Get the date 3 months from now without the time
-          RENEWAL_DATE=$(date -v+3m '+%Y-%m-%d')
+          RENEWAL_DATE=$(date -d '+3 months' '+%Y-%m-%d')
 
           # Get Vulnerability Management control (code: DCF-183)
           curl -X GET -G https://public-api.drata.com/public/controls \
