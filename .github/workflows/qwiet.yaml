@@ -29,6 +29,8 @@ on:  # yamllint disable-line rule:truthy
         required: true
       SHIFTLEFT_ACCESS_TOKEN:
         required: true
+      DRATA_API_KEY:
+        required: true
 
 jobs:
 
@@ -87,6 +89,37 @@ jobs:
     steps:
       - name: "Upload External Evidence"
         env:
-          SCAN_ID: ${{needs.qwiet.outputs.scan_id}}
-          SCAN_URL: ${{needs.qwiet.outputs.scan_url}}
-        run: echo "$SCAN_ID $SCAN_URL"
+          DRATA_API_KEY: ${{ secrets.DRATA_API_KEY }}
+          SCAN_ID: ${{ needs.qwiet.outputs.scan_id }}
+          SCAN_URL: ${{ needs.qwiet.outputs.scan_url }}
+          WORKSPACE_ID: '1'
+        run: |
+          # Get current date and time
+          CREATION_DATE=$(date '+%Y-%m-%d 12:00:00.000000')
+
+          # Get the date 3 months from now without the time
+          RENEWAL_DATE=$(date -v+3m '+%Y-%m-%d')
+
+          # Get Vulnerability Management control (code: DCF-183)
+          curl -X GET -G https://public-api.drata.com/public/controls \
+              -H "Authorization: Bearer ${DRATA_API_KEY}" \
+              -d "q=DCF-183" \
+              -d "isArchived=false" \
+              -o controls.json
+
+          TOTAL_CONTROLS=$(jq '.total' controls.json)
+          echo "Total controls: ${TOTAL_CONTROLS}"
+
+          CONTROL_ID=$(jq '.data[0].id' controls.json)
+          echo "Control ID: ${CONTROL_ID}"
+
+          curl -X POST "https://public-api.drata.com/public/workspaces/${WORKSPACE_ID}/controls/${CONTROL_ID}/external-evidence" \
+              -H "Authorization: Bearer ${DRATA_API_KEY}" \
+              -H "Content-Type: multipart/form-data" \
+              -H "Accept: application/json" \
+              --form "filename=\"Qwiet ${{ inputs.NAME }} ${SCAN_ID}\"" \
+              --form "url=\"${SCAN_URL}\"" \
+              --form "description=\"Github Action\"" \
+              --form "creationDate=\"${CREATION_DATE}\"" \
+              --form "renewalDate=\"${RENEWAL_DATE}\"" \
+              --form "renewalScheduleType=\"THREE_MONTHS\""
