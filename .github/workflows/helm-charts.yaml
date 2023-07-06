@@ -381,12 +381,16 @@ jobs:
 # START: PR ONLY
       - name: "☸ PREVIEW: Create namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
         # if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
-        if: github.ref != 'refs/heads/master' && ${{ steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT }} == "true"
+        if: |
+          github.ref != 'refs/heads/master' &&
+          ${{ steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT }} == 'true'
         # if: ${{ steps.setup-variables.outputs.DO_RELEASE_BUILD }} == "false" && ${{ steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT }} == "true"
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
         run: |
-          echo "Create Preview Namespace: ${PREVIEW_NAMESPACE} "
+          echo "Create Preview Namespace: ${PREVIEW_NAMESPACE}"
+          echo "steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT: ${{ steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT }}"
+          echo "steps.setup-variables.outputs.DO_RELEASE_BUILD: ${{ steps.setup-variables.outputs.DO_RELEASE_BUILD }}"
           kubectl create namespace ${PREVIEW_NAMESPACE} --dry-run=client -o json | kubectl apply -f -
           kubectl config set-context $(kubectl config current-context) --namespace ${PREVIEW_NAMESPACE}
 
