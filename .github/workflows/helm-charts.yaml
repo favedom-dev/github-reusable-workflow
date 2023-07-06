@@ -381,7 +381,8 @@ jobs:
 # START: PR ONLY
       - name: "☸ PREVIEW: Create namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
         # if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
-        if: ${{ steps.setup-variables.outputs.DO_RELEASE_BUILD }} != "true" && ${{ steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT }} == "true"
+        if: github.ref != 'refs/heads/master' && ${{ steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT }} == "true"
+        # if: ${{ steps.setup-variables.outputs.DO_RELEASE_BUILD }} == "false" && ${{ steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT }} == "true"
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
         run: |
