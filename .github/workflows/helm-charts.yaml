@@ -25,6 +25,9 @@ on:  # yamllint disable-line rule:truthy
       OVERRIDE_CHART_APP_NAME:
         required: false
         type: string
+      DO_RELEASE_BUILD:
+        required: false
+        type: boolean
       DO_PREVIEW_ENVIRONMENT:
         default: true
         required: false
@@ -135,6 +138,34 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - name: "🔧 Setup variables"
+        id: setup-variables
+        env:
+          GH_REF: ${{ github.ref }}
+          INPUT_DO_RELEASE_BUILD: ${{ inputs.DO_RELEASE_BUILD }}
+          INPUT_DO_PREVIEW_ENVIRONMENT: ${{ inputs.DO_PREVIEW_ENVIRONMENT }}
+        run: |
+          if [ "${GH_REF}" = "refs/heads/master" ]; then
+            DO_RELEASE_BUILD="true"
+            DO_PREVIEW_ENVIRONMENT="false"
+          else
+            DO_RELEASE_BUILD="false"
+            DO_PREVIEW_ENVIRONMENT="true"
+            echo "DEBUG: INPUT_DO_RELEASE_BUILD : ${INPUT_DO_RELEASE_BUILD}"
+            echo "DEBUG: DO_RELEASE_BUILD : ${DO_RELEASE_BUILD}"
+            if [ -n "${INPUT_DO_RELEASE_BUILD}" ]; then
+              DO_RELEASE_BUILD="true"
+              DO_PREVIEW_ENVIRONMENT="false"
+              echo "DEBUG: IF - DO_RELEASE_BUILD : ${DO_RELEASE_BUILD}"
+            fi
+          fi
+          echo "DO_RELEASE_BUILD : ${DO_RELEASE_BUILD}"
+          echo "DO_RELEASE_BUILD=${DO_RELEASE_BUILD}" >> $GITHUB_ENV
+          echo "DO_RELEASE_BUILD=${DO_RELEASE_BUILD}" >> $GITHUB_OUTPUT
+          echo "DO_PREVIEW_ENVIRONMENT : ${DO_PREVIEW_ENVIRONMENT}"
+          echo "DO_PREVIEW_ENVIRONMENT=${DO_PREVIEW_ENVIRONMENT}" >> $GITHUB_ENV
+          echo "DO_PREVIEW_ENVIRONMENT=${DO_PREVIEW_ENVIRONMENT}" >> $GITHUB_OUTPUT
 
       - name: "🔧 Enable helm debug"
         if: inputs.ENABLE_HELM_DEBUG == true
@@ -326,7 +357,8 @@ jobs:
       #     fi
 
       - name: "☸ RELEASE [GAR]: Upload helm chart to ocr://"
-        if: github.ref == 'refs/heads/master'
+        # if: github.ref == 'refs/heads/master'
+        if: ${{ steps.setup-variables.outputs.DO_RELEASE_BUILD }} == "true"
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
         env:
           CHART_APP_NAME: ${{ steps.set-chart-app-name.outputs.CHART_APP_NAME }}
@@ -345,7 +377,8 @@ jobs:
 
 # START: PR ONLY
       - name: "☸ PREVIEW: Create namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
-        if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
+        # if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
+        if: ${{ steps.setup-variables.outputs.DO_RELEASE_BUILD }} != "true" && ${{ steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT }} == "true"
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
         run: |
@@ -354,7 +387,8 @@ jobs:
           kubectl config set-context $(kubectl config current-context) --namespace ${PREVIEW_NAMESPACE}
 
       - name: "🔐 PREVIEW: Copy secrets"
-        if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
+        # if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
+        if: ${{ steps.setup-variables.outputs.DO_RELEASE_BUILD }} != "true" && ${{ steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT }} == "true"
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           SCRIPT_NAME: ${{ inputs.SECRETS_SCRIPT_NAME }}
@@ -366,7 +400,8 @@ jobs:
           ./${SCRIPT_NAME}
 
       - name: "☸ PREVIEW: Helm upgrade/install"
-        if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
+        # if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
+        if: ${{ steps.setup-variables.outputs.DO_RELEASE_BUILD }} != "true" && ${{ steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT }} == "true"
         env:
           NAME: ${{ inputs.NAME }}
           HELM_VALUES_GLOBALS: ${{ inputs.HELM_VALUES_GLOBALS }}
@@ -378,7 +413,8 @@ jobs:
           helm upgrade --install ${NAME} -f ./values.yaml . ${HELM_PREVIEW_ARGS} ${HELM_DEBUG_FLAG}
 
       - name: "🌐 PREVIEW: Link to Preview"
-        if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
+        # if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
+        if: ${{ steps.setup-variables.outputs.DO_RELEASE_BUILD }} != "true" && ${{ steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT }} == "true"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 # yamllint disable rule:line-length
