@@ -57,4 +57,31 @@ jobs:
           ${{ inputs.ARG_LANGUAGE }} \
           ${{ inputs.ARG_STANDARD }} \
           ${{ inputs.VCS_PREFIX_CORRECTION }} \
-          ${{ inputs.SCAN_DIR }}
+          ${{ inputs.SCAN_DIR }} | tee analyze.txt
+
+          SCAN_ID=$(grep -im 1 -E 'The Scan ID for application ' analyze.txt | grep -om 1 -E '\d+$')
+
+          if [[ "${SCAN_ID}" =~ ^[0-9]+$ ]]; then
+              echo "Scan ID: $SCAN_ID"
+              echo "scan_id=$SCAN_ID" >> $GITHUB_OUTPUT
+          elif [[ -z "$SCAN_ID" ]]; then
+              echo "No scan ID found"
+              exit 1
+          else
+              echo "Scan ID found, but is not a number: $SCAN_ID"
+              exit 1
+          fi
+
+          SCAN_URL="https://app.shiftleft.io/apps/${{ inputs.NAME }}/summary?scan=$SCAN_ID"
+          echo "Scan URL: $SCAN_URL"
+          echo "scan_url=$SCAN_URL" >> $GITHUB_OUTPUT
+
+  drata:
+    runs-on: ubuntu-latest
+    needs: qwiet
+    steps:
+      - name: "Upload External Evidence"
+        env:
+          SCAN_ID: ${{needs.qwiet.outputs.scan_id}}
+          SCAN_URL: ${{needs.qwiet.outputs.scan_url}}
+        run: echo "$SCAN_ID $SCAN_URL"
