@@ -57,4 +57,10 @@ jobs:
           ${{ inputs.ARG_LANGUAGE }} \
           ${{ inputs.ARG_STANDARD }} \
           ${{ inputs.VCS_PREFIX_CORRECTION }} \
-          ${{ inputs.SCAN_DIR }}
+          ${{ inputs.SCAN_DIR }} | tee qwiet-analysis.log 
+
+      - name: Upload Qwiet Analyze Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: qwiet-analysis.log
+          path: qwiet-analysis.log
