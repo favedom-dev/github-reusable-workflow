@@ -393,8 +393,9 @@ jobs:
           kubectl config set-context $(kubectl config current-context) --namespace ${PREVIEW_NAMESPACE}
 
       - name: "🔐 PREVIEW: Copy secrets"
-        # if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
-        if: ${{ steps.setup-variables.outputs.DO_RELEASE_BUILD }} != "true" && ${{ steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT }} == "true"
+        if: |
+          github.ref != 'refs/heads/master' &&
+          steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT == 'true'
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           SCRIPT_NAME: ${{ inputs.SECRETS_SCRIPT_NAME }}
@@ -406,8 +407,9 @@ jobs:
           ./${SCRIPT_NAME}
 
       - name: "☸ PREVIEW: Helm upgrade/install"
-        # if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
-        if: ${{ steps.setup-variables.outputs.DO_RELEASE_BUILD }} != "true" && ${{ steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT }} == "true"
+        if: |
+          github.ref != 'refs/heads/master' &&
+          steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT == 'true'
         env:
           NAME: ${{ inputs.NAME }}
           HELM_VALUES_GLOBALS: ${{ inputs.HELM_VALUES_GLOBALS }}
@@ -419,8 +421,9 @@ jobs:
           helm upgrade --install ${NAME} -f ./values.yaml . ${HELM_PREVIEW_ARGS} ${HELM_DEBUG_FLAG}
 
       - name: "🌐 PREVIEW: Link to Preview"
-        # if: github.ref != 'refs/heads/master' && inputs.DO_PREVIEW_ENVIRONMENT == true
-        if: ${{ steps.setup-variables.outputs.DO_RELEASE_BUILD }} != "true" && ${{ steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT }} == "true"
+        if: |
+          github.ref != 'refs/heads/master' &&
+          steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 # yamllint disable rule:line-length
