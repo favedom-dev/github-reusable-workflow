@@ -83,6 +83,12 @@ jobs:
           echo "Scan URL: $SCAN_URL"
           echo "scan_url=$SCAN_URL" >> $GITHUB_OUTPUT
 
+      - name: Upload Qwiet Analyze Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: qwiet-analysis.txt
+          path: analyze.txt
+
   drata:
     runs-on: ubuntu-latest
     needs: qwiet
