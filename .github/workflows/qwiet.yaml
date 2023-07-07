@@ -63,9 +63,9 @@ jobs:
           ${{ inputs.ARG_LANGUAGE }} \
           ${{ inputs.ARG_STANDARD }} \
           ${{ inputs.VCS_PREFIX_CORRECTION }} \
-          ${{ inputs.SCAN_DIR }} | tee analyze.txt
+          ${{ inputs.SCAN_DIR }} | tee qwiet-analysis.log
 
-          SCAN_ID=$(grep -im 1 -E 'The Scan ID for application ' analyze.txt | grep -om 1 -E '[0-9]+$')
+          SCAN_ID=$(grep -im 1 -E 'The Scan ID for application ' qwiet-analysis.log | grep -om 1 -E '[0-9]+$')
           echo "Scan ID: $SCAN_ID"
 
           if [[ "${SCAN_ID}" =~ ^[0-9]+$ ]]; then
@@ -86,8 +86,8 @@ jobs:
       - name: Upload Qwiet Analyze Artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: qwiet-analysis.txt
-          path: analyze.txt
+          name: qwiet-analysis.log
+          path: qwiet-analysis.log
 
   drata:
     runs-on: ubuntu-latest
