@@ -159,7 +159,6 @@ jobs:
           HEALTH_RETRIES: ${{ inputs.HEALTH_RETRIES }}
           HEALTH_RETRY_DELAY: ${{ inputs.HEALTH_RETRY_DELAY }}
           STACKHAWK_SLEEP_DELAY: ${{ steps.set-stackhawk-sleep.outputs.STACKHAWK_SLEEP_DELAY }}
-          # STACKHAWK_SLEEP_DELAY: ${{ inputs.STACKHAWK_SLEEP_DELAY }}
         run: |
           sleep ${STACKHAWK_SLEEP_DELAY}
           echo "CHECKING: ${APP_HOST}${API_PATH}${HEALTH_PATH}"
