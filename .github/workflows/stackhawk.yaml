@@ -138,7 +138,7 @@ jobs:
           STACKHAWK_SLEEP_DELAY_DEFAULT: ${{ inputs.STACKHAWK_SLEEP_DELAY_DEFAULT }}
           STACKHAWK_SLEEP_DELAY_DEFAULT_JAVA: ${{ inputs.STACKHAWK_SLEEP_DELAY_DEFAULT_JAVA }}
         run: |
-          if [ -n "${STACKHAWK_SLEEP_DELAY}" ]; then
+          if [ "${STACKHAWK_SLEEP_DELAY}" -gt 0 ]; then
             echo "Using STACKHAWK_SLEEP_DELAY : ${STACKHAWK_SLEEP_DELAY}"
           else
             STACKHAWK_SLEEP_DELAY="${STACKHAWK_SLEEP_DELAY_DEFAULT}"
