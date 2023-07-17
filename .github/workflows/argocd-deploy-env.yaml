@@ -127,6 +127,7 @@ jobs:
                 REMOVE_STR="pvz-";;
               *)
                 echo "INFO: No string to remove"
+            esac
             # ARGOCD_APP_NAME=$(echo ${{ inputs.name }} | sed 's/peeq-//')
             echo "REMOVE_STR  : ${REMOVE_STR}"
             ARGOCD_APP_NAME=$(echo ${{ inputs.name }} | sed 's/'"${REMOVE_STR}"'//')
