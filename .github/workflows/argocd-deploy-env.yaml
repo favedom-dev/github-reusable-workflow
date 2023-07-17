@@ -118,7 +118,17 @@ jobs:
         run: |
           ARGOCD_APP_NAME=${{ inputs.ARGOCD_APP_NAME }}
           if [ ! -n "${ARGOCD_APP_NAME}" ]; then
-            ARGOCD_APP_NAME=$(echo ${{ inputs.name }} | sed 's/peeq-//')
+            APP_PREFIX=$(echo ${{ inputs.name }} | cut -f 1 -d '-')
+            echo "APP_PREFIX : ${APP_PREFIX}"
+            case "${APP_PREFIX}" in
+              "peeq")
+                REMOVE_STR="peeq-"
+              "pvz")
+                REMOVE_STR="pvz-"
+              *)
+                echo "INFO: No string to remove"
+            # ARGOCD_APP_NAME=$(echo ${{ inputs.name }} | sed 's/peeq-//')
+            ARGOCD_APP_NAME=$(echo ${{ inputs.name }} | sed 's/'"${REMOVE_STR}"'//')
           fi
           echo "ARGOCD_APP_NAME=${ARGOCD_APP_NAME}" >> $GITHUB_OUTPUT
 
