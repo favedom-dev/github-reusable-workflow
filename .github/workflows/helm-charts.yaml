@@ -157,18 +157,26 @@ jobs:
             DO_PREVIEW_ENVIRONMENT="true"
             echo "DEBUG: ELSE - INPUT_DO_RELEASE_BUILD : ${INPUT_DO_RELEASE_BUILD}"
             echo "DEBUG: ELSE - DO_RELEASE_BUILD : ${DO_RELEASE_BUILD}"
-            # if [ "${INPUT_DO_RELEASE_BUILD}" = "true" ]; then
-            #   DO_RELEASE_BUILD="true"
-            #   DO_PREVIEW_ENVIRONMENT="false"
-            #   echo "DEBUG: IF - DO_RELEASE_BUILD : ${DO_RELEASE_BUILD}"
-            # fi
+            if [ "${INPUT_DO_PREVIEW_ENVIRONMENT}" = "false" ]; then
+              DO_PREVIEW_ENVIRONMENT="false"
+              echo "DEBUG: IF - DO_RELEASE_BUILD : ${DO_RELEASE_BUILD}"
+            fi
           fi
+          HELM_REGISTRY_LOCATION=${{ inputs.HELM_DOCKER_REGISTRY }}/${{ inputs.GAR_PROJECT_ID }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}
+          HELM_REGISTRY_URL="https://console.cloud.google.com/artifacts/docker/${{ inputs.GAR_PROJECT_ID }}/${{ inputs.LOCATION }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}?project=${{ inputs.GAR_PROJECT_ID }}/"
+          # Display values
           echo "DO_RELEASE_BUILD       : ${DO_RELEASE_BUILD}"
           echo "DO_PREVIEW_ENVIRONMENT : ${DO_PREVIEW_ENVIRONMENT}"
+          echo "HELM_REGISTRY_LOCATION : ${HELM_REGISTRY_LOCATION}"
+          echo "HELM_REGISTRY_URL      : ${HELM_REGISTRY_URL}"
           echo "DO_RELEASE_BUILD=${DO_RELEASE_BUILD}" >> $GITHUB_ENV
           echo "DO_RELEASE_BUILD=${DO_RELEASE_BUILD}" >> $GITHUB_OUTPUT
           echo "DO_PREVIEW_ENVIRONMENT=${DO_PREVIEW_ENVIRONMENT}" >> $GITHUB_ENV
           echo "DO_PREVIEW_ENVIRONMENT=${DO_PREVIEW_ENVIRONMENT}" >> $GITHUB_OUTPUT
+          echo "HELM_REGISTRY_LOCATION=${HELM_REGISTRY_LOCATION}" >> $GITHUB_ENV
+          echo "HELM_REGISTRY_LOCATION=${HELM_REGISTRY_LOCATION}" >> $GITHUB_OUTPUT
+          echo "HELM_REGISTRY_URL=${HELM_REGISTRY_URL}" >> $GITHUB_ENV
+          echo "HELM_REGISTRY_URL=${HELM_REGISTRY_URL}" >> $GITHUB_OUTPUT
 
       - name: "🔧 Enable helm debug"
         if: inputs.ENABLE_HELM_DEBUG == true
@@ -378,6 +386,22 @@ jobs:
           ${CHART_APP_NAME}-${VERSION}.tgz \
           oci://${HELM_DOCKER_REGISTRY}/${PROJECT_ID}/${HELM_REGISTRY_NAME}/${CHART_APP_NAME} \
           ${HELM_DEBUG_FLAG}
+# yamllint enable rule:line-length
+
+      - name: "🌐 Link to Helm"
+        if: |
+          github.ref == 'refs/heads/master' ||
+          steps.setup-variables.outputs.DO_RELEASE_BUILD == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          HELM_REGISTRY_URL: ${{ steps.setup-variables.outputs.HELM_REGISTRY_URL }}
+# yamllint disable rule:line-length
+        run: |-
+          echo "${HELM_REGISTRY_URL}"
+          # if [ "${{ github.event_name }}" = "pull_request" ]; then
+          #   gh pr comment ${{ github.event.number }} \
+          #   --body "🐳 Helm: [${{ inputs.NAME }} ${{ inputs.VERSION }}](${HELM_REGISTRY_URL})"
+          # fi
 # yamllint enable rule:line-length
 
 # START: PR ONLY
