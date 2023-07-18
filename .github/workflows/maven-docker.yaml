@@ -13,6 +13,10 @@ on:  # yamllint disable-line rule:truthy
         default: '.'
         required: false
         type: string
+      JDK_VERSION:
+        default: 11
+        required: false
+        type: number
       MVN_ENV_VARS:  # -DmyVariable=someValue
         required: false
         type: string
@@ -134,10 +138,10 @@ jobs:
           password: '${{ steps.auth-gcp-token.outputs.access_token }}'
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
-      - name: "🔧 Set up JDK 11"
+      - name: "🔧 Set up JDK ${{ inputs.JDK_VERSION }}"
         uses: actions/setup-java@v3
         with:
-          java-version: '11'
+          java-version: '${{ inputs.JDK_VERSION }}'
           distribution: 'temurin'
 
       - name: "🔧 Maven ~/.m2/settings.xml"
