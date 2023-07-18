@@ -9,6 +9,10 @@ on:  # yamllint disable-line rule:truthy
       VERSION:
         required: true
         type: string
+      JDK_VERSION:
+        default: 11
+        required: false
+        type: number
       MVN_ARGS:
         default: 'clean deploy'
         required: false
@@ -91,10 +95,10 @@ jobs:
           workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
           service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
-      - name: "🔧 Set up JDK 11"
+      - name: "🔧 Set up JDK ${{ inputs.JDK_VERSION }}"
         uses: actions/setup-java@v3
         with:
-          java-version: '11'
+          java-version: '${{ inputs.JDK_VERSION }}'
           distribution: 'temurin'
 
       - name: "🔧 Maven ~/.m2/settings.xml"
