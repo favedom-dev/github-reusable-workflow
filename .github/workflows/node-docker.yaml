@@ -139,7 +139,7 @@ jobs:
           password: '${{ steps.auth-gcp-token.outputs.access_token }}'
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
-      - name: "🔧 Setup node.js ${{ inputs.NODE_VERSION }}"
+      - name: "🔧 Setup node.js version: ${{ inputs.NODE_VERSION }}"
         uses: actions/setup-node@v3
         with:
           node-version: ${{ inputs.NODE_VERSION }}
