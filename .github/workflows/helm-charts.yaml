@@ -394,7 +394,7 @@ jobs:
           ${HELM_DEBUG_FLAG}
 # yamllint enable rule:line-length
 
-      - name: "🌐 Link to Helm: ${{ steps.setup-variables.outputs.HELM_REGISTRY_URL }}"
+      - name: "🌐 Link to Helm"
         if: |
           github.ref == 'refs/heads/master' ||
           steps.setup-variables.outputs.DO_RELEASE_BUILD == 'true'
