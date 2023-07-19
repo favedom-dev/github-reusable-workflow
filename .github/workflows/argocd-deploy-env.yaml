@@ -220,7 +220,7 @@ jobs:
           pwd
           cat ./${{ inputs.YAML_FILE }}
 
-      - name: "🌐 Create environment PR in ${{ inputs.ENV_REPO_NAME }}"
+      - name: "🌐 Create environment PR in repo: ${{ inputs.ENV_REPO_NAME }}"
         if: github.ref == 'refs/heads/master'
         working-directory: ${{ inputs.ENV_REPO_PATH }}
         env:
