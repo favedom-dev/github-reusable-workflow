@@ -220,7 +220,7 @@ jobs:
           echo "CHARTS_DIR=${CHARTS_DIR}" >> $GITHUB_ENV
           echo "CHARTS_DIR=${CHARTS_DIR}" >> $GITHUB_OUTPUT
 
-      - name: "🔧 Setup helm"
+      - name: "🔧 Setup helm version: ${{ inputs.HELM_VERSION }}"
         uses: azure/setup-helm@v3
         with:
           version: ${{ inputs.HELM_VERSION }}
@@ -235,7 +235,7 @@ jobs:
           workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
           service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
-      - name: "🔧 GKE credentials"
+      - name: "🔧 GKE credentials cluster: ${{ inputs.CLUSTER_NAME }}"
         id: 'get-credentials'
         uses: 'google-github-actions/get-gke-credentials@v0'
         with:
@@ -260,19 +260,24 @@ jobs:
           echo "DOCKER_REGISTRY_NAME: ${DOCKER_REGISTRY_NAME}"
           echo "working-directory   : ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}"
           echo "=================================="
+          echo "Chart.yaml - version: ${VERSION}"
           sed -i -e "s/version:.*/version: ${VERSION}/" Chart.yaml
+          echo "values.yaml - tag: ${VERSION}"
           sed -i -e "s/tag:.*/tag: ${VERSION}/" values.yaml
           echo "GAR: repository update"
           sed -i -e "s|repository:.*|repository: ${DOCKER_REGISTRY}\/${PROJECT_ID}\/${DOCKER_REGISTRY_NAME}\/${CHART_APP_NAME}|" values.yaml
           if [ "${GH_REF}" == "refs/heads/master" ]; then
+            echo "Chart.yaml - appVersion: ${VERSION}"
             echo "appVersion: ${VERSION}" >> Chart.yaml
             if [ "${{ inputs.OVERRIDE_CHART_APP_NAME }}" != "${{ inputs.OVERRIDE_CHART_APP_DIR }}" ]; then
               YAML_FILE="Chart.yaml"
-              echo "Updating ${YAML_FILE} with: name: ${CHART_APP_NAME}"
+              echo "Updating ${YAML_FILE} - name: ${CHART_APP_NAME}"
               sed -i -e "s|name:.*|name: ${CHART_APP_NAME}|" ${YAML_FILE}
             fi
           else
+            echo "../*/Chart.yaml - version: ${VERSION}"
             sed -i -e "s/version:.*/version: ${VERSION}/" ../*/Chart.yaml
+            echo "requirements.yaml - version: ${VERSION}"
             echo "  version: ${VERSION}" >> requirements.yaml
           fi
 
@@ -321,7 +326,7 @@ jobs:
           helm registry login -u oauth2accesstoken \
           --password-stdin https://${HELM_DOCKER_REGISTRY}
 
-      - name: "☸ Helm"
+      - name: "☸ Helm in ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}"
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
         env:
           APP_NAME: ${{ inputs.NAME }}
@@ -329,6 +334,7 @@ jobs:
           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
         run: |
           echo "HELM_DEBUG_FLAG: ${HELM_DEBUG_FLAG}"
+          echo "working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}"
           # echo "=================================="
           # echo "RUN: helm repo list"
           # helm repo list
@@ -367,7 +373,7 @@ jobs:
       #       cat requirements.yaml
       #     fi
 
-      - name: "☸ RELEASE [GAR]: Upload helm chart to ocr://"
+      - name: "☸ RELEASE [GAR]: Upload helm chart - ${{ inputs.HELM_REGISTRY_NAME }}"
         # if: github.ref == 'refs/heads/master'
         if: |
           github.ref == 'refs/heads/master' ||
@@ -388,7 +394,7 @@ jobs:
           ${HELM_DEBUG_FLAG}
 # yamllint enable rule:line-length
 
-      - name: "🌐 Link to Helm"
+      - name: "🌐 Link to Helm: ${{ steps.setup-variables.outputs.HELM_REGISTRY_URL }}"
         if: |
           github.ref == 'refs/heads/master' ||
           steps.setup-variables.outputs.DO_RELEASE_BUILD == 'true'
