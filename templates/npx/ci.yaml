@@ -1,0 +1,195 @@
+name: CI
+
+on: # yamllint disable-line rule:truthy
+  pull_request:
+    # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#pull_request
+    types: [labeled, opened, synchronize, reopened]
+    branches:
+      - master
+    paths:
+      - ".github/workflows/ci.yaml"
+      - "apps/web/**"
+      - "libs/**"
+      - "package*.json"
+  push:
+    branches:
+      - master
+    paths:
+      - ".github/workflows/ci.yaml"
+      - "apps/web/**"
+      - "libs/**"
+      - "package*.json"
+
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    outputs:
+      ARGOCD_APP_NAME: ${{ steps.config.outputs.ARGOCD_APP_NAME }}
+      BASE_CHARTS_DIR: ${{ steps.config.outputs.BASE_CHARTS_DIR }}
+      BUILD_CMD: ${{ steps.config.outputs.BUILD_CMD }}
+      BUILD_NAME: ${{ steps.config.outputs.BUILD_NAME }}
+      DO_PR_MERGE: ${{ steps.config.outputs.DO_PR_MERGE }}
+      DOCKER_CONTEXT: ${{ steps.config.outputs.DOCKER_CONTEXT }}
+      DOCKER_REGISTRY_NAME: ${{ steps.config.outputs.DOCKER_REGISTRY_NAME }}
+      ENV_REPO_SUBDIR_BASE: ${{ steps.config.outputs.ENV_REPO_SUBDIR_BASE }}
+      HEALTH_PATH: ${{ steps.config.outputs.HEALTH_PATH }}
+      HELM_REGISTRY_NAME: ${{ steps.config.outputs.HELM_REGISTRY_NAME }}
+      INSTALL_CMD: ${{ steps.config.outputs.INSTALL_CMD }}
+      OVERRIDE_CHART_APP_DIR: ${{ steps.config.outputs.OVERRIDE_CHART_APP_DIR }}
+      # DO_PREVIEW_ENVIRONMENT: ${{ steps.config.outputs.DO_PREVIEW_ENVIRONMENT }}
+      # IS_STACKHAWK_READY: ${{ steps.config.outputs.IS_STACKHAWK_READY }}
+      # NODE_VERSION: ${{ steps.config.outputs.NODE_VERSION }}
+
+    steps:
+      # - name: "DEBUG: GITHUB INFO"
+      #   env:
+      #     GITHUB_CONTEXT: ${{ toJSON(github) }}
+      #   run: |-
+      #     echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
+
+      - name: "🔧 Config"
+        id: config
+        env:
+          ARGOCD_APP_NAME: ++APP_NAME++
+          BASE_CHARTS_DIR: "./apps/web/charts"
+          BUILD_CMD: "npx nx build web --configuration=production"
+          BUILD_NAME: "NPX build"
+          DO_PR_MERGE: 'false'
+          DOCKER_CONTEXT: "./apps/web"
+          DOCKER_REGISTRY_NAME: ++DOCKER_REGISTRY_NAME++
+          ENV_REPO_SUBDIR_BASE: ++ENV_REPO_SUBDIR_BASE++
+          HEALTH_PATH: ""
+          HELM_REGISTRY_NAME: ++HELM_REGISTRY_NAME++
+          INSTALL_CMD: "npm install"
+          OVERRIDE_CHART_APP_DIR: "release"
+          # TODO:
+          # https://docs.github.com/en/enterprise-cloud@latest/actions/learn-github-actions/expressions#example-of-literals
+          # https://docs.github.com/en/actions/using-jobs/defining-outputs-for-jobs#overview
+          # Outputs are Unicode strings
+          # DO_PREVIEW_ENVIRONMENT: ${{ false }}
+          # IS_STACKHAWK_READY: ${{ false }}
+          # NODE_VERSION: ${{ 20 }}
+        run: |
+          ## Display values
+          echo "ARGOCD_APP_NAME         : ${ARGOCD_APP_NAME}"
+          echo "BASE_CHARTS_DIR         : ${BASE_CHARTS_DIR}"
+          echo "BUILD_CMD               : ${BUILD_CMD}"
+          echo "BUILD_NAME              : ${BUILD_NAME}"
+          echo "DO_PR_MERGE             : ${DO_PR_MERGE}"
+          echo "DOCKER_CONTEXT          : ${DOCKER_CONTEXT}"
+          echo "DOCKER_REGISTRY_NAME    : ${DOCKER_REGISTRY_NAME}"
+          echo "ENV_REPO_SUBDIR_BASE    : ${ENV_REPO_SUBDIR_BASE}"
+          echo "HEALTH_PATH             : ${HEALTH_PATH}"
+          echo "HELM_REGISTRY_NAME      : ${HELM_REGISTRY_NAME}"
+          echo "INSTALL_CMD             : ${INSTALL_CMD}"
+          echo "OVERRIDE_CHART_APP_DIR  : ${OVERRIDE_CHART_APP_DIR}"
+          # echo "DO_PREVIEW_ENVIRONMENT  : ${DO_PREVIEW_ENVIRONMENT}"
+          # echo "IS_STACKHAWK_READY      : ${IS_STACKHAWK_READY}"
+          # echo "NODE_VERSION            : ${NODE_VERSION}"
+          ## Set values in action
+          echo "ARGOCD_APP_NAME=${ARGOCD_APP_NAME}" >> $GITHUB_OUTPUT
+          echo "BASE_CHARTS_DIR=${BASE_CHARTS_DIR}" >> $GITHUB_OUTPUT
+          echo "BUILD_CMD=${BUILD_CMD}" >> $GITHUB_OUTPUT
+          echo "BUILD_NAME=${BUILD_NAME}" >> $GITHUB_OUTPUT
+          echo "DO_PR_MERGE=${DO_PR_MERGE}" >> $GITHUB_OUTPUT
+          echo "DOCKER_CONTEXT=${DOCKER_CONTEXT}" >> $GITHUB_OUTPUT
+          echo "DOCKER_REGISTRY_NAME=${DOCKER_REGISTRY_NAME}" >> $GITHUB_OUTPUT
+          echo "ENV_REPO_SUBDIR_BASE=${ENV_REPO_SUBDIR_BASE}" >> $GITHUB_OUTPUT
+          echo "HEALTH_PATH=${HEALTH_PATH}" >> $GITHUB_OUTPUT
+          echo "HELM_REGISTRY_NAME=${HELM_REGISTRY_NAME}" >> $GITHUB_OUTPUT
+          echo "INSTALL_CMD=${INSTALL_CMD}" >> $GITHUB_OUTPUT
+          echo "OVERRIDE_CHART_APP_DIR=${OVERRIDE_CHART_APP_DIR}" >> $GITHUB_OUTPUT
+          # echo "DO_PREVIEW_ENVIRONMENT=${DO_PREVIEW_ENVIRONMENT}" >> $GITHUB_OUTPUT
+          # echo "IS_STACKHAWK_READY=${IS_STACKHAWK_READY}" >> $GITHUB_OUTPUT
+          # echo "NODE_VERSION=${NODE_VERSION}" >> $GITHUB_OUTPUT
+
+  app-setup:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/app-setup.yaml@master
+    with:
+      IS_STACKHAWK_READY: false
+
+  repo-version:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@master
+    needs: [app-setup]
+    with:
+      MONOREPO_APP: ${{ needs.app-setup.outputs.NAME }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  node-docker:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/node-docker.yaml@master
+    needs: [config, app-setup, repo-version]
+    with:
+      NAME: ${{ needs.app-setup.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+      INSTALL_CMD: ${{ needs.config.outputs.INSTALL_CMD }}
+      TEST: false
+      BUILD_NAME: ${{ needs.config.outputs.BUILD_NAME }}
+      BUILD_CMD: ${{ needs.config.outputs.BUILD_CMD }}
+      # NODE_VERSION: ${{ needs.config.outputs.NODE_VERSION }}
+      NODE_VERSION: 20
+      DOCKER_CONTEXT: ${{ needs.config.outputs.DOCKER_CONTEXT }}
+      DOCKER_REGISTRY: ${{ needs.config.outputs.DOCKER_REGISTRY_NAME }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      WIF_PROVIDER: "${{ secrets.WIF_PROVIDER }}"
+      WIF_SERVICE_ACCOUNT: "${{ secrets.WIF_SERVICE_ACCOUNT }}"
+
+  helm-charts:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/helm-charts.yaml@master
+    needs: [config, app-setup, repo-version, node-docker]
+    with:
+      NAME: ${{ needs.app-setup.outputs.NAME }}
+      VERSION: ${{ needs.repo-version.outputs.version }}
+      PREVIEW_NAMESPACE: ${{ needs.app-setup.outputs.PREVIEW_NAMESPACE }}
+      BASE_CHARTS_DIR: ${{ needs.config.outputs.BASE_CHARTS_DIR }}
+      OVERRIDE_CHART_APP_DIR: ${{ needs.config.outputs.OVERRIDE_CHART_APP_DIR }}
+      DOCKER_REGISTRY_NAME: ${{ needs.config.outputs.DOCKER_REGISTRY_NAME }}
+      HELM_REGISTRY_NAME: ${{ needs.config.outputs.HELM_REGISTRY_NAME }}
+      DO_PREVIEW_ENVIRONMENT: false
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      WIF_PROVIDER: "${{ secrets.WIF_PROVIDER }}"
+      WIF_SERVICE_ACCOUNT: "${{ secrets.WIF_SERVICE_ACCOUNT }}"
+
+  stackhawk:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/stackhawk.yaml@master
+    needs: [config, app-setup, repo-version, node-docker, helm-charts]
+    if: github.event_name == 'pull_request' && needs.app-setup.outputs.IS_STACKHAWK_READY == 'true'
+    with:
+      NAME: ${{ needs.app-setup.outputs.NAME }}
+      NAMESPACE: ${{ needs.app-setup.outputs.PREVIEW_NAMESPACE }}
+      API_PATH: ${{ needs.app-setup.outputs.API_PATH }}
+      HEALTH_PATH: ${{ needs.config.outputs.HEALTH_PATH }}
+      STACKHAWK_DIRECTORY: ${{ needs.app-setup.outputs.STACKHAWK_DIRECTORY }}
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      HAWK_API_KEY: ${{ secrets.HAWK_API_KEY }}
+      TEST_PASSWORD: ${{ secrets.STACKHAWK_USER_PASSWORD }}
+
+  # development:
+  #   uses: favedom-dev/github-reusable-workflow/.github/workflows/argocd-deploy-env.yaml@master
+  #   needs: [config, app-setup, repo-version, node-docker, helm-charts]
+  #   if: github.ref == 'refs/heads/master'
+  #   with:
+  #     NAME: ${{ needs.app-setup.outputs.NAME }}
+  #     VERSION: ${{ needs.repo-version.outputs.version }}
+  #     MONOREPO_APP: ${{ needs.app-setup.outputs.NAME }}
+  #     ARGOCD_APP_NAME: ${{ needs.config.outputs.ARGOCD_APP_NAME }}
+  #   secrets:
+  #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  # production:
+  #   uses: favedom-dev/github-reusable-workflow/.github/workflows/argocd-deploy-env.yaml@master
+  #   needs: [config, app-setup, repo-version, node-docker, helm-charts]
+  #   if: github.ref == 'refs/heads/master'
+  #   with:
+  #     NAME: ${{ needs.app-setup.outputs.NAME }}
+  #     VERSION: ${{ needs.repo-version.outputs.version }}
+  #     MONOREPO_APP: ${{ needs.app-setup.outputs.NAME }}
+  #     ARGOCD_APP_NAME: ${{ needs.config.outputs.ARGOCD_APP_NAME }}
+  #     ENV_REPO_SUBDIR_BASE: ${{ needs.config.outputs.ENV_REPO_SUBDIR_BASE }}
+  #     DO_PR_MERGE: ${{ needs.config.outputs.DO_PR_MERGE }}
+  #   secrets:
+  #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
