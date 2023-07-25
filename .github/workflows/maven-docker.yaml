@@ -68,6 +68,14 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      AWS_REGION:  # set this to your preferred AWS region, e.g. us-west-2
+        default: us-west-2
+        required: false
+        type: string
+      ECR_REPOSITORY:  # set this to your Amazon ECR repository name
+        default: powervz
+        required: false
+        type: string
 
     secrets:
       GH_TOKEN:
@@ -81,6 +89,10 @@ on:  # yamllint disable-line rule:truthy
       GCP_JSON_KEY:
         required: false
       SHIFTLEFT_ACCESS_TOKEN:
+        required: false
+      AWS_ACCESS_KEY_ID:
+        required: false
+      AWS_SECRET_ACCESS_KEY:
         required: false
 
 jobs:
@@ -129,7 +141,7 @@ jobs:
       # - name: 'Set up Cloud SDK'
       #   uses: 'google-github-actions/setup-gcloud@v0'
 
-      - name: "🔧 Docker Auth"
+      - name: "🔧 Docker Auth: GAR"
         if: ${{ !env.ACT }}
         id: auth-docker
         uses: 'docker/login-action@v2'
@@ -137,6 +149,24 @@ jobs:
           username: 'oauth2accesstoken'
           password: '${{ steps.auth-gcp-token.outputs.access_token }}'
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
+
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@0e613a0980cbf65ed5b322eb7a1e075d28913a83
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: ${{ inputs.AWS_REGION }}
+
+      # - name: "🔧 Docker Auth: ECR"
+      #   uses: docker/login-action@v2
+      #   with:
+      #     registry: <aws-account-number>.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com
+      #     username: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # - name: Login to Amazon ECR
+      #   id: login-pf-aws-ecr
+      #   uses: aws-actions/amazon-ecr-login@v1
 
       - name: "🔧 Set up JDK ${{ inputs.JDK_VERSION }}"
         uses: actions/setup-java@v3
