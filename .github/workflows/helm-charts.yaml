@@ -209,6 +209,8 @@ jobs:
           CHARTS_DIR=${BASE_CHARTS_DIR}/preview
           if [ -n "${OVERRIDE_CHARTS_DIR}" ]; then
             CHARTS_DIR=${{ inputs.OVERRIDE_CHARTS_DIR }}
+          elif [ -n "${OVERRIDE_CHART_APP_DIR}" ]; then
+            CHARTS_DIR=${BASE_CHARTS_DIR}/${{ inputs.OVERRIDE_CHART_APP_DIR }}
           elif [ "${GH_REF}" == "refs/heads/master" ]; then
             if [ -n "${OVERRIDE_CHART_APP_DIR}" ]; then
               CHARTS_DIR=${BASE_CHARTS_DIR}/${OVERRIDE_CHART_APP_DIR}
