@@ -6,6 +6,9 @@ on:  # yamllint disable-line rule:truthy
       OVERRIDE_NAME:
         required: false
         type: string
+      OVERRIDE_PREVIEW_NAMESPACE:
+        required: false
+        type: string
       OVERRIDE_API_PATH:  # '/api/++SERVICE++'
         required: false
         type: string
@@ -82,8 +85,17 @@ jobs:
 
       - name: "📜 Set Name for Preview Namespace"
         id: set-name-pr-namespace
+        env:
+          OVERRIDE_PREVIEW_NAMESPACE: ${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
         run: |
-          PREVIEW_NAMESPACE=pr-${{ steps.set-name.outputs.NAME }}-${{ github.event.number }}
+          echo "DEBUG: OVERRIDE_PREVIEW_NAMESPACE = ${OVERRIDE_PREVIEW_NAMESPACE}"
+          if [ -n "${OVERRIDE_PREVIEW_NAMESPACE}" ]; then
+            PREVIEW_NAMESPACE=${{ inputs.PREVIEW_NAMESPACE }}
+            echo "OVERRIDE: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
+          else
+            PREVIEW_NAMESPACE=pr-${{ steps.set-name.outputs.NAME }}-${{ github.event.number }}
+            echo "DEFAULT: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
+          fi
           echo "PREVIEW_NAMESPACE: ${PREVIEW_NAMESPACE}"
           echo "PREVIEW_NAMESPACE=${PREVIEW_NAMESPACE}" >> $GITHUB_OUTPUT
 
