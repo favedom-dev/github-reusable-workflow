@@ -87,10 +87,12 @@ jobs:
         id: set-name-pr-namespace
         env:
           OVERRIDE_PREVIEW_NAMESPACE: ${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
+          GH_EVENT_NUMBER: ${{ github.event.number }}
         run: |
           echo "DEBUG: OVERRIDE_PREVIEW_NAMESPACE = ${OVERRIDE_PREVIEW_NAMESPACE}"
+          echo "DEBUG: GH_EVENT_NUMBER = ${GH_EVENT_NUMBER}"
           if [ -n "${OVERRIDE_PREVIEW_NAMESPACE}" ]; then
-            PREVIEW_NAMESPACE=${{ inputs.PREVIEW_NAMESPACE }}
+            PREVIEW_NAMESPACE=${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
             echo "OVERRIDE: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
           else
             PREVIEW_NAMESPACE=pr-${{ steps.set-name.outputs.NAME }}-${{ github.event.number }}
