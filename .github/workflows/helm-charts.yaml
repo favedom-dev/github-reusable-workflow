@@ -299,15 +299,15 @@ jobs:
             sed -i -e "s/version:.*/version: ${VERSION}/" ../*/Chart.yaml
             echo "requirements.yaml - version: ${VERSION}"
             echo "  version: ${VERSION}" >> requirements.yaml
-          fi
+            echo "DEBUG ==================== requirements.yaml"
+            cat requirements.yaml
+            fi
           echo "DEBUG ===================="
           ls -la
           echo "DEBUG ==================== Chart.yaml"
           cat Chart.yaml
           echo "DEBUG ==================== values.yaml"
           cat values.yaml
-          echo "DEBUG ==================== requirements.yaml"
-          cat requirements.yaml
 
 # yamllint enable rule:line-length
 
