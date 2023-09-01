@@ -256,11 +256,15 @@ jobs:
           GH_REF: ${{ github.ref }}
 # yamllint disable rule:line-length
         run: |
-          echo "CHART_APP_NAME      : ${CHART_APP_NAME}"
-          echo "VERSION             : ${VERSION}"
-          echo "DOCKER_REGISTRY     : ${DOCKER_REGISTRY}"
-          echo "DOCKER_REGISTRY_NAME: ${DOCKER_REGISTRY_NAME}"
-          echo "working-directory   : ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}"
+          echo "CHART_APP_NAME          : ${CHART_APP_NAME}"
+          echo "VERSION                 : ${VERSION}"
+          echo "DOCKER_REGISTRY         : ${DOCKER_REGISTRY}"
+          echo "DOCKER_REGISTRY_NAME    : ${DOCKER_REGISTRY_NAME}"
+          echo "working-directory       : ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}"
+          echo "DO_RELEASE_BUILD        : ${{ steps.setup-variables.outputs.DO_RELEASE_BUILD }}"
+          echo "OVERRIDE_CHART_APP_NAME : ${{ inputs.OVERRIDE_CHART_APP_NAME }}"
+          echo "OVERRIDE_CHART_APP_DIR  : ${{ inputs.OVERRIDE_CHART_APP_DIR }}"
+          echo "GH_REF                  : ${GH_REF}"
           echo "=================================="
           echo "Chart.yaml - version: ${VERSION}"
           sed -i -e "s/version:.*/version: ${VERSION}/" Chart.yaml
@@ -270,6 +274,7 @@ jobs:
           sed -i -e "s|repository:.*|repository: ${DOCKER_REGISTRY}\/${PROJECT_ID}\/${DOCKER_REGISTRY_NAME}\/${CHART_APP_NAME}|" values.yaml
           # if [ "${GH_REF}" == "refs/heads/master" ]; then
           if [ "${GH_REF}" == "refs/heads/master" ] || [ "${{ steps.setup-variables.outputs.DO_RELEASE_BUILD  }}" == "true" ] ; then
+            echo "Release build updates..."
             echo "Chart.yaml - appVersion: ${VERSION}"
             echo "appVersion: ${VERSION}" >> Chart.yaml
             if [ "${{ inputs.OVERRIDE_CHART_APP_NAME }}" != "${{ inputs.OVERRIDE_CHART_APP_DIR }}" ]; then
@@ -278,11 +283,20 @@ jobs:
               sed -i -e "s|name:.*|name: ${CHART_APP_NAME}|" ${YAML_FILE}
             fi
           else
+            echo "Preview build updates..."
             echo "../*/Chart.yaml - version: ${VERSION}"
             sed -i -e "s/version:.*/version: ${VERSION}/" ../*/Chart.yaml
             echo "requirements.yaml - version: ${VERSION}"
             echo "  version: ${VERSION}" >> requirements.yaml
           fi
+          echo "DEBUG ===================="
+          ls -la
+          echo "DEBUG ==================== Chart.yaml"
+          cat Chart.yaml
+          echo "DEBUG ==================== values.yaml"
+          cat values.yaml
+          echo "DEBUG ==================== requirements.yaml"
+          cat requirements.yaml
 
 # yamllint enable rule:line-length
 
