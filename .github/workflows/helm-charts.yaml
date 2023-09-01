@@ -273,7 +273,7 @@ jobs:
           echo "GAR: repository update"
           sed -i -e "s|repository:.*|repository: ${DOCKER_REGISTRY}\/${PROJECT_ID}\/${DOCKER_REGISTRY_NAME}\/${CHART_APP_NAME}|" values.yaml
           # if [ "${GH_REF}" == "refs/heads/master" ]; then
-          if [ "${GH_REF}" == "refs/heads/master" ] || [ "${{ steps.setup-variables.outputs.DO_RELEASE_BUILD  }}" == "true" ] ; then
+          if [ "${GH_REF}" = "refs/heads/master" ] || [ "${{ steps.setup-variables.outputs.DO_RELEASE_BUILD  }}" = "true" ] ; then
             echo "Release build updates..."
             echo "Chart.yaml - appVersion: ${VERSION}"
             echo "appVersion: ${VERSION}" >> Chart.yaml
