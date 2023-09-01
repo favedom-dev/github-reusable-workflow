@@ -207,15 +207,26 @@ jobs:
           OVERRIDE_CHART_APP_DIR: ${{ inputs.OVERRIDE_CHART_APP_DIR }}
         run: |
           CHARTS_DIR=${BASE_CHARTS_DIR}/preview
+          echo "CHARTS_DIR             : ${CHARTS_DIR}"
+          echo "BASE_CHARTS_DIR        : ${BASE_CHARTS_DIR}"
+          echo "APP_NAME               : ${APP_NAME}"
+          echo "GH_REF                 : ${GH_REF}"
+          echo "OVERRIDE_CHARTS_DIR    : ${OVERRIDE_CHARTS_DIR}"
+          echo "OVERRIDE_CHART_APP_DIR : ${OVERRIDE_CHART_APP_DIR}"
+          echo "CHARTS_DIR : ${CHARTS_DIR}"
           if [ -n "${OVERRIDE_CHARTS_DIR}" ]; then
             CHARTS_DIR=${{ inputs.OVERRIDE_CHARTS_DIR }}
+            echo "1 CHARTS_DIR = ${CHARTS_DIR}"
           elif [ -n "${OVERRIDE_CHART_APP_DIR}" ]; then
             CHARTS_DIR=${BASE_CHARTS_DIR}/${{ inputs.OVERRIDE_CHART_APP_DIR }}
+            echo "2 CHARTS_DIR = ${CHARTS_DIR}"
           elif [ "${GH_REF}" == "refs/heads/master" ]; then
             if [ -n "${OVERRIDE_CHART_APP_DIR}" ]; then
               CHARTS_DIR=${BASE_CHARTS_DIR}/${OVERRIDE_CHART_APP_DIR}
+              echo "3 CHARTS_DIR = ${CHARTS_DIR}"
             else
               CHARTS_DIR=${BASE_CHARTS_DIR}/${APP_NAME}
+              echo "4 CHARTS_DIR = ${CHARTS_DIR}"
             fi
           fi;
           echo "CHARTS_DIR : ${CHARTS_DIR}"
