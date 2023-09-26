@@ -174,6 +174,14 @@ jobs:
           java-version: '${{ inputs.JDK_VERSION }}'
           distribution: 'temurin'
 
+      - name: Cache local Maven repository
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ inputs.NAME }}-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ inputs.NAME }}-${{ runner.os }}-maven-
+
       - name: "🔧 Maven ~/.m2/settings.xml"
         run: |
           wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
