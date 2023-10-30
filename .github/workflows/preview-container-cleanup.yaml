@@ -11,6 +11,10 @@ on:  # yamllint disable-line rule:truthy
       # PR_VERSION:
       #   required: true
       #   type: string
+      PR_PREFIX:
+        default: '0.0.0-SNAPSHOT-PR-'
+        required: false
+        type: string
       PROJECT_ID:
         default: 'favedom-dev'
         required: false
@@ -57,6 +61,7 @@ jobs:
           echo "github.event_name  : ${{ github.event_name }}"
           echo "github.run_attempt : ${{ github.run_attempt }}"
           echo "github.run_number  : ${{ github.run_number }}"
+          echo "github.sha         : ${{ github.sha }}"
           echo "--------------------------------------"
           echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
 
@@ -77,15 +82,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           # GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          gh pr view --json number -q .number
-          echo "==="
-          gh pr view --json number -q .number || echo ""
+          gh pr list -s all --search ${{ github.sha }} --json number
+          # echo "==="
+          gh pr list -s all --search ${{ github.sha }} --json number -q .[0].number
+
       # END: GET PR NUMBER
 
       - name: "🔧 Setup variables"
         id: setup-variables
         run: |
-          PR_VERSION=$(gh pr view --json number -q .number || echo "")
+          PR_VERSION="${PR_PREFIX}"$(gh pr list -s all --search ${{ github.sha }} --json number -q .[0].number)
           # PR_VERSION=${{ steps.pr.outputs.pull_request_number }}
           echo "PR_VERSION=${PR_VERSION}" >> $GITHUB_ENV
           echo "PR_VERSION=${PR_VERSION}" >> $GITHUB_OUTPUT
