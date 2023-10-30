@@ -34,7 +34,7 @@ on:  # yamllint disable-line rule:truthy
 
     secrets:
       GH_TOKEN:
-        required: true
+        required: false
       WIF_PROVIDER:  # Workload Identity Federation Provider
         required: false
       WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
@@ -72,7 +72,11 @@ jobs:
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # - run: echo ${{ steps.pr.outputs.pull_request_number }}
-      - run: |
+      - name: test pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
           gh pr view --json number -q .number
           echo "==="
           gh pr view --json number -q .number || echo ""
