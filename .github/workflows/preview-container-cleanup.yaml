@@ -23,7 +23,7 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       CREATE_CREDENTIALS_FILE:
-        default: false # true
+        default: true
         required: false
         type: boolean
       EXPORT_ENVIRONMENT_VARIABLES:
