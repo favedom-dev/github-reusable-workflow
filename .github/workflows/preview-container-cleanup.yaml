@@ -139,7 +139,11 @@ jobs:
       - name: Delete image
         run: |
           echo "TODO: delete image"
-          echo "SOMETHING LIKE THIS: gcloud artifacts docker images delete ${DOCKER_REPO}:${DOCKER_TAG} --delete-tags --quiet"
+          for i in $( gcloud artifacts docker tags list ${DOCKER_REPO} | grep "${DOCKER_TAG}" | cut -f1 -d ' '); do
+            echo "${DOCKER_REPO}:${i}"
+            # gcloud artifacts docker images delete "${DOCKER_REPO}":"${i}" --delete-tags --quiet
+            echo "EXAMPLE: gcloud artifacts docker images delete ${DOCKER_REPO}:${i} --delete-tags --quiet"
+          done
 
 
 # gcloud container images list --project=favedom-dev
