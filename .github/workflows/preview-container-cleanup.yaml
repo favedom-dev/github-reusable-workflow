@@ -113,16 +113,16 @@ jobs:
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_ENV
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_OUTPUT
           # ===
-          DOCKER_TAG=${DOCKER_LOCATION}:${PR_VERSION}
-          echo "DOCKER_TAG=${DOCKER_TAG}" >> $GITHUB_ENV
-          echo "DOCKER_TAG=${DOCKER_TAG}" >> $GITHUB_OUTPUT
-          echo "================="
-          echo "GAR             : ${GAR}"
-          echo "PR_NUM          : ${PR_NUM}"
-          echo "PR_VERSION      : ${PR_VERSION}"
-          echo "DOCKER_LOCATION : ${DOCKER_LOCATION}"
-          echo "DOCKER_URL      : ${DOCKER_URL}"
-          echo "DOCKER_TAG      : ${DOCKER_TAG}"
+          DOCKER_TAG_PREFIX=${PR_VERSION}
+          echo "DOCKER_TAG_PREFIX=${DOCKER_TAG_PREFIX}" >> $GITHUB_ENV
+          echo "DOCKER_TAG_PREFIX=${DOCKER_TAG_PREFIX}" >> $GITHUB_OUTPUT
+          echo "==================="
+          echo "GAR               : ${GAR}"
+          echo "PR_NUM            : ${PR_NUM}"
+          echo "PR_VERSION        : ${PR_VERSION}"
+          echo "DOCKER_LOCATION   : ${DOCKER_LOCATION}"
+          echo "DOCKER_URL        : ${DOCKER_URL}"
+          echo "DOCKER_TAG_PREFIX : ${DOCKER_TAG_PREFIX}"
 
       # https://velocityz.atlassian.net/browse/FAN-3674
       - name: "🔧 Google Auth Token"
@@ -156,13 +156,13 @@ jobs:
         run: |
           echo "TODO: delete image"
           echo "DOCKER_LOCATION : ${DOCKER_LOCATION}"
-          echo "DOCKER_TAG      : ${DOCKER_TAG}"
+          echo "DOCKER_TAG_PREFIX      : ${DOCKER_TAG_PREFIX}"
           echo "DOCKER_URL      : ${DOCKER_URL}"
           echo "PR_VERSION      : ${PR_VERSION}"
-          for i in $( gcloud artifacts docker tags list ${DOCKER_LOCATION} | grep "${DOCKER_TAG}" | cut -f1 -d ' '); do
-            echo "repo:i = ${DOCKER_LOCATION}:${i}"
-            # gcloud artifacts docker images delete "${DOCKER_LOCATION}":"${i}" --delete-tags --quiet
-            echo "EXAMPLE: gcloud artifacts docker images delete ${DOCKER_LOCATION}:${i} --delete-tags --quiet"
+          for tag in $( gcloud artifacts docker tags list ${DOCKER_LOCATION} | grep "${DOCKER_TAG_PREFIX}" | cut -f1 -d ' '); do
+            echo "repo:tag = ${DOCKER_LOCATION}:${tag}"
+            # gcloud artifacts docker images delete "${DOCKER_LOCATION}":"${tag}" --delete-tags --quiet
+            echo "EXAMPLE: gcloud artifacts docker images delete ${DOCKER_LOCATION}:${tag} --delete-tags --quiet"
           done
           echo "Can verify PR containters \"${PR_VERSION}*\" deleted at ${DOCKER_URL}"
 
