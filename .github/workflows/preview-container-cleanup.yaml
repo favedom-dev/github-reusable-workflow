@@ -92,7 +92,12 @@ jobs:
       - name: "🔧 Setup variables"
         id: setup-variables
         run: |
-          PR_VERSION=${{ inputs.PR_PREFIX }}${{ github.event.pull_request.number }}
+          PR_NUM=${{ github.event.pull_request.number }}
+          echo "PR_NUM=${PR_NUM}" >> $GITHUB_ENV
+          echo "PR_NUM=${PR_NUM}" >> $GITHUB_OUTPUT
+          # ===
+          # PR_VERSION=${{ inputs.PR_PREFIX }}${{ github.event.pull_request.number }}
+          PR_VERSION=${{ inputs.PR_PREFIX }}${PR_NUM}
           echo "PR_VERSION=${PR_VERSION}" >> $GITHUB_ENV
           echo "PR_VERSION=${PR_VERSION}" >> $GITHUB_OUTPUT
           # ===
@@ -113,6 +118,7 @@ jobs:
           echo "DOCKER_TAG=${DOCKER_TAG}" >> $GITHUB_OUTPUT
           echo "================="
           echo "GAR             : ${GAR}"
+          echo "PR_NUM          : ${PR_NUM}"
           echo "PR_VERSION      : ${PR_VERSION}"
           echo "DOCKER_LOCATION : ${DOCKER_LOCATION}"
           echo "DOCKER_URL      : ${DOCKER_URL}"
@@ -149,11 +155,16 @@ jobs:
       - name: Delete image
         run: |
           echo "TODO: delete image"
-          for i in $( gcloud artifacts docker tags list ${DOCKER_REPO} | grep "${DOCKER_TAG}" | cut -f1 -d ' '); do
-            echo "${DOCKER_REPO}:${i}"
-            # gcloud artifacts docker images delete "${DOCKER_REPO}":"${i}" --delete-tags --quiet
-            echo "EXAMPLE: gcloud artifacts docker images delete ${DOCKER_REPO}:${i} --delete-tags --quiet"
+          echo "DOCKER_LOCATION : ${DOCKER_LOCATION}"
+          echo "DOCKER_TAG      : ${DOCKER_TAG}"
+          echo "DOCKER_URL      : ${DOCKER_URL}"
+          echo "PR_VERSION      : ${PR_VERSION}"
+          for i in $( gcloud artifacts docker tags list ${DOCKER_LOCATION} | grep "${DOCKER_TAG}" | cut -f1 -d ' '); do
+            echo "repo:i = ${DOCKER_LOCATION}:${i}"
+            # gcloud artifacts docker images delete "${DOCKER_LOCATION}":"${i}" --delete-tags --quiet
+            echo "EXAMPLE: gcloud artifacts docker images delete ${DOCKER_LOCATION}:${i} --delete-tags --quiet"
           done
+          echo "Can verify PR containters \"${PR_VERSION}*\" deleted at ${DOCKER_URL}"
 
 
 # gcloud container images list --project=favedom-dev
