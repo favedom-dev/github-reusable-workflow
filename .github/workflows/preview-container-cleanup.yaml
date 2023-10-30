@@ -92,7 +92,7 @@ jobs:
       - name: "🔧 Setup variables"
         id: setup-variables
         run: |
-          PR_VERSION="${PR_PREFIX}"${{ github.event.pull_request.number }}
+          PR_VERSION=${{ inputs.PR_PREFIX }}${{ github.event.pull_request.number }}
           echo "PR_VERSION=${PR_VERSION}" >> $GITHUB_ENV
           echo "PR_VERSION=${PR_VERSION}" >> $GITHUB_OUTPUT
           # ===
@@ -101,7 +101,6 @@ jobs:
           echo "GAR=${GAR}" >> $GITHUB_OUTPUT
           # ===
           DOCKER_LOCATION=${GAR}/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}
-          # DOCKER_LOCATION=${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}
           echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_ENV
           echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_OUTPUT
           # ===
@@ -110,7 +109,6 @@ jobs:
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_OUTPUT
           # ===
           DOCKER_TAG=${DOCKER_LOCATION}:${PR_VERSION}
-          # DOCKER_TAG=${DOCKER_LOCATION}:${{ inputs.PR_VERSION }}
           echo "DOCKER_TAG=${DOCKER_TAG}" >> $GITHUB_ENV
           echo "DOCKER_TAG=${DOCKER_TAG}" >> $GITHUB_OUTPUT
           echo "================="
@@ -137,7 +135,7 @@ jobs:
         with:
           username: 'oauth2accesstoken'
           password: '${{ steps.auth-gcp-token.outputs.access_token }}'
-          registry: '${GAR}'
+          registry: "${GAR}"
 
       # https://github.com/google-github-actions/setup-gcloud
       - name: 'Set up Cloud SDK'
