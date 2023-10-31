@@ -27,8 +27,40 @@ display_standard_vars() {
   echo "========================================================="
 }
 
+display_project_id() {
+  echo "PROJECT_ID                : ${PROJECT_ID}"
+}
+
+display_service_account() {
+  display_project_id
+  echo "SERVICE_ACCOUNT_EMAIL     : ${SERVICE_ACCOUNT_EMAIL}"
+}
+
+display_service_account_id() {
+  display_project_id
+  echo "SERVICE_ACCOUNT_ID        : ${SERVICE_ACCOUNT_ID}"
+}
+
+display_container_bucket() {
+  echo "CONTAINER_BUCKET          : ${CONTAINER_BUCKET}"
+}
+
+display_workload_identity() {
+  display_project_id
+  echo "WORKLOAD_IDENTITY_POOL    : ${WORKLOAD_IDENTITY_POOL}"
+}
+
+display_workload_identity_id() {
+  display_workload_identity
+  echo "WORKLOAD_IDENTITY_POOL_ID - gets set in function get_workload_identity_pool()"
+  echo "WORKLOAD_IDENTITY_POOL_ID : ${WORKLOAD_IDENTITY_POOL_ID}"
+}
+
+# =========================================================
+
 # 2. Optional) Create a Google Cloud Service Account. If you already have a Service Account, take note of the email address and skip this step
 init_service_account() {
+  display_service_account_id
   gcloud iam service-accounts create ${SERVICE_ACCOUNT_ID} \
   --project="${PROJECT_ID}" \
   --display-name="${SERVICE_ACCOUNT_ID}" \
@@ -39,8 +71,11 @@ init_service_account() {
 # email: github-actions-core@favedom-dev.iam.gserviceaccount.com
 
 list_service_accounts() {
-  gcloud iam service-accounts list
+  display_project_id
+  echo "Using --project=${PROJECT_ID}"
+  gcloud iam service-accounts list --project="${PROJECT_ID}"
 }
+
 
 # delete_custom_role
 # init_custom_cloud_run_role() {
@@ -50,6 +85,7 @@ list_service_accounts() {
 # }
 
 set_service_account_roles() {
+  display_service_account
   gcloud projects add-iam-policy-binding ${PROJECT_ID} \
   --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
   --role="roles/artifactregistry.writer"
@@ -66,8 +102,7 @@ set_service_account_roles() {
 }
 
 set_service_account_roles_artifact_admin() {
-  echo "PROJECT_ID            : ${PROJECT_ID}"
-  echo "SERVICE_ACCOUNT_EMAIL : ${SERVICE_ACCOUNT_EMAIL}"
+  display_service_account
   gcloud projects add-iam-policy-binding ${PROJECT_ID} \
   --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
   --role="roles/artifactregistry.repoAdmin"
@@ -75,6 +110,7 @@ set_service_account_roles_artifact_admin() {
 
 # https://cloud.google.com/storage/docs/access-control/iam-roles
 set_service_account_roles_storage() {
+  display_service_account
   gcloud projects add-iam-policy-binding ${PROJECT_ID} \
   --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
   --role="roles/storage.objectAdmin"
@@ -82,6 +118,7 @@ set_service_account_roles_storage() {
 
 # https://cloud.google.com/compute/docs/access/iam
 set_service_account_roles_compute() {
+  display_service_account
   gcloud projects add-iam-policy-binding ${PROJECT_ID} \
   --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
   --role="roles/compute.viewer"
@@ -89,34 +126,36 @@ set_service_account_roles_compute() {
 
 # https://cloud.google.com/secret-manager/docs/access-control
 set_service_account_roles_secret_accessor() {
-  echo "PROJECT_ID           : ${PROJECT_ID}"
-  echo "SERVICE_ACCOUNT_EMAIL: ${SERVICE_ACCOUNT_EMAIL}"
+  display_service_account
   gcloud projects add-iam-policy-binding ${PROJECT_ID} \
   --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
   --role="roles/secretmanager.secretAccessor"
 }
 
 remove_roles() {
-    gcloud projects remove-iam-policy-binding ${PROJECT_ID} \
+  display_service_account
+  gcloud projects remove-iam-policy-binding ${PROJECT_ID} \
   --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
   --role="roles/run.invoker"
 
-    gcloud projects remove-iam-policy-binding ${PROJECT_ID} \
+  gcloud projects remove-iam-policy-binding ${PROJECT_ID} \
   --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
   --role="projects/${PROJECT_ID}/roles/run.writer"
 }
 
 delete_custom_role() {
-    gcloud iam roles delete run.writer --project=${PROJECT_ID}
+  gcloud iam roles delete run.writer --project=${PROJECT_ID}
 }
 
 add_role_admin() {
+  display_service_account
   gcloud projects add-iam-policy-binding ${PROJECT_ID} \
   --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
   --role="roles/run.admin"
 }
 
 add_role_serviceAccountUser() {
+  display_service_account
   gcloud projects add-iam-policy-binding ${PROJECT_ID} \
   --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
   --role="roles/iam.serviceAccountUser"
@@ -124,16 +163,19 @@ add_role_serviceAccountUser() {
 
 
 add_principal_to_bucket() {
+  display_container_bucket
   gsutil iam ch \
   serviceAccount:${SERVICE_ACCOUNT_EMAIL}:roles/storage.admin gs://${CONTAINER_BUCKET}
 }
 
 view_bucket_policy() {
+  display_container_bucket
   gsutil iam get gs://${CONTAINER_BUCKET}
 }
 
-
+# list roles associated with service account
 get_service_account_roles() {
+  display_service_account
   gcloud projects get-iam-policy ${PROJECT_ID}  \
   --flatten="bindings[].members" \
   --format="table(bindings.role)" \
@@ -148,6 +190,7 @@ enable_iam_credentials_api() {
 
 # 5. Create a Workload Identity Pool
 init_workload_identity_pool() {
+  display_workload_identity
   gcloud iam workload-identity-pools create "${WORKLOAD_IDENTITY_POOL}" \
   --project="${PROJECT_ID}" \
   --location="global" \
@@ -158,16 +201,18 @@ init_workload_identity_pool() {
 # RUN THIS
 # 6. Get the full ID of the Workload Identity Pool
 get_workload_identity_pool() {
+  display_workload_identity
   export WORKLOAD_IDENTITY_POOL_ID=$( \
   gcloud iam workload-identity-pools describe "${WORKLOAD_IDENTITY_POOL}" \
   --project="${PROJECT_ID}" \
   --location="global" \
   --format="value(name)")
-  echo "WORKLOAD_IDENTITY_POOL_ID: ${WORKLOAD_IDENTITY_POOL_ID}"
+  display_workload_identity_id
 }
 
 # 7. Create a Workload Identity Provider in that pool
 init_workload_identity_provider() {
+  display_workload_identity
   gcloud iam workload-identity-pools providers create-oidc "github" \
   --project="${PROJECT_ID}" \
   --location="global" \
@@ -180,7 +225,7 @@ init_workload_identity_provider() {
 # 8. Allow authentications from the Workload Identity Provider originating from your repository to impersonate the Service Account created above
 set_workload_identity_provider_service_account_access() {
 #   get_workload_identity_pool
-  echo "WORKLOAD_IDENTITY_POOL_ID: ${WORKLOAD_IDENTITY_POOL_ID}"
+  display_workload_identity_id
   gcloud iam service-accounts add-iam-policy-binding "${SERVICE_ACCOUNT_EMAIL}" \
   --project="${PROJECT_ID}" \
   --role="roles/iam.workloadIdentityUser" \
