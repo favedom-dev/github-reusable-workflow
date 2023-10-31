@@ -106,7 +106,7 @@ jobs:
       - name: Delete image
         run: |
           declare -a PR_CONTAINER_LIST
-          for tag in $( gcloud artifacts docker tags list ${DOCKER_LOCATION} | grep "${DOCKER_TAG_PREFIX}" | cut -f1 -d ' '); do
+          for tag in $(gcloud artifacts docker tags list ${DOCKER_LOCATION} | grep "${DOCKER_TAG_PREFIX}" | cut -f1 -d ' '); do
             CURRENT_CONTAINER="${DOCKER_LOCATION}:${tag}"
             echo ""
             echo ">>>>>>>>>>>>>>"
