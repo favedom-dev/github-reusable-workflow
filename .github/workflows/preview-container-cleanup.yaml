@@ -46,18 +46,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - name: "GITHUB INFO"
-        env:
-          GITHUB_CONTEXT: ${{ toJSON(github) }}
-        run: |-
-          echo "PR number          : ${{ github.event.pull_request.number }}"
-          echo "github.event_name  : ${{ github.event_name }}"
-          echo "github.run_attempt : ${{ github.run_attempt }}"
-          echo "github.run_number  : ${{ github.run_number }}"
-          echo "github.sha         : ${{ github.sha }}"
-          echo "--------------------------------------"
-          echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
-
       - name: "🔧 Setup variables"
         id: setup-variables
         run: |
@@ -122,29 +110,3 @@ jobs:
             gcloud artifacts docker images delete "${DOCKER_LOCATION}":"${tag}" --delete-tags --quiet
           done
           echo "Can verify PR containters \"${PR_VERSION}*\" deleted at ${DOCKER_URL}"
-
-
-# gcloud container images list --project=favedom-dev
-# gcloud artifacts packages list --project=favedom-dev --repository=peeq-docker --location=us-central1
-
-# To delete image busy-box in us-west1 and all of its digests and tags:
-# gcloud artifacts docker images delete
-
-# To list tags for image busy-box in us-west1:
-# gcloud artifacts docker tags list
-# gcloud artifacts docker tags list --project=favedom-dev us-central1-docker.pkg.dev/favedom-dev/peeq-docker/peeq-mono-web-vtnil
-# gcloud artifacts docker tags list us-central1-docker.pkg.dev/favedom-dev/peeq-docker/peeq-mono-web-vtnil
-# gcloud artifacts docker tags list us-central1-docker.pkg.dev/favedom-dev/peeq-docker/peeq-mono-web-vtnil:0.0.0-SNAPSHOT-PR-1246-3087-1
-
-
-#### REFER TO THESE BELOW
-# gcloud artifacts docker tags list us-central1-docker.pkg.dev/favedom-dev/peeq-docker/peeq-mono-web-vtnil | grep 0.0.0-SNAPSHOT-PR-1246
-
-# gcloud artifacts docker tags list us-central1-docker.pkg.dev/favedom-dev/peeq-docker/peeq-mono-web-vtnil | grep 0.0.0-SNAPSHOT-PR-1246 | cut -f1 -d ' '
-
-# DOCKER_REPO="us-central1-docker.pkg.dev/favedom-dev/peeq-docker/peeq-mono-web-vtnil"
-# for i in $( gcloud artifacts docker tags list ${DOCKER_REPO} | grep 0.0.0-SNAPSHOT-PR-1246 | cut -f1 -d ' '); do
-#   echo "${DOCKER_REPO}:${i}"
-#   gcloud artifacts docker images delete "${DOCKER_REPO}":"${i}" --delete-tags --quiet
-# done
-
