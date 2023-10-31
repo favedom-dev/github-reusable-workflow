@@ -108,15 +108,6 @@ jobs:
           echo "DOCKER_URL        : ${DOCKER_URL}"
           echo "DOCKER_TAG_PREFIX : ${DOCKER_TAG_PREFIX}"
 
-      # - name: "🔧 Google Auth Token"
-      #   if: ${{ !env.ACT }}
-      #   id: auth-gcp-token
-      #   uses: 'google-github-actions/auth@v0'
-      #   with:
-      #     token_format: 'access_token'
-      #     workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
-      #     service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-
       - name: "🔧 Google Auth Token"
         id: auth-gcp-token
         uses: 'google-github-actions/auth@v0'
@@ -139,18 +130,25 @@ jobs:
       - name: 'Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
 
-      - name: Delete image
+      - name: Delete PR ${{ steps.setup-variables.outputs.PR_NUM }} container(s)
         run: |
           declare -a PR_CONTAINER_LIST
+          echo "PRE: #PR_CONTAINER_LIST : ${#PR_CONTAINER_LIST[@]}"
           for tag in $(gcloud artifacts docker tags list ${DOCKER_LOCATION} | grep "${DOCKER_TAG_PREFIX}" | cut -f1 -d ' '); do
             CURRENT_CONTAINER="${DOCKER_LOCATION}:${tag}"
             echo ""
             echo ">>>>>>>>>>>>>>"
             echo "START DELETING: ${CURRENT_CONTAINER}"
+            echo "FOR: #PR_CONTAINER_LIST : ${#PR_CONTAINER_LIST[@]}"
             PR_CONTAINER_LIST=[${#PR_CONTAINER_LIST[@]}]="${CURRENT_CONTAINER}"
             gcloud artifacts docker images delete "${CURRENT_CONTAINER}" --delete-tags --quiet
             echo "DONE  DELETING: ${CURRENT_CONTAINER}"
             echo "<<<<<<<<<<<<<<"
+            echo "!!!!!!"
+            echo "${PR_CONTAINER_LIST[*]}"
+            echo "!!!!!!"
+            printf '%s\n' "${PR_CONTAINER_LIST[@]}"
+            echo "!!!!!!"
           done
           echo "Can verify PR containters \"${PR_VERSION}*\" deleted at ${DOCKER_URL}"
           printf '%s\n' "${PR_CONTAINER_LIST[@]}"
