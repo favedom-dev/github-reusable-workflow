@@ -111,10 +111,14 @@ jobs:
             echo ""
             echo ">>>>>>>>>>>>>>"
             echo "START DELETING: ${CURRENT_CONTAINER}"
+            echo "#PR_CONTAINER_LIST[@] : ${#PR_CONTAINER_LIST[@]}"
             PR_CONTAINER_LIST=[${#PR_CONTAINER_LIST[@]}]="${CURRENT_CONTAINER}"
             gcloud artifacts docker images delete "${CURRENT_CONTAINER}" --delete-tags --quiet
             echo "DONE  DELETING: ${CURRENT_CONTAINER}"
             echo "<<<<<<<<<<<<<<"
+            echo "---------------------------------"
+            printf '%s\n' "${PR_CONTAINER_LIST[@]}"
+            echo "---------------------------------"
           done
           echo "Can verify PR containters \"${PR_VERSION}*\" deleted at ${DOCKER_URL}"
           printf '%s\n' "${PR_CONTAINER_LIST[@]}"
