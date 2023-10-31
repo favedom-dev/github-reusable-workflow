@@ -65,6 +65,14 @@ set_service_account_roles() {
 #   --role="projects/${PROJECT_ID}/roles/run.writer"
 }
 
+set_service_account_roles_artifact_admin() {
+  echo "PROJECT_ID            : ${PROJECT_ID}"
+  echo "SERVICE_ACCOUNT_EMAIL : ${SERVICE_ACCOUNT_EMAIL}"
+  gcloud projects add-iam-policy-binding ${PROJECT_ID} \
+  --member="serviceAccount:${SERVICE_ACCOUNT_EMAIL}" \
+  --role="roles/artifactregistry.repoAdmin"
+}
+
 # https://cloud.google.com/storage/docs/access-control/iam-roles
 set_service_account_roles_storage() {
   gcloud projects add-iam-policy-binding ${PROJECT_ID} \
