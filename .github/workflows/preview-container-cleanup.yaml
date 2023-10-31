@@ -108,10 +108,13 @@ jobs:
           declare -a PR_CONTAINER_LIST
           for tag in $( gcloud artifacts docker tags list ${DOCKER_LOCATION} | grep "${DOCKER_TAG_PREFIX}" | cut -f1 -d ' '); do
             CURRENT_CONTAINER="${DOCKER_LOCATION}:${tag}"
+            echo ""
+            echo ">>>>>>>>>>>>>>"
             echo "START DELETING: ${CURRENT_CONTAINER}"
             PR_CONTAINER_LIST=[${#PR_CONTAINER_LIST[@]}]="${CURRENT_CONTAINER}"
             gcloud artifacts docker images delete "${CURRENT_CONTAINER}" --delete-tags --quiet
-            echo "DONE DELETING : ${CURRENT_CONTAINER}"
+            echo "DONE  DELETING: ${CURRENT_CONTAINER}"
+            echo "<<<<<<<<<<<<<<"
           done
           echo "Can verify PR containters \"${PR_VERSION}*\" deleted at ${DOCKER_URL}"
           printf '%s\n' "${PR_CONTAINER_LIST[@]}"
