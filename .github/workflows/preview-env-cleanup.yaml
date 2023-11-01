@@ -132,27 +132,21 @@ jobs:
 
       - name: Delete PR ${{ steps.setup-variables.outputs.PR_NUM }} container(s)
         run: |
-          declare -a PR_CONTAINER_LIST
-          echo "PRE: #PR_CONTAINER_LIST : ${#PR_CONTAINER_LIST[@]}"
+          declare -a PR_TAG_LIST
           for tag in $(gcloud artifacts docker tags list ${DOCKER_LOCATION} | grep "${DOCKER_TAG_PREFIX}" | cut -f1 -d ' '); do
             CURRENT_CONTAINER="${DOCKER_LOCATION}:${tag}"
+            PR_TAG_LIST[${#PR_TAG_LIST[@]}]="${tag}"
             echo ""
             echo ">>>>>>>>>>>>>>"
             echo "START DELETING: ${CURRENT_CONTAINER}"
-            echo "FOR: #PR_CONTAINER_LIST : ${#PR_CONTAINER_LIST[@]}"
-            # PR_CONTAINER_LIST[${#PR_CONTAINER_LIST[@]}]="${CURRENT_CONTAINER}"
-            PR_CONTAINER_LIST[${#PR_CONTAINER_LIST[@]}]="${tag}"
             gcloud artifacts docker images delete "${CURRENT_CONTAINER}" --delete-tags --quiet
             echo "DONE  DELETING: ${CURRENT_CONTAINER}"
             echo "<<<<<<<<<<<<<<"
-            echo "!!!!!!"
-            echo "${PR_CONTAINER_LIST[*]}"
-            echo "!!!!!!"
-            printf '%s\n' "${PR_CONTAINER_LIST[@]}"
-            echo "!!!!!!"
           done
-          echo "Can verify PR containters \"${PR_VERSION}*\" deleted at ${DOCKER_URL}"
-          printf '%s\n' "${PR_CONTAINER_LIST[@]}"
+          echo "Can verify PR containters \"${PR_VERSION}*\" deleted at URL:"
+          echo "${DOCKER_URL}"
+          echo "Containers removed had tags:"
+          printf '%s\n' "${PR_TAG_LIST[@]}"
 
       - id: 'get-credentials'
         uses: 'google-github-actions/get-gke-credentials@v1'
