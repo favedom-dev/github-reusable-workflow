@@ -127,10 +127,10 @@ jobs:
           registry: "${{ steps.setup-variables.outputs.GAR }}"
 
       # https://github.com/google-github-actions/setup-gcloud
-      - name: 'Set up Cloud SDK'
+      - name: '🔧 Set up Cloud SDK'
         uses: 'google-github-actions/setup-gcloud@v1'
 
-      - name: Delete PR ${{ steps.setup-variables.outputs.PR_NUM }} container(s)
+      - name: "🗑️ Delete PR ${{ steps.setup-variables.outputs.PR_NUM }} container(s)"
         run: |
           declare -a PR_TAG_LIST
           for tag in $(gcloud artifacts docker tags list ${DOCKER_LOCATION} | grep "${DOCKER_TAG_PREFIX}" | cut -f1 -d ' '); do
@@ -149,14 +149,15 @@ jobs:
           echo "Containers removed had tags:"
           printf '%s\n' "${PR_TAG_LIST[@]}"
 
-      - id: 'get-credentials'
+      - name: "🔧 Get GKE Credentials"
+        id: 'get-credentials'
         uses: 'google-github-actions/get-gke-credentials@v1'
         with:
           cluster_name: ${{ inputs.CLUSTER_NAME }}
           location: ${{ inputs.LOCATION }}
           project_id: ${{ inputs.CLUSTER_PROJECT_ID }}
 
-      - name: "Delete namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
+      - name: "🗑️ Delete namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
         run: |
