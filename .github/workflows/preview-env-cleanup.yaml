@@ -140,7 +140,8 @@ jobs:
             echo ">>>>>>>>>>>>>>"
             echo "START DELETING: ${CURRENT_CONTAINER}"
             echo "FOR: #PR_CONTAINER_LIST : ${#PR_CONTAINER_LIST[@]}"
-            PR_CONTAINER_LIST=[${#PR_CONTAINER_LIST[@]}]="${CURRENT_CONTAINER}"
+            # PR_CONTAINER_LIST[${#PR_CONTAINER_LIST[@]}]="${CURRENT_CONTAINER}"
+            PR_CONTAINER_LIST[${#PR_CONTAINER_LIST[@]}]="${tag}"
             gcloud artifacts docker images delete "${CURRENT_CONTAINER}" --delete-tags --quiet
             echo "DONE  DELETING: ${CURRENT_CONTAINER}"
             echo "<<<<<<<<<<<<<<"
