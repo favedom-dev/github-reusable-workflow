@@ -143,6 +143,7 @@ jobs:
             echo "DONE  DELETING: ${CURRENT_CONTAINER}"
             echo "<<<<<<<<<<<<<<"
           done
+          echo ""
           echo "Can verify PR containters \"${PR_VERSION}*\" deleted at URL:"
           echo "${DOCKER_URL}"
           echo "Containers removed had tags:"
