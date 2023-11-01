@@ -97,7 +97,7 @@ jobs:
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_ENV
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_OUTPUT
           # ===
-          DOCKER_TAG_PREFIX=${PR_VERSION}
+          DOCKER_TAG_PREFIX="${PR_VERSION}-"
           echo "DOCKER_TAG_PREFIX=${DOCKER_TAG_PREFIX}" >> $GITHUB_ENV
           echo "DOCKER_TAG_PREFIX=${DOCKER_TAG_PREFIX}" >> $GITHUB_OUTPUT
           echo "==================="
