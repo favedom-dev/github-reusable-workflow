@@ -148,7 +148,7 @@ jobs:
 
       - name: "☁️ Checkout environment repository: ${{ inputs.ENV_REPO_NAME }}"
         if: github.ref == 'refs/heads/master'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: ${{ inputs.ENV_REPO_NAME }}
           token: ${{ secrets.GH_TOKEN }}

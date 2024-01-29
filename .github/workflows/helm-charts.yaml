@@ -136,7 +136,7 @@ jobs:
           git config --global user.name "velocityz-0x-pq-github"
 
       - name: "☁️ Checkout repository: ${{ inputs.NAME }}"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
