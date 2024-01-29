@@ -130,7 +130,13 @@ jobs:
             esac
             # ARGOCD_APP_NAME=$(echo ${{ inputs.name }} | sed 's/peeq-//')
             echo "REMOVE_STR  : ${REMOVE_STR}"
+            if [ -z "$REMOVE_STR" ]; then
+              echo "REMOVE_STR not set"
+              ARGOCD_APP_NAME=$(echo ${{ inputs.name }})
+            else
+            echo "REMOVE_STR set"
             ARGOCD_APP_NAME=$(echo ${{ inputs.name }} | sed 's/'"${REMOVE_STR}"'//')
+            fi
           fi
           echo "ARGOCD_APP_NAME=${ARGOCD_APP_NAME}" >> $GITHUB_OUTPUT
 
