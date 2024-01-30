@@ -84,7 +84,7 @@ jobs:
           echo "GAR_URL=${GAR_URL}" >> $GITHUB_OUTPUT
 
       - name: "☁️ Checkout repository"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "🔧 Google Auth Token"
         if: ${{ !env.ACT }}

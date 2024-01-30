@@ -77,7 +77,7 @@ jobs:
           git config --global url."https://${{ inputs.GH_USER }}:${{ secrets.GH_TOKEN }}@github.com/${{ inputs.GH_ORG }}".insteadOf "https://github.com/${{ inputs.GH_ORG }}"
 
       - name: "☁️ Checkout repository"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Required for backend tfstate files in google bucket
       - name: "🔧 Google Auth Token"

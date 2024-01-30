@@ -41,7 +41,7 @@ jobs:
     steps:
 
       - name: "☁️ Checkout repository"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download Qwiet CLI
         run: |
@@ -57,7 +57,7 @@ jobs:
           ${{ inputs.ARG_LANGUAGE }} \
           ${{ inputs.ARG_STANDARD }} \
           ${{ inputs.VCS_PREFIX_CORRECTION }} \
-          ${{ inputs.SCAN_DIR }} | tee qwiet-analysis.log 
+          ${{ inputs.SCAN_DIR }} | tee qwiet-analysis.log
 
       - name: Upload Qwiet Analyze Artifacts
         uses: actions/upload-artifact@v3
