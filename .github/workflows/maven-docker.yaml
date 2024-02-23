@@ -144,7 +144,7 @@ jobs:
       - name: "🔧 Docker Auth: GAR"
         if: ${{ !env.ACT }}
         id: auth-docker
-        uses: 'docker/login-action@v2'
+        uses: 'docker/login-action@v3'
         with:
           username: 'oauth2accesstoken'
           password: '${{ steps.auth-gcp-token.outputs.access_token }}'
@@ -158,7 +158,7 @@ jobs:
       #     aws-region: ${{ inputs.AWS_REGION }}
 
       # - name: "🔧 Docker Auth: ECR"
-      #   uses: docker/login-action@v2
+      #   uses: docker/login-action@v3
       #   with:
       #     registry: <aws-account-number>.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com
       #     username: ${{ secrets.AWS_ACCESS_KEY_ID }}
