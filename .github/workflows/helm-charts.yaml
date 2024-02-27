@@ -234,7 +234,7 @@ jobs:
           echo "CHARTS_DIR=${CHARTS_DIR}" >> $GITHUB_OUTPUT
 
       - name: "🔧 Setup helm version: ${{ inputs.HELM_VERSION }}"
-        uses: azure/setup-helm@v3
+        uses: azure/setup-helm@v4
         with:
           version: ${{ inputs.HELM_VERSION }}
         id: install
@@ -250,7 +250,7 @@ jobs:
 
       - name: "🔧 GKE credentials cluster: ${{ inputs.CLUSTER_NAME }}"
         id: 'get-credentials'
-        uses: 'google-github-actions/get-gke-credentials@v1'
+        uses: 'google-github-actions/get-gke-credentials@v2'
         with:
           cluster_name: ${{ inputs.CLUSTER_NAME }}
           location: ${{ inputs.LOCATION }}
