@@ -234,7 +234,7 @@ jobs:
           echo "CHARTS_DIR=${CHARTS_DIR}" >> $GITHUB_OUTPUT
 
       - name: "🔧 Setup helm version: ${{ inputs.HELM_VERSION }}"
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v3
         with:
           version: ${{ inputs.HELM_VERSION }}
         id: install
