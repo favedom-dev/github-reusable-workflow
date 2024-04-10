@@ -169,7 +169,9 @@ jobs:
           APP_HOST: https://${{ inputs.NAMESPACE }}.${{ inputs.BASE_DOMAIN }}
           # APP_ID: ${{ inputs.STACKHAWK_APP_ID }}
           APP_ENV: ${{ inputs.STACKHAWK_APP_ENV }}
-        uses: stackhawk/hawkscan-action@v2.0.0
+        # uses: stackhawk/hawkscan-action@v2.0.0
+        # https://github.com/stackhawk/hawkscan-action
+        uses: stackhawk/hawkscan-action@v2
         with:
           apiKey: ${{ secrets.HAWK_API_KEY }}
           dryRun: ${{ inputs.STACKHAWK_DRYRUN }}
