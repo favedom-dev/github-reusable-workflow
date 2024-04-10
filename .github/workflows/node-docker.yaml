@@ -140,14 +140,16 @@ jobs:
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
       - name: "🔧 Setup node.js version: ${{ inputs.NODE_VERSION }}"
-        uses: actions/setup-node@v3
+        # https://github.com/actions/setup-node
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           cache: npm
 
       - name: "📦 Cache node_modules"
         id: cache-node-modules
-        uses: actions/cache@v3
+        # https://github.com/actions/cache
+        uses: actions/cache@v4
         with:
           path: node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -228,7 +230,8 @@ jobs:
           echo "tags=$DOCKER_TAGS" >> $GITHUB_OUTPUT
 
       - name: "🐳 Docker: build, tag, and push"
-        uses: docker/build-push-action@v3
+        # https://github.com/docker/build-push-action
+        uses: docker/build-push-action@v5
         with:
           context: ${{ inputs.DOCKER_CONTEXT }}
           file: ${{ env.DOCKERFILE_FILE }}
