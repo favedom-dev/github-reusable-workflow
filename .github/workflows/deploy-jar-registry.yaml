@@ -96,7 +96,7 @@ jobs:
           service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
       - name: "🔧 Set up JDK ${{ inputs.JDK_VERSION }}"
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '${{ inputs.JDK_VERSION }}'
           distribution: 'temurin'
