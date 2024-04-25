@@ -71,7 +71,7 @@ echo ""
 # if [ -z "$NEEDS_TAG" ]; then
     # echo "Tagged with $NEW_TAG (Ignoring fatal:cannot describe - this means commit is untagged) "
     # env | sort
-    if [! ${ACT} ]; then
+    if [ ! ${ACT} ]; then
       gh release create "${NEW_TAG}" --generate-notes
       rc=$?
       if [ ${rc} -ne 0 ] ; then
