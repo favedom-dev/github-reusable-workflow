@@ -92,7 +92,8 @@ jobs:
       #     echo "DOCKER_REGISTRY: ${{ inputs.DOCKER_REGISTRY }}"
 
       - name: "🐳 Docker: build, tag, and push"
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v5
+        if: ${{ !env.ACT }}
         with:
           context: .
           push: true
@@ -100,6 +101,7 @@ jobs:
           tags: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}:${{ inputs.VERSION }},${{ steps.setup-variables.outputs.DOCKER_LOCATION }}:latest
 
       - name: "🌐 Link to Container"
+        if: ${{ !env.ACT }}
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}

@@ -147,7 +147,10 @@ jobs:
           INPUT_DO_RELEASE_BUILD: ${{ inputs.DO_RELEASE_BUILD }}
           INPUT_DO_PREVIEW_ENVIRONMENT: ${{ inputs.DO_PREVIEW_ENVIRONMENT }}
         run: |
-          if [ "${GH_REF}" = "refs/heads/master" ] || [ "${INPUT_DO_RELEASE_BUILD}" = "true" ]; then
+          if [ "${ACT}" = "refs/heads/master" ]; then
+            DO_RELEASE_BUILD="false"
+            DO_PREVIEW_ENVIRONMENT="false"
+          elif [ "${GH_REF}" = "refs/heads/master" ] || [ "${INPUT_DO_RELEASE_BUILD}" = "true" ]; then
             DO_RELEASE_BUILD="true"
             DO_PREVIEW_ENVIRONMENT="false"
             echo "DEBUG: IF - INPUT_DO_RELEASE_BUILD : ${INPUT_DO_RELEASE_BUILD}"
@@ -165,6 +168,7 @@ jobs:
           HELM_REGISTRY_LOCATION=${{ inputs.HELM_DOCKER_REGISTRY }}/${{ inputs.GAR_PROJECT_ID }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}
           HELM_REGISTRY_URL="https://console.cloud.google.com/artifacts/docker/${{ inputs.GAR_PROJECT_ID }}/${{ inputs.LOCATION }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}?project=${{ inputs.GAR_PROJECT_ID }}/"
           # Display values
+          echo "ACT                    : ${ACT}"
           echo "DO_RELEASE_BUILD       : ${DO_RELEASE_BUILD}"
           echo "DO_PREVIEW_ENVIRONMENT : ${DO_PREVIEW_ENVIRONMENT}"
           echo "HELM_REGISTRY_LOCATION : ${HELM_REGISTRY_LOCATION}"
@@ -252,6 +256,7 @@ jobs:
       - name: "🔧 GKE credentials cluster: ${{ inputs.CLUSTER_NAME }}"
         id: 'get-credentials'
         uses: 'google-github-actions/get-gke-credentials@v2'
+        if: ${{ !env.ACT }}
         with:
           cluster_name: ${{ inputs.CLUSTER_NAME }}
           location: ${{ inputs.LOCATION }}
@@ -309,6 +314,8 @@ jobs:
           cat Chart.yaml
           echo "DEBUG ==================== values.yaml"
           cat values.yaml
+          echo "forcing failure"
+          exit 9
 
 # yamllint enable rule:line-length
 
@@ -335,7 +342,7 @@ jobs:
       #     fi
 
       - name: "☸ Helm add repos"
-        if: inputs.HELM_ADD_REPOS == true
+        if: inputs.HELM_ADD_REPOS == true && ${{ !env.ACT }}
         env:
           SCRIPT_NAME: ${{ inputs.HELM_ADD_REPOS_SCRIPT_NAME }}
         working-directory: ${{ inputs.SCRIPTS_DIR }}
@@ -345,6 +352,7 @@ jobs:
           ./${SCRIPT_NAME}
 
       - name: "🔧 [GAR] (oci://): Helm login"
+        if: ${{ !env.ACT }}
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
         env:
           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
