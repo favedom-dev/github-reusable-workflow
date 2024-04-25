@@ -1,5 +1,9 @@
 #!/bin/bash
 
+echo "-----------"
+env | sort
+echo "==========="
+
 # if a monorepo pass the app name
 MONOREPO_APP_NAME=$1
 
