@@ -147,9 +147,10 @@ jobs:
           INPUT_DO_RELEASE_BUILD: ${{ inputs.DO_RELEASE_BUILD }}
           INPUT_DO_PREVIEW_ENVIRONMENT: ${{ inputs.DO_PREVIEW_ENVIRONMENT }}
         run: |
-          if [ "${ACT}" = "refs/heads/master" ]; then
+          if [ "${ACT}" ]; then
             DO_RELEASE_BUILD="false"
             DO_PREVIEW_ENVIRONMENT="false"
+            echo "If ${ACT}..."
           elif [ "${GH_REF}" = "refs/heads/master" ] || [ "${INPUT_DO_RELEASE_BUILD}" = "true" ]; then
             DO_RELEASE_BUILD="true"
             DO_PREVIEW_ENVIRONMENT="false"
@@ -315,8 +316,8 @@ jobs:
           cat Chart.yaml
           echo "DEBUG ==================== values.yaml"
           cat values.yaml
-          echo "forcing failure"
-          exit 9
+          # echo "forcing failure"
+          # exit 9
 
 # yamllint enable rule:line-length
 

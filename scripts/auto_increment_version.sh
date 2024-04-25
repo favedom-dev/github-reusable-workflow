@@ -2,7 +2,7 @@
 
 echo "-----------"
 # env | sort
-echo "ACT : \"${ACT}\"
+echo "ACT : \"${ACT}\""
 echo "==========="
 
 # if a monorepo pass the app name
