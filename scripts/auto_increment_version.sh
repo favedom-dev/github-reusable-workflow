@@ -71,10 +71,14 @@ echo ""
 # if [ -z "$NEEDS_TAG" ]; then
     # echo "Tagged with $NEW_TAG (Ignoring fatal:cannot describe - this means commit is untagged) "
     # env | sort
-    gh release create "${NEW_TAG}" --generate-notes
-    rc=$?
-    if [ ${rc} -ne 0 ] ; then
-      exit ${rc}
+    if [! ${ACT} ]; then
+      gh release create "${NEW_TAG}" --generate-notes
+      rc=$?
+      if [ ${rc} -ne 0 ] ; then
+        exit ${rc}
+      fi
+    else
+      echo "RUNNING LOCALLY with act, skipped gh release create"
     fi
     echo "${NEW_VERSION}" > VERSION
     echo "${VNUM1}" > VERSION_MAJOR
