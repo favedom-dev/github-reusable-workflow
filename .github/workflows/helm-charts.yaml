@@ -254,8 +254,8 @@ jobs:
           workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
           service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
-      # - name: "🔧 GKE credentials cluster: ${{ inputs.CLUSTER_NAME }}"
-      - name: "🔧 GKE credentials cluster:"
+      - name: "🔧 GKE credentials cluster: ${{ inputs.CLUSTER_NAME }}"
+      # - name: "🔧 GKE credentials cluster:"
         if: ${{ !env.ACT }}
         id: 'get-credentials'
         uses: 'google-github-actions/get-gke-credentials@v2'
@@ -344,12 +344,13 @@ jobs:
       #     fi
 
       - name: "☸ Helm add repos"
-        if: ${{ !env.ACT }} || inputs.HELM_ADD_REPOS == true
+        if: inputs.HELM_ADD_REPOS == true
         env:
           SCRIPT_NAME: ${{ inputs.HELM_ADD_REPOS_SCRIPT_NAME }}
+          BRANCH_NAME: master
         working-directory: ${{ inputs.SCRIPTS_DIR }}
         run: |
-          wget -O ./${SCRIPT_NAME} ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/master/scripts/${SCRIPT_NAME}
+          wget -O ./${SCRIPT_NAME} ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${BRANCH_NAME}/scripts/${SCRIPT_NAME}
           chmod 777 ./${SCRIPT_NAME}
           ./${SCRIPT_NAME}
 
