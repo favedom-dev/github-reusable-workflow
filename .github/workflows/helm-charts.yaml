@@ -253,7 +253,8 @@ jobs:
           workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
           service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
-      - name: "🔧 GKE credentials cluster: ${{ inputs.CLUSTER_NAME }}"
+      # - name: "🔧 GKE credentials cluster: ${{ inputs.CLUSTER_NAME }}"
+      - name: "🔧 GKE credentials cluster:"
         if: ${{ !env.ACT }}
         id: 'get-credentials'
         uses: 'google-github-actions/get-gke-credentials@v2'
