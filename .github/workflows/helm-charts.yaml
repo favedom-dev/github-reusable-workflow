@@ -254,9 +254,9 @@ jobs:
           service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
       - name: "🔧 GKE credentials cluster: ${{ inputs.CLUSTER_NAME }}"
+        if: ${{ !env.ACT }}
         id: 'get-credentials'
         uses: 'google-github-actions/get-gke-credentials@v2'
-        if: ${{ !env.ACT }}
         with:
           cluster_name: ${{ inputs.CLUSTER_NAME }}
           location: ${{ inputs.LOCATION }}
