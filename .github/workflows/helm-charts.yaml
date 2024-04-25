@@ -344,7 +344,7 @@ jobs:
       #     fi
 
       - name: "☸ Helm add repos"
-        if: always() && (inputs.HELM_ADD_REPOS == true && ${{ !env.ACT }})
+        if: inputs.HELM_ADD_REPOS == true && ${{ env.ACT }}
         env:
           SCRIPT_NAME: ${{ inputs.HELM_ADD_REPOS_SCRIPT_NAME }}
         working-directory: ${{ inputs.SCRIPTS_DIR }}
