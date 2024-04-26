@@ -81,7 +81,9 @@ echo ""
       fi
     else
       VNUM3=${VNUM3}act
-      echo "RUNNING LOCALLY with act, skipped \"gh release create\" -- VNUM3 = ${VNUM3}"
+      NEW_VERSION=${NEW_VERSION}act
+      NEW_TAG=${NEW_TAG}act
+      echo "RUNNING LOCALLY with act, skipped \"gh release create\""
     fi
 
     echo "VERSION_MAJOR = ${VNUM1}"
