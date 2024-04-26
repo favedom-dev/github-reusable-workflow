@@ -81,7 +81,15 @@ echo ""
       fi
     else
       echo "RUNNING LOCALLY with act, skipped gh release create"
+      # VNUM3=${VNUM3}act
     fi
+
+    echo "VERSION       = ${NEW_VERSION}"
+    echo "VERSION_MAJOR = ${VNUM1}"
+    echo "VERSION_MINOR = ${VNUM2}"
+    echo "VERSION_PATCH = ${VNUM3}"
+    echo "TAG           = ${NEW_TAG}"
+
     echo "${NEW_VERSION}" > VERSION
     echo "${VNUM1}" > VERSION_MAJOR
     echo "${VNUM2}" > VERSION_MINOR
