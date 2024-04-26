@@ -121,8 +121,8 @@ jobs:
         if: ${{ env.ACT }}
         run: |
           apt-get update && apt-get -y install gettext-base
-          apt-get update && apt-get -y install asdf
           apt-get update && apt-get -y install maven
+          # apt-get update && apt-get -y install asdf
           # apt-get update && apt-get -y install sudo
 
       - name: "☁️ Checkout repository"
