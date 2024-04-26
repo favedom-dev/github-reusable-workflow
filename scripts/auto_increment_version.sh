@@ -1,5 +1,10 @@
 #!/bin/bash
 
+echo "-----------"
+# env | sort
+echo "ACT : \"${ACT}\""
+echo "==========="
+
 # if a monorepo pass the app name
 MONOREPO_APP_NAME=$1
 
@@ -67,10 +72,15 @@ echo ""
 # if [ -z "$NEEDS_TAG" ]; then
     # echo "Tagged with $NEW_TAG (Ignoring fatal:cannot describe - this means commit is untagged) "
     # env | sort
-    gh release create "${NEW_TAG}" --generate-notes
-    rc=$?
-    if [ ${rc} -ne 0 ] ; then
-      exit ${rc}
+    echo "ACT : \"${ACT}\""
+    if [ ! ${ACT} ]; then
+      gh release create "${NEW_TAG}" --generate-notes
+      rc=$?
+      if [ ${rc} -ne 0 ] ; then
+        exit ${rc}
+      fi
+    else
+      echo "RUNNING LOCALLY with act, skipped gh release create"
     fi
     echo "${NEW_VERSION}" > VERSION
     echo "${VNUM1}" > VERSION_MAJOR

@@ -232,6 +232,7 @@ jobs:
       - name: "🐳 Docker: build, tag, and push"
         # https://github.com/docker/build-push-action
         uses: docker/build-push-action@v5
+        if: ${{ !env.ACT }}
         with:
           context: ${{ inputs.DOCKER_CONTEXT }}
           file: ${{ env.DOCKERFILE_FILE }}
@@ -239,6 +240,7 @@ jobs:
           tags: ${{ steps.docker-tags.outputs.tags }}
 
       - name: "🌐 Link to Container"
+        if: ${{ !env.ACT }}
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
