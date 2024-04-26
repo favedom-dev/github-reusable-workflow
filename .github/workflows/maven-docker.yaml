@@ -132,9 +132,9 @@ jobs:
           export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
 
       - name: "🔧 Google Auth JSON Key"
-        if: ${{ !env.ACT }}
+        if: ${{ !env.ACT && inputs.RUN_GCP_JSON_KEY }}
+        # if: inputs.RUN_GCP_JSON_KEY
         id: auth-gcp-key
-        if: inputs.RUN_GCP_JSON_KEY
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_JSON_KEY }}'
