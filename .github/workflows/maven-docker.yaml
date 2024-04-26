@@ -117,6 +117,12 @@ jobs:
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_ENV
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_OUTPUT
 
+      - name: Install Act dependencies
+        if: ${{ env.ACT }}
+        run: |
+          apt-get update && apt-get -y install gettext-base
+          # apt-get update && apt-get -y install sudo
+
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
 
