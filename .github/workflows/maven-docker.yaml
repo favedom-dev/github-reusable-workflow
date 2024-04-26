@@ -206,10 +206,14 @@ jobs:
 
       - name: "🔨 Build with Maven"
         working-directory: ${{ inputs.APP_WORKING_DIR }}
-        env:
-          GCP_ACCESS_TOKEN: '${{ steps.auth-gcp-token.outputs.access_token }}'
-          GCP_ACCESS_TOKEN_EXPIRATION: '${{ steps.auth-gcp-token.outputs.access_token_expiration }}'
+        # env:
+        #   GCP_ACCESS_TOKEN: '${{ steps.auth-gcp-token.outputs.access_token }}'
+        #   GCP_ACCESS_TOKEN_EXPIRATION: '${{ steps.auth-gcp-token.outputs.access_token_expiration }}'
         run: |
+          if [ ! ${ACT} ]; then
+            export GCP_ACCESS_TOKEN="${{ steps.auth-gcp-token.outputs.access_token }}"
+            export GCP_ACCESS_TOKEN_EXPIRATION="${{ steps.auth-gcp-token.outputs.access_token_expiration }}"
+          fi
           echo "MVN_ARGS        : ${{ inputs.MVN_ARGS }}"
           echo "MVN_ENV_VARS    : ${{ inputs.MVN_ENV_VARS }}"
           echo "MVN_ARGS_EXTRA  : ${{ inputs.MVN_ARGS_EXTRA }}"
