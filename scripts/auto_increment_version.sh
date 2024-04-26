@@ -80,8 +80,8 @@ echo ""
         exit ${rc}
       fi
     else
-      echo "RUNNING LOCALLY with act, skipped gh release create"
       VNUM3=${VNUM3}act
+      echo "RUNNING LOCALLY with act, skipped \"gh release create\" -- VNUM3 = ${VNUM3}"
     fi
 
     echo "VERSION_MAJOR = ${VNUM1}"
