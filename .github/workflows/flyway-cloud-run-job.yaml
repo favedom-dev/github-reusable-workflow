@@ -80,6 +80,7 @@ jobs:
     steps:
 
       - name: "🔧 Google Auth Token"
+        if: ${{ !env.ACT }}
         id: auth-gcp-token
         uses: 'google-github-actions/auth@v2'
         with:
