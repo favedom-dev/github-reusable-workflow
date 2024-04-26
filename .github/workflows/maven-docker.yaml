@@ -213,6 +213,9 @@ jobs:
           if [ ! ${ACT} ]; then
             export GCP_ACCESS_TOKEN="${{ steps.auth-gcp-token.outputs.access_token }}"
             export GCP_ACCESS_TOKEN_EXPIRATION="${{ steps.auth-gcp-token.outputs.access_token_expiration }}"
+          else
+            env | sort
+            # export GCP_ACCESS_TOKEN="${{ steps.auth-gcp-token.outputs.access_token }}"
           fi
           echo "MVN_ARGS        : ${{ inputs.MVN_ARGS }}"
           echo "MVN_ENV_VARS    : ${{ inputs.MVN_ENV_VARS }}"
