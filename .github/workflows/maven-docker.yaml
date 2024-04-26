@@ -94,6 +94,8 @@ on:  # yamllint disable-line rule:truthy
         required: false
       AWS_SECRET_ACCESS_KEY:
         required: false
+      ACT_GCP_ACCESS_TOKEN:
+        required: false
 
 jobs:
 
@@ -194,6 +196,9 @@ jobs:
 
       - name: "🔧 Maven ~/.m2/settings.xml"
         run: |
+          if [ ${ACT} ]; then
+            GCP_ACCESS_TOKEN="${{ secrets.ACT_GCP_ACCESS_TOKEN }}"
+          fi
           wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
           echo "./settings.xml"
           cat ./settings.xml
