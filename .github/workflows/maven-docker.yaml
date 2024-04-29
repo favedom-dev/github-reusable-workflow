@@ -197,7 +197,7 @@ jobs:
       - name: "🔧 Maven ~/.m2/settings.xml"
         run: |
           if [ ${ACT} ]; then
-            export GCP_ACCESS_TOKEN="${{ secrets.ACT_GCP_ACCESS_TOKEN }}"
+            export GCP_ACCESS_TOKEN='${{ secrets.ACT_GCP_ACCESS_TOKEN }}'
             echo "secrets.ACT_GCP_ACCESS_TOKEN : ${{ secrets.ACT_GCP_ACCESS_TOKEN }}"
             echo "GCP_ACCESS_TOKEN             : ${GCP_ACCESS_TOKEN}"
             echo "#GCP_ACCESS_TOKEN            : ${#GCP_ACCESS_TOKEN}"
@@ -213,6 +213,8 @@ jobs:
           echo "==="
           echo "~/.m2/settings.xml"
           cat ~/.m2/settings.xml
+          echo "###"
+          cat ~/.m2/settings.xml | base64
 
       - name: "🔨 Maven set version"
         working-directory: ${{ inputs.APP_WORKING_DIR }}
