@@ -149,9 +149,20 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCP_JSON_KEY }}'
 
+      - name: "🔧 [ACT] Google Auth Token"
+        if: ${{ env.ACT }}
+        id: act-auth-gcp-token
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
       # https://github.com/google-github-actions/setup-gcloud
-      # - name: 'Set up Cloud SDK'
-      #   uses: 'google-github-actions/setup-gcloud@v0'
+      - name: '🔧 [ACT] Set up Cloud SDK'
+        if: ${{ env.ACT }}
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: '[ACT] Use gcloud CLI'
+        if: ${{ env.ACT }}
+        run: 'gcloud info'
 
       - name: "🔧 Docker Auth: GAR"
         if: ${{ !env.ACT }}
