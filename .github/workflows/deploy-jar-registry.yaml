@@ -38,7 +38,8 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       MAVEN_REGISTRY:
-        default: 'peeq-java'
+        default: 'java'
+        # default: 'peeq-java'
         required: false
         type: string
       JAR_PATH:
