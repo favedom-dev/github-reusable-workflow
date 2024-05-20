@@ -30,7 +30,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
       ENV_REPO_SUBDIR_BASE:
         # default: 'dev/fanfuzenil'
-        default: 'dev/tmp-fanfuzenil'
+        default: 'dev/tmp-fanfuze'
         required: false
         type: string
       ENV_REPO_SUBDIR:
