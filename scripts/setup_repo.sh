@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 REPO_NAME=$(basename `git rev-parse --show-toplevel`)
 echo "REPO_NAME: ${REPO_NAME}"

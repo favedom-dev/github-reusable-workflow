@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 get_ci_yaml() {
   filename="ci.yaml"
