@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # invoke function using:
 # bash setup_gcp_wif.sh functionName

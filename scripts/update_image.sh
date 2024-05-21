@@ -1,4 +1,4 @@
-#/bin/bash
+#!/usr/bin/env bash
 
 # NAME="peeq-fan-keycloak-theme"
 # YAML_FILE="helm/values/identityx-v17.yaml"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Format for contents of file HELM_REPOS_FILENAME is:
 #    repo name + "," + repo url

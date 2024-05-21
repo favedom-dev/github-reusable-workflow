@@ -1,4 +1,4 @@
-#/bin/bash
+#!/usr/bin/env bash
 
 # REQUIREMENTS:
 # The YAML_FILE MUST have ELEMENT_NAME_2 on the next line after ELEMENT_NAME_1
