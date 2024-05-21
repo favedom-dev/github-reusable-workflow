@@ -87,6 +87,10 @@ on:  # yamllint disable-line rule:truthy
       #   required: false
       #   type: string
       #   description: "[OBSOLETE] When VERSION_SCRIPT_NAME=update_image.sh"
+      REGISTRY_PROTOCOL:
+        default: 'oci'
+        required: false
+        type: string
       REGISTRY:
         default: 'us-central1-docker.pkg.dev'
         required: false
@@ -236,6 +240,7 @@ jobs:
           NAME: ${{ steps.set-argocd-app-name.outputs.ARGOCD_APP_NAME }}
           VERSION: ${{ inputs.VERSION }}
           YAML_FILE: ${{ inputs.YAML_FILE }}
+          REGISTRY_PROTOCOL: ${{ inputs.REGISTRY_PROTOCOL }}
           REGISTRY: ${{ inputs.REGISTRY }}
           REPOSITORY: ${{ inputs.REPOSITORY }}
           ROOT_ELEMENT: ${{ inputs.ROOT_ELEMENT }}
@@ -255,6 +260,16 @@ jobs:
             --prettyPrint \
             "(.${{ inputs.YAML_ELEMENT }}[] | select(has(\"name\")) | select(.name == \"${{ inputs.NAME }}\")).${{ inputs.YAML_UPDATE_ELEMENT }} = \"${{ inputs.VERSION }}\"" \
             -i ./${{ inputs.YAML_FILE }}
+
+            FQ_REPOSITORY=${REGISTRY_PROTOCOL}://${REGISTRY}/${REPOSITORY}/${NAME}
+            echo "FQ_REPOSITORY : ${FQ_REPOSITORY}"
+            echo "TODO: updated repository add in the -i arg"
+            yq \
+            eval \
+            --prettyPrint \
+            "(.${{ inputs.YAML_ELEMENT }}[] | select(has(\"name\")) | select(.name == \"${{ inputs.NAME }}\")).repository = \""${FQ_REPOSITORY}"\"" \
+            ./${{ inputs.YAML_FILE }}
+            # -i ./${{ inputs.YAML_FILE }}
           fi
 # yamllint enable rule:line-length
 
