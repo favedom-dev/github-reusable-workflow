@@ -44,15 +44,16 @@ on:  # yamllint disable-line rule:truthy
         default: 'true'
         required: false
         type: string
-
       VERSION_SCRIPT_BASE_URL:
-        default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts'
+        # default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/scripts'
+        default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/tmp-fanfuze/scripts'
         required: false
         type: string
       VERSION_SCRIPT_NAME:
         default: ''  # 'update_component_version.sh'
         required: false
         type: string
+        description: "Only set when needing to use the script, otherwise leave blank"
       YAML_FILE:
         default: 'requirements.yaml'
         required: false
@@ -61,27 +62,46 @@ on:  # yamllint disable-line rule:truthy
         default: 'dependencies'
         required: false
         type: string
+        description: "When VERSION_SCRIPT_NAME is null"
       YAML_UPDATE_ELEMENT:
         default: 'version'
         required: false
         type: string
-      # ELEMENT_NAME_1:
-      #   default: 'name'
-      #   required: false
-      #   type: string
-      # ELEMENT_NAME_2:
-      #   default: 'version'
-      #   required: false
-      #   type: string
+        description: "When VERSION_SCRIPT_NAME is null"
       SED_GCR_REPO:
         default: 'gcr.io\/favedom-dev\/'
         required: false
         type: string
+        description: "When VERSION_SCRIPT_NAME=update_image.sh"
       SED_GAR_REPO:
-        # default: 'us-central1-docker.pkg.dev\/favedom-dev\/peeq-docker\/'
-        default: 'us-central1-docker.pkg.dev\/favedom-dev\/docker\/'
+        default: 'us-central1-docker.pkg.dev\/favedom-dev\/peeq-docker\/'
+        # default: 'us-central1-docker.pkg.dev\/favedom-dev\/docker\/'
         required: false
         type: string
+        description: "When VERSION_SCRIPT_NAME=update_image.sh"
+      REGISTRY:
+        default: 'us-central1-docker.pkg.dev'
+        required: false
+        type: string
+        description: "Override REGISTRY in VERSION_SCRIPT_NAME=update_tag.sh"
+      REPOSITORY:
+        default: 'favedom-dev/docker'
+        required: false
+        type: string
+        description: "Override REPOSITORY in VERSION_SCRIPT_NAME=update_tag.sh"
+      ROOT_ELEMENT:
+        required: false
+        type: string
+        description: "Override ROOT_ELEMENT in VERSION_SCRIPT_NAME=update_tag.sh"
+      SUB_ELEMENT:
+        required: false
+        type: string
+        description: "Override SUB_ELEMENT in VERSION_SCRIPT_NAME=update_tag.sh"
+      BASE_ELEMENT:
+        required: false
+        type: string
+        description: "Override BASE_ELEMENT in VERSION_SCRIPT_NAME=update_tag.sh"
+
     secrets:
       GH_TOKEN:  # GitHub token
         required: true
@@ -112,6 +132,11 @@ jobs:
           echo "YAML_UPDATE_ELEMENT     : ${{ inputs.YAML_UPDATE_ELEMENT }}"
           echo "SED_GCR_REPO            : ${{ inputs.SED_GCR_REPO }}"
           echo "SED_GAR_REPO            : ${{ inputs.SED_GAR_REPO }}"
+          echo "REGISTRY                : ${{ inputs.REGISTRY }}"
+          echo "REPOSITORY              : ${{ inputs.REPOSITORY }}"
+          echo "ROOT_ELEMENT            : ${{ inputs.ROOT_ELEMENT }}"
+          echo "SUB_ELEMENT             : ${{ inputs.SUB_ELEMENT }}"
+          echo "BASE_ELEMENT                : ${{ inputs.BASE_ELEMENT }}"
 
       - name: "Set ARGOCD_APP_NAME"
         id: set-argocd-app-name
@@ -199,10 +224,13 @@ jobs:
           NAME: ${{ steps.set-argocd-app-name.outputs.ARGOCD_APP_NAME }}
           VERSION: ${{ inputs.VERSION }}
           YAML_FILE: ${{ inputs.YAML_FILE }}
-          # ELEMENT_NAME_1: ${{ inputs.ELEMENT_NAME_1 }}
-          # ELEMENT_NAME_2: ${{ inputs.ELEMENT_NAME_2 }}
           SED_GCR_REPO: ${{ inputs.SED_GCR_REPO }}
           SED_GAR_REPO: ${{ inputs.SED_GAR_REPO }}
+          REGISTRY: ${{ inputs.REGISTRY }}
+          REPOSITORY: ${{ inputs.REPOSITORY }}
+          ROOT_ELEMENT: ${{ inputs.ROOT_ELEMENT }}
+          SUB_ELEMENT: ${{ inputs.SUB_ELEMENT }}
+          BASE_ELEMENT: ${{ inputs.BASE_ELEMENT }}
 # yamllint disable rule:line-length
         run: |
           if [ ${#VERSION_SCRIPT_NAME} -gt 0 ]; then
