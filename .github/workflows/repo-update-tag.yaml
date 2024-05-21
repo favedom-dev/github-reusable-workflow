@@ -35,6 +35,14 @@ jobs:
         run: |
           # Get the latest commit on the specified branch
           LATEST_COMMIT=$(git rev-parse origin/${BRANCH_NAME})
+          PREVIOUS_TAG_COMMIT=$(git rev-parse ${TAG})
+
+          echo "--------------------:--------------------"
+          echo "TAG_NAME            : ${TAG_NAME}"
+          echo "BRANCH_NAME         : ${BRANCH_NAME}"
+          echo "LATEST_COMMIT       : ${LATEST_COMMIT}"
+          echo "PREVIOUS_TAG_COMMIT : ${PREVIOUS_TAG_COMMIT}"
+          echo "====================:===================="
 
           # Check if the tag exists
           if git rev-parse ${TAG_NAME} >/dev/null 2>&1; then
