@@ -1,0 +1,52 @@
+name: Move Tag to Latest on Branch
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      TAG_NAME:
+        required: true
+        type: string
+      BRANCH_NAME:
+        required: true
+        type: string
+
+    secrets:
+      GH_TOKEN:  # GitHub token
+        required: true
+
+jobs:
+  move-tag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history to ensure tags are included
+
+      - name: Fetch all branches and tags
+        run: |
+          git fetch --all
+
+      - name: Move tag to latest commit
+        env:
+          TAG_NAME: ${{ inputs.TAG_NAME }}  # The tag you want to move
+          BRANCH_NAME: ${{ inputs.BRANCH_NAME }}   # The branch you want to track
+        run: |
+          # Get the latest commit on the specified branch
+          LATEST_COMMIT=$(git rev-parse origin/${BRANCH_NAME})
+
+          # Check if the tag exists
+          if git rev-parse ${TAG_NAME} >/dev/null 2>&1; then
+            # Update the tag to the latest commit
+            git tag -d ${TAG_NAME}
+            git push origin :refs/tags/${TAG_NAME}
+          fi
+
+          # Create the tag at the latest commit
+          git tag ${TAG_NAME} ${LATEST_COMMIT}
+          git push origin ${TAG_NAME}
+
+      - name: Push the new tag
+        run: |
+          git push origin --tags

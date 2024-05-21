@@ -19,7 +19,7 @@ on: # yamllint disable-line rule:truthy
 jobs:
 
   git-tag:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-update-tag.yaml@v2
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-update-tag.yaml@master
     with:
       TAG_NAME: ${{ inputs.TAG_NAME }}
       BRANCH_NAME: ${{ inputs.BRANCH_NAME }}
