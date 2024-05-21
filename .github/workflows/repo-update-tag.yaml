@@ -1,10 +1,7 @@
 name: Move Tag to Latest on Branch
 
-on:
-  # push:
-  #   branches:
-  #     - main  # Change to the branch you want to track
-  # workflow_dispatch: # Allows manual triggering of the workflow
+
+on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       TAG_NAME:
@@ -15,7 +12,7 @@ on:
         type: string
 
     secrets:
-      GH_TOKEN:
+      GH_TOKEN:  # GitHub token
         required: true
 
 jobs:
@@ -24,22 +21,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Fetch all history to ensure tags are included
 
-      - name: "Fetch all branches and tags"
+      - name: Fetch all branches and tags
         run: |
           git fetch --all
 
-      - name: "Move tag to latest commit"
+      - name: Move tag to latest commit
         env:
           TAG_NAME: ${{ inputs.TAG_NAME }}  # The tag you want to move
-          BRANCH_NAME: ${{ inputs.BRANCH_NAME }}  # The branch you want to track
+          BRANCH_NAME: ${{ inputs.BRANCH_NAME }}   # The branch you want to track
         run: |
           # Get the latest commit on the specified branch
           LATEST_COMMIT=$(git rev-parse origin/${BRANCH_NAME})
+          PREVIOUS_TAG_COMMIT=$(git rev-parse ${TAG})
+
+          echo "--------------------:--------------------"
+          echo "TAG_NAME            : ${TAG_NAME}"
+          echo "BRANCH_NAME         : ${BRANCH_NAME}"
+          echo "LATEST_COMMIT       : ${LATEST_COMMIT}"
+          echo "PREVIOUS_TAG_COMMIT : ${PREVIOUS_TAG_COMMIT}"
+          echo "====================:===================="
 
           # Check if the tag exists
           if git rev-parse ${TAG_NAME} >/dev/null 2>&1; then
