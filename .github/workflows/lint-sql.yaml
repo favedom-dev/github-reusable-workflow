@@ -8,6 +8,10 @@ on:  # yamllint disable-line rule:truthy
         default: 'postgres'
         required: false
         type: string
+      PYTHON_VERSION:
+        default: "3.7"
+        required: false
+        type: string
     secrets:
       GH_TOKEN:
         required: true
@@ -17,12 +21,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install Python
         uses: "actions/setup-python@v2"
         with:
-          python-version: "3.7"
+          python-version: "${{ inputs.PYTHON_VERSION }}"
 
       - name: install sqlfluff
         run: "pip install sqlfluff"
