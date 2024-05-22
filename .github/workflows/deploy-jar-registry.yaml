@@ -10,7 +10,7 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
       JDK_VERSION:
-        default: 11
+        default: 21
         required: false
         type: number
       MVN_ARGS:
@@ -43,7 +43,7 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       JAR_PATH:
-        default: 'com.peeq'
+        default: 'com.velocityz'
         required: false
         type: string
       SCAN_JAR:
@@ -114,7 +114,8 @@ jobs:
 
       - name: "🔨 Build with Maven"
         working-directory: ${{ inputs.MAVEN_WORKING_DIR }}
-        run: mvn -B ${{ inputs.MVN_ARGS }}
+        run: |
+          mvn -B ${{ inputs.MVN_ARGS }}
 
       - name: "🌐 Link to Lib"
         env:
