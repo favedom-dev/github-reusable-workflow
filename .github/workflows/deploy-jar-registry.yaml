@@ -13,6 +13,10 @@ on:  # yamllint disable-line rule:truthy
         default: 21
         required: false
         type: number
+      JDK_DISTRIBUTION:
+        default: 'temurin'
+        required: false
+        type: string
       MVN_ARGS:
         default: 'clean deploy'
         required: false
@@ -96,11 +100,11 @@ jobs:
           workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
           service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
-      - name: "🔧 Set up JDK ${{ inputs.JDK_VERSION }}"
+      - name: "🔧 Set up JDK ${{ inputs.JDK_VERSION }} ${{ inputs.JDK_DISTRIBUTION }}"
         uses: actions/setup-java@v4
         with:
           java-version: '${{ inputs.JDK_VERSION }}'
-          distribution: 'temurin'
+          distribution: '${{ inputs.JDK_DISTRIBUTION }}'
 
       - name: "🔧 Maven ~/.m2/settings.xml"
         run: |
