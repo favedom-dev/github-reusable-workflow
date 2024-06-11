@@ -34,7 +34,7 @@ echo "-----------------:-----------------"
 
 NAMESPACE_SECRETS=$(<"${SECRET_FILENAME}")
 
-for secret_namespace in ${NAMESPACE_SECRETS[@]}; do
+for secret_namespace in "${NAMESPACE_SECRETS[@]}"; do
   # clean array
   unset secretList
   # get secret_namespace
@@ -54,7 +54,7 @@ for secret_namespace in ${NAMESPACE_SECRETS[@]}; do
   echo "======:==================:================"
 
   # get secrets
-  for secret in ${secretList[@]}; do
+  for secret in "${secretList[@]}"; do
     # copy secret
     echo ""
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
