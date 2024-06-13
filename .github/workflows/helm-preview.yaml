@@ -1,0 +1,466 @@
+name: Helm Preview
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      NAME:
+        required: true
+        type: string
+      VERSION:
+        required: true
+        type: string
+      PREVIEW_NAMESPACE:
+        required: true
+        type: string
+
+      CHARTS_DIR:
+        default: 'charts'
+        type: string
+        required: false
+      HELM_CHARTS_GIT_REPO:
+        default: 'helm-charts'
+        required: false
+        type: string
+      HELM_CHARTS_GIT_ORG:
+        default: 'favedom-dev'
+        required: false
+        type: string
+      HELM_CHARTS_GIT_BRANCH:
+        default: 'master'
+        required: false
+        type: string
+      HELM_CHARTS_GIT_REPO_PATH:
+        default: 'preview'
+        required: false
+        type: string
+      GH_USER_EMAIL:
+        default: 'github@powervz.com'
+        required: false
+        type: string
+      GH_USER_NAME:
+        default: 'PowerVZ GitHub Bot'
+        required: false
+        type: string
+
+      HELM_REGISTRY_BASE_URL:
+        default: "https://console.cloud.google.com/artifacts/docker"
+        required: false
+        type: string
+      HELM_DOCKER_REGISTRY:
+        default: 'us-central1-docker.pkg.dev'  # GAR (oci://)
+        required: false
+        type: string
+      HELM_REGISTRY_NAME:
+        default: 'helm'
+        required: false
+        type: string
+      HELM_PROJECT_ID:
+        default: 'favedom-dev'
+        required: false
+        type: string
+      HELM_LOCATION:
+        default: 'us-central1'
+        required: false
+        type: string
+      HELM_VERSION:
+        default: 'v3.7.2'
+        required: false
+        type: string
+      HELM_ENABLE_DEBUG:
+        default: true
+        required: false
+        type: boolean
+
+      DOCKER_REGISTRY:
+        default: 'us-central1-docker.pkg.dev'  # GAR (oci://)
+        required: false
+        type: string
+      DOCKER_REGISTRY_NAME:
+        default: 'peeq-docker'
+        # default: 'docker' # TODO use this registry
+        required: false
+        type: string
+      DOCKER_PROJECT_ID:
+        default: 'favedom-dev'
+        required: false
+        type: string
+
+
+      VALUES_GLOBALS_YAML:
+        default: 'values-preview.yaml'
+        required: false
+        type: string
+      VALUES_PREVIEW_YAML:
+        default: 'values-preview.yaml'
+        required: false
+        type: string
+      VALUES_PREVIEW_YAML_TPL:
+        default: 'values-preview.yaml.tpl'
+        required: false
+        type: string
+      # OVERRIDE_CHARTS_DIR:
+      #   required: false
+      #   type: string
+      # OVERRIDE_CHART_APP_DIR:
+      #   required: false
+      #   type: string
+      OVERRIDE_CHART_APP_NAME:
+        required: false
+        type: string
+
+      CLUSTER_PROJECT_ID:
+        default: 'development-375017'
+        required: false
+        type: string
+      CLUSTER_NAME:
+        default: 'fanfuzenil'
+        required: false
+        type: string
+      CLUSTER_LOCATION:
+        default: 'us-central1-a'
+        required: false
+        type: string
+
+
+      # =============================
+
+
+
+      # HELM_ADD_REPOS:
+      #   default: false
+      #   required: false
+      #   type: boolean
+      # HELM_ADD_REPOS_SCRIPT_NAME:
+      #   default: 'helm_add_repos.sh'
+      #   required: false
+      #   type: string
+      HELM_PREVIEW_ARGS:
+        default: ''
+        required: false
+        type: string
+      PREVIEW_BASE_DOMAIN:
+        default: 'dev.fanfuzenil.com'
+        required: false
+        type: string
+      API_PATH:
+        default: ''  # /api/++SERVICE++/
+        required: false
+        type: string
+      PREVIEW_HEALTHCHECK:
+        default: 'actuator/health'
+        required: false
+        type: string
+      SCRIPTS_DIR:
+        default: './scripts'
+        required: false
+        type: string
+      SECRETS_SCRIPT_NAME:
+        default: 'preview_copy_secrets.sh'
+        required: false
+        type: string
+      SECRETS_SCRIPT_BRANCH:
+        default: 'master'
+        required: false
+        type: string
+      SCRIPTS_DOWNLOAD_BASE_URL:
+        default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
+        required: false
+        type: string
+
+    secrets:
+      GH_TOKEN:  # GitHub token
+        required: true
+      WIF_PROVIDER:  # Workload Identity Federation Provider
+        required: true
+      WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
+        required: true
+
+jobs:
+
+  helm-preview:
+    timeout-minutes: 10
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+    steps:
+
+      - name: "🔧 Git config"
+        run: |
+          git config --global user.email ""
+          # git config --global user.name "velocityz-0x-pq-github"
+          git config --global user.name "${{ inputs.GH_USER_NAME }}"
+
+      - name: "☁️ Checkout helm repository: ${{ inputs.HELM_CHARTS_GIT_REPO }}"
+        if: github.ref == 'refs/heads/master'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.HELM_CHARTS_GIT_REPO }}
+          token: ${{ secrets.GH_TOKEN }}
+          ref: ${{ inputs.HELM_CHARTS_GIT_BRANCH }}
+          path: ${{ inputs.HELM_CHARTS_GIT_REPO_PATH }}
+
+      - name: "🔧 Setup variables"
+        id: setup-variables
+        env:
+          GH_REF: ${{ github.ref }}
+          CHART_APP_NAME: ${{ inputs.NAME }}
+          OVERRIDE_CHART_APP_NAME: ${{ inputs.OVERRIDE_CHART_APP_NAME }}
+        run: |
+          HELM_REGISTRY_LOCATION=${{ inputs.HELM_DOCKER_REGISTRY }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}
+          HELM_REGISTRY_URL="${{ inputs.HELM_REGISTRY_BASE_URL }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_LOCATION }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}?project=${{ inputs.HELM_PROJECT_ID }}/"
+          DOCKER_REPOSITORY=${{ inputs.DOCKER_REGISTRY }}/${{ inputs.DOCKER_PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY_NAME }}/${{ inputs.NAME }}
+          CHARTS_WORKING_DIR=${{ inputs.HELM_CHARTS_GIT_REPO_PATH }}/${{ inputs.HELM_CHARTS_GIT_REPO }}/${{ inputs.CHARTS_DIR }}
+          # echo "OVERRIDE_CHART_APP_NAME: ${OVERRIDE_CHART_APP_NAME}"
+          if [ -n "${OVERRIDE_CHART_APP_NAME}" ]; then
+            CHART_APP_NAME=${OVERRIDE_CHART_APP_NAME}
+          fi
+
+          # Display values
+          echo "ACT                    : ${ACT}"
+          echo "HELM_REGISTRY_LOCATION : ${HELM_REGISTRY_LOCATION}"
+          echo "HELM_REGISTRY_URL      : ${HELM_REGISTRY_URL}"
+          echo "DOCKER_REPOSITORY      : ${DOCKER_REPOSITORY}"
+          echo "?CHART_APP_NAME         : ${CHART_APP_NAME}"
+          echo "CHARTS_WORKING_DIR     : ${CHARTS_WORKING_DIR}"
+          # set to output and env
+          echo "HELM_REGISTRY_LOCATION=${HELM_REGISTRY_LOCATION}" >> $GITHUB_ENV
+          echo "HELM_REGISTRY_LOCATION=${HELM_REGISTRY_LOCATION}" >> $GITHUB_OUTPUT
+          echo "HELM_REGISTRY_URL=${HELM_REGISTRY_URL}" >> $GITHUB_ENV
+          echo "HELM_REGISTRY_URL=${HELM_REGISTRY_URL}" >> $GITHUB_OUTPUT
+          echo "DOCKER_REPOSITORY=${DOCKER_REPOSITORY}" >> $GITHUB_ENV
+          echo "DOCKER_REPOSITORY=${DOCKER_REPOSITORY}" >> $GITHUB_OUTPUT
+          echo "CHART_APP_NAME=${CHART_APP_NAME}" >> $GITHUB_ENV
+          echo "CHART_APP_NAME=${CHART_APP_NAME}" >> $GITHUB_OUTPUT
+          echo "CHARTS_WORKING_DIR=${CHARTS_WORKING_DIR}" >> $GITHUB_ENV
+          echo "CHARTS_WORKING_DIR=${CHARTS_WORKING_DIR}" >> $GITHUB_OUTPUT
+          # DEBUG
+          echo "---"
+          pwd
+          echo "==="
+          ls -la
+          echo "~~~"
+          ls -laR
+          echo "@@@"
+          ls -la ${CHARTS_WORKING_DIR}
+
+      - name: "🔧 Enable helm debug"
+        if: inputs.HELM_ENABLE_DEBUG == true
+        run: |
+          echo "HELM_DEBUG_FLAG=--debug" >> $GITHUB_ENV
+
+      - name: "🔧 Setup helm version: ${{ inputs.HELM_VERSION }}"
+        # https://github.com/Azure/setup-helm
+        uses: azure/setup-helm@v4
+        with:
+          version: ${{ inputs.HELM_VERSION }}
+        id: install
+
+      - name: "🔧 Google Auth Token"
+        # if: ${{ !env.ACT }}
+        id: auth-gcp-token
+        uses: 'google-github-actions/auth@v2'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
+          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+
+      - name: "🔧 GKE credentials cluster: ${{ inputs.CLUSTER_NAME }}"
+        # if: ${{ !env.ACT }}
+        id: 'get-credentials'
+        uses: 'google-github-actions/get-gke-credentials@v2'
+        with:
+          cluster_name: ${{ inputs.CLUSTER_NAME }}
+          location: ${{ inputs.CLUSTER_LOCATION }}
+          project_id: ${{ inputs.CLUSTER_PROJECT_ID }}
+
+      - name: "🔧 Update helm charts"
+        working-directory: ${{ inputs.CHARTS_DIR }}
+        # working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
+        env:
+          NAME: ${{ inputs.NAME }}
+          VERSION: ${{ inputs.VERSION }}
+          DOCKER_REPOSITORY: ${{ steps.setup-variables.outputs.DOCKER_REPOSITORY }}
+        run: |
+          echo "------------------------:------------------------"
+          echo "NAME                    : ${NAME}"
+          echo "VERSION                 : ${VERSION}"
+          echo "DOCKER_REPOSITORY       : ${DOCKER_REPOSITORY}"
+          echo "========================:========================"
+
+          envsubst < ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML_TPL }}> ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML }}
+
+          echo "DEBUG ===================="
+          ls -la
+          echo "DEBUG ==================== ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML }}"
+          cat ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML }}
+
+          # echo "forcing failure"
+          # exit 9
+
+      # - name: "DEBUG: helm charts Before"
+      #   if: inputs.ENABLE_HELM_DEBUG == true
+      #   env:
+      #     GH_REF: ${{ github.ref }}
+      #   working-directory: ${{ inputs.CHARTS_DIR }}
+      #   # working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
+      #   run: |
+      #     echo "DEBUG"
+      #     echo "=================================="
+      #     echo "Chart.yaml"
+      #     cat Chart.yaml
+      #     echo "=================================="
+      #     echo "../${{ inputs.NAME }}/Chart.yaml"
+      #     cat ../${{ inputs.NAME }}/Chart.yaml
+      #     echo "=================================="
+      #     echo "values.yaml"
+      #     cat values.yaml
+      #     echo "=================================="
+      #     if [ "${GH_REF}" != "refs/heads/master" ]; then
+      #       echo "requirements.yaml"
+      #       cat requirements.yaml
+      #     fi
+
+      # - name: "☸ Helm add repos"
+      #   if: inputs.HELM_ADD_REPOS == true
+      #   env:
+      #     SCRIPT_NAME: ${{ inputs.HELM_ADD_REPOS_SCRIPT_NAME }}
+      #     BRANCH_NAME: master
+      #   working-directory: ${{ inputs.SCRIPTS_DIR }}
+      #   run: |
+      #     wget -O ./${SCRIPT_NAME} ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${BRANCH_NAME}/scripts/${SCRIPT_NAME}
+      #     chmod 777 ./${SCRIPT_NAME}
+      #     ./${SCRIPT_NAME}
+
+      - name: "🔧 [GAR] (oci://): Helm login"
+        # if: ${{ !env.ACT }}
+        working-directory: ${{ inputs.CHARTS_DIR }}
+        # working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
+        env:
+          HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
+          HELM_REGISTRY_NAME: ${{ inputs.HELM_REGISTRY_NAME }}
+          HELM_EXPERIMENTAL_OCI: 1
+        run: |
+          gcloud auth print-access-token | \
+          helm registry login -u oauth2accesstoken \
+          --password-stdin https://${HELM_DOCKER_REGISTRY}
+
+      - name: "☸ Helm in ${{ inputs.CHARTS_DIR }}"
+        working-directory: ${{ inputs.CHARTS_DIR }}
+        # working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
+        env:
+          CHART_NAME: ${{ inputs.NAME }}
+          VERSION: ${{ inputs.VERSION }}
+          HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
+          VALUES_GLOBALS_YAML: ${{ inputs.VALUES_GLOBALS_YAML }}
+        run: |
+          echo "HELM_DEBUG_FLAG: ${HELM_DEBUG_FLAG}"
+          echo "working-directory: $(pwd)"
+          run_cmd() {
+            echo "----------------------------------"
+            echo "${_cmd[*]}"
+            eval "${_cmd[@]}"
+            RC=${?}
+            if [ "${RC}" -ne 0 ]; then
+              echo "ERROR: rc = ${RC}"
+              exit "${RC}"
+            fi
+            unset CMD
+            echo "=================================="
+            echo ""
+          }
+          # echo "=================================="
+          # echo "RUN: helm repo list"
+          # helm repo list
+          _cmd=(helm dependency update "${CHART_NAME}" "${HELM_DEBUG_FLAG}")
+          run_cmd
+
+          _cmd=(helm dependency build "${CHART_NAME}" "${HELM_DEBUG_FLAG}")
+          run_cmd
+
+          _cmd=(helm lint "${CHART_NAME}" \
+          -f "./${CHART_NAME}/values.yaml" \
+          -f "./${VALUES_GLOBALS_YAML}" \
+          -f "./${CHART_NAME}/${VALUES_PREVIEW_YAML}" \
+          "${HELM_DEBUG_FLAG}")
+          run_cmd
+
+          _cmd=(helm template "${CHART_NAME}" \
+          --dry-run \
+          -f "./${CHART_NAME}/values.yaml" \
+          -f "./${VALUES_GLOBALS_YAML}" \
+          -f "./${CHART_NAME}/${VALUES_PREVIEW_YAML}" \
+          "${HELM_DEBUG_FLAG}")
+          run_cmd
+
+          _cmd=(helm package "${CHART_NAME}" --version "${VERSION}" "${HELM_DEBUG_FLAG}")
+          run_cmd
+
+
+      - name: "☸ PREVIEW: Create namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
+        env:
+          PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
+        run: |
+          echo "Create Preview Namespace: ${PREVIEW_NAMESPACE}"
+          kubectl create namespace ${PREVIEW_NAMESPACE} --dry-run=client -o json | kubectl apply -f -
+          kubectl config set-context $(kubectl config current-context) --namespace ${PREVIEW_NAMESPACE}
+
+      - name: "🔐 PREVIEW: Copy secrets"
+        env:
+          PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
+          SCRIPT_NAME: ${{ inputs.SECRETS_SCRIPT_NAME }}
+          BRANCH_NAME: ${{ inputs.SECRETS_SCRIPT_BRANCH }}
+        working-directory: ${{ inputs.SCRIPTS_DIR }}
+        run: |
+          wget -O ./${SCRIPT_NAME} ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${BRANCH_NAME}/scripts/${SCRIPT_NAME}
+          chmod 777 ./${SCRIPT_NAME}
+          ./${SCRIPT_NAME}
+
+      # TODO add in when working
+      # - name: "☸ PREVIEW: Helm upgrade/install"
+      #   env:
+      #     CHART_NAME: ${{ inputs.NAME }}
+      #     VALUES_GLOBALS_YAML: ${{ inputs.VALUES_GLOBALS_YAML }}
+      #     HELM_PREVIEW_ARGS: ${{ inputs.HELM_PREVIEW_ARGS }}
+      #   working-directory: ${{ inputs.CHARTS_DIR }}
+      #   # working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
+      #   run: |
+      #     echo "CHART_NAME             : ${CHART_NAME}"
+      #     echo "HELM_DEBUG_FLAG        : ${HELM_DEBUG_FLAG}"
+      #     _cmd=(helm upgrade \
+      #     "${DRY_RUN}" \
+      #     --install "${CHART_NAME}" \
+      #     -f "./${CHART_NAME}/values.yaml" \
+      #     -f "./${VALUES_GLOBALS_YAML}" \
+      #     -f "./${CHART_NAME}/${VALUES_PREVIEW_YAML}" \
+      #     "${HELM_PREVIEW_ARGS}" \
+      #     "./${CHART_NAME}" \
+      #     "${HELM_DEBUG_FLAG}")
+
+      #     echo "${_cmd[*]}"
+      #     eval "${_cmd[@]}"
+
+      - name: "🌐 PREVIEW: Link to Preview"
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
+          PREVIEW_URL: https://${{ inputs.PREVIEW_NAMESPACE }}.${{ inputs.PREVIEW_BASE_DOMAIN }}
+          API_PATH: ${{ inputs.API_PATH }}
+          PREVIEW_API_HEALTHCHECK: ${{ inputs.API_PATH }}${{ inputs.PREVIEW_HEALTHCHECK }}
+          PR_BODY: pr_body.md
+        run: |-
+          echo "${PREVIEW_URL}"
+          # START: body message file
+          echo "PR built and available in a preview environment ${{ inputs.NAME }} pr ${{ github.event.number }}:" > ${PR_BODY}
+          echo "- 🌐 preview [link](${PREVIEW_URL})" >> ${PR_BODY}
+          if [ ${#API_PATH}  -gt 0 ]; then
+            echo "- 💓 healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_URL}${PREVIEW_API_HEALTHCHECK})" >> ${PR_BODY}
+          fi
+          echo "- ☸ preview namespace: ${{ inputs.PREVIEW_NAMESPACE }}" >> ${PR_BODY}
+          echo "===="
+          cat ${PR_BODY}
+          echo "===="
+          # END: body message file
+          gh pr comment ${{ github.event.number }} --body-file ${PR_BODY}
