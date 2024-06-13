@@ -59,7 +59,7 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       HELM_VERSION:
-        default: 'v3.7.2'
+        default: 'v3.11.3'
         required: false
         type: string
       HELM_ENABLE_DEBUG:
