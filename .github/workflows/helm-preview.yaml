@@ -212,10 +212,10 @@ jobs:
           if [ -n "${OVERRIDE_CHART_APP_NAME}" ]; then
             CHART_APP_NAME=${OVERRIDE_CHART_APP_NAME}
           fi
-          ARG_CHART_VALUES: "-f ./${{ inputs.NAME }}/values.yaml"
-          ARG_COMMON_VALUES: "-f ./common/values.yaml"
-          ARG_PREVIEW_GLOBALS_VALUES: "-f ./${{ inputs.VALUES_PREVIEW_YAML }}"
-          ARG_PREVIEW_CHART_VALUES: "-f ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML }}"
+          ARG_CHART_VALUES="-f ./${{ inputs.NAME }}/values.yaml"
+          ARG_COMMON_VALUES="-f ./common/values.yaml"
+          ARG_PREVIEW_GLOBALS_VALUES="-f ./${{ inputs.VALUES_PREVIEW_YAML }}"
+          ARG_PREVIEW_CHART_VALUES="-f ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML }}"
 
           # Display values
           echo "ACT                        : ${ACT}"
