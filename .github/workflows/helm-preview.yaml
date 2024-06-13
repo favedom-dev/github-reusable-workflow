@@ -369,6 +369,7 @@ jobs:
           -f "./${CHART_NAME}/values.yaml" \
           -f "./${VALUES_GLOBALS_YAML}" \
           -f "./${CHART_NAME}/${VALUES_PREVIEW_YAML}" \
+          -f "./common/values.yaml" \
           "${HELM_DEBUG_FLAG}")
           run_cmd
 
