@@ -280,8 +280,6 @@ jobs:
 
           envsubst < ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML_TPL }}> ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML }}
 
-          echo "DEBUG ===================="
-          ls -la
           echo "DEBUG ==================== ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML }}"
           cat ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML }}
 
