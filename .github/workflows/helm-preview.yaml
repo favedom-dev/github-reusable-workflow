@@ -196,7 +196,7 @@ jobs:
       - name: "☁️ Checkout helm repository: ${{ inputs.HELM_CHARTS_GIT_REPO }}"
         uses: actions/checkout@v4
         with:
-          repository: ${{ inputs.HELM_CHARTS_GIT_REPO }}
+          repository: ${{ inputs.HELM_CHARTS_GIT_ORG }}/${{ inputs.HELM_CHARTS_GIT_REPO }}
           token: ${{ secrets.GH_TOKEN }}
           ref: ${{ inputs.HELM_CHARTS_GIT_BRANCH }}
           path: ${{ inputs.HELM_CHARTS_GIT_REPO_PATH }}
