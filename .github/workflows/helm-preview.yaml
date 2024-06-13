@@ -340,6 +340,10 @@ jobs:
           HELM_EXPERIMENTAL_OCI: 1
           VALUES_GLOBALS_YAML: ${{ inputs.VALUES_GLOBALS_YAML }}
           VALUES_PREVIEW_YAML: ${{ inputs.VALUES_PREVIEW_YAML }}
+          ARG_CHART_VALUES: "-f ./${CHART_NAME}/values.yaml"
+          ARG_COMMON_VALUES: "-f ./common/values.yaml"
+          ARG_PREVIEW_GLOBALS_VALUES: "-f ./${VALUES_PREVIEW_YAML}"
+          ARG_PREVIEW_CHART_VALUES: "-f ./${CHART_NAME}/${VALUES_PREVIEW_YAML}"
         run: |
           echo "HELM_DEBUG_FLAG: ${HELM_DEBUG_FLAG}"
           echo "working-directory: $(pwd)"
@@ -356,9 +360,15 @@ jobs:
             echo "=================================="
             echo ""
           }
-          # echo "=================================="
-          # echo "RUN: helm repo list"
-          # helm repo list
+          echo "DEBUG......................."
+          echo "ARG_CHART_VALUES           : ${ARG_CHART_VALUES}"
+          echo "ARG_COMMON_VALUES          : ${ARG_COMMON_VALUES}"
+          echo "ARG_PREVIEW_GLOBALS_VALUES : ${ARG_PREVIEW_GLOBALS_VALUES}"
+          echo "ARG_PREVIEW_CHART_VALUES   : ${ARG_PREVIEW_CHART_VALUES}"
+          echo ".......................DEBUG"
+          # _cmd=(helm repo list "${HELM_DEBUG_FLAG}")
+          # run_cmd
+
           _cmd=(helm dependency update "${CHART_NAME}" "${HELM_DEBUG_FLAG}")
           run_cmd
 
@@ -377,11 +387,13 @@ jobs:
           --dry-run \
           -f "./${CHART_NAME}/values.yaml" \
           -f "./${VALUES_GLOBALS_YAML}" \
-          -f "./${CHART_NAME}/${VALUES_PREVIEW_YAML}" \
+          -f "./common/values.yaml" \
           "${HELM_DEBUG_FLAG}")
           run_cmd
 
-          _cmd=(helm package "${CHART_NAME}" --version "${VERSION}" "${HELM_DEBUG_FLAG}")
+          _cmd=(helm package "${CHART_NAME}" \
+          --version "${VERSION}" \
+          "${HELM_DEBUG_FLAG}")
           run_cmd
 
 
