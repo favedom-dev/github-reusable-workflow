@@ -194,7 +194,6 @@ jobs:
           git config --global user.name "${{ inputs.GH_USER_NAME }}"
 
       - name: "☁️ Checkout helm repository: ${{ inputs.HELM_CHARTS_GIT_REPO }}"
-        if: github.ref == 'refs/heads/master'
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.HELM_CHARTS_GIT_REPO }}
