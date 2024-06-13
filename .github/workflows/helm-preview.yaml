@@ -212,14 +212,23 @@ jobs:
           if [ -n "${OVERRIDE_CHART_APP_NAME}" ]; then
             CHART_APP_NAME=${OVERRIDE_CHART_APP_NAME}
           fi
+          ARG_CHART_VALUES: "-f ./${{ inputs.NAME }}/values.yaml"
+          ARG_COMMON_VALUES: "-f ./common/values.yaml"
+          ARG_PREVIEW_GLOBALS_VALUES: "-f ./${{ inputs.VALUES_PREVIEW_YAML }}"
+          ARG_PREVIEW_CHART_VALUES: "-f ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML }}"
 
           # Display values
-          echo "ACT                    : ${ACT}"
-          echo "HELM_REGISTRY_LOCATION : ${HELM_REGISTRY_LOCATION}"
-          echo "HELM_REGISTRY_URL      : ${HELM_REGISTRY_URL}"
-          echo "DOCKER_REPOSITORY      : ${DOCKER_REPOSITORY}"
-          echo "?CHART_APP_NAME         : ${CHART_APP_NAME}"
-          echo "CHARTS_WORKING_DIR     : ${CHARTS_WORKING_DIR}"
+          echo "ACT                        : ${ACT}"
+          echo "HELM_REGISTRY_LOCATION     : ${HELM_REGISTRY_LOCATION}"
+          echo "HELM_REGISTRY_URL          : ${HELM_REGISTRY_URL}"
+          echo "DOCKER_REPOSITORY          : ${DOCKER_REPOSITORY}"
+          echo "?CHART_APP_NAME             : ${CHART_APP_NAME}"
+          echo "CHARTS_WORKING_DIR         : ${CHARTS_WORKING_DIR}"
+          echo "ARG_CHART_VALUES           : ${ARG_CHART_VALUES}"
+          echo "ARG_COMMON_VALUES          : ${ARG_COMMON_VALUES}"
+          echo "ARG_PREVIEW_GLOBALS_VALUES : ${ARG_PREVIEW_GLOBALS_VALUES}"
+          echo "ARG_PREVIEW_CHART_VALUES   : ${ARG_PREVIEW_CHART_VALUES}"
+
           # set to output and env
           echo "HELM_REGISTRY_LOCATION=${HELM_REGISTRY_LOCATION}" >> $GITHUB_ENV
           echo "HELM_REGISTRY_LOCATION=${HELM_REGISTRY_LOCATION}" >> $GITHUB_OUTPUT
@@ -231,6 +240,14 @@ jobs:
           echo "CHART_APP_NAME=${CHART_APP_NAME}" >> $GITHUB_OUTPUT
           echo "CHARTS_WORKING_DIR=${CHARTS_WORKING_DIR}" >> $GITHUB_ENV
           echo "CHARTS_WORKING_DIR=${CHARTS_WORKING_DIR}" >> $GITHUB_OUTPUT
+          echo "ARG_CHART_VALUES=${ARG_CHART_VALUES}" >> $GITHUB_ENV
+          echo "ARG_CHART_VALUES=${ARG_CHART_VALUES}" >> $GITHUB_OUTPUT
+          echo "ARG_COMMON_VALUES=${ARG_COMMON_VALUES}" >> $GITHUB_ENV
+          echo "ARG_COMMON_VALUES=${ARG_COMMON_VALUES}" >> $GITHUB_OUTPUT
+          echo "ARG_PREVIEW_GLOBALS_VALUES=${ARG_PREVIEW_GLOBALS_VALUES}" >> $GITHUB_ENV
+          echo "ARG_PREVIEW_GLOBALS_VALUES=${ARG_PREVIEW_GLOBALS_VALUES}" >> $GITHUB_OUTPUT
+          echo "ARG_PREVIEW_CHART_VALUES=${ARG_PREVIEW_CHART_VALUES}" >> $GITHUB_ENV
+          echo "ARG_PREVIEW_CHART_VALUES=${ARG_PREVIEW_CHART_VALUES}" >> $GITHUB_OUTPUT
 
       - name: "🔧 Enable helm debug"
         if: inputs.HELM_ENABLE_DEBUG == true
@@ -340,10 +357,10 @@ jobs:
           HELM_EXPERIMENTAL_OCI: 1
           VALUES_GLOBALS_YAML: ${{ inputs.VALUES_GLOBALS_YAML }}
           VALUES_PREVIEW_YAML: ${{ inputs.VALUES_PREVIEW_YAML }}
-          ARG_CHART_VALUES: "-f ./${CHART_NAME}/values.yaml"
-          ARG_COMMON_VALUES: "-f ./common/values.yaml"
-          ARG_PREVIEW_GLOBALS_VALUES: "-f ./${VALUES_PREVIEW_YAML}"
-          ARG_PREVIEW_CHART_VALUES: "-f ./${CHART_NAME}/${VALUES_PREVIEW_YAML}"
+          ARG_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_CHART_VALUES }}
+          ARG_COMMON_VALUES: ${{ steps.setup-variables.outputs.ARG_COMMON_VALUES }}
+          ARG_PREVIEW_GLOBALS_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_GLOBALS_VALUES }}
+          ARG_PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_CHART_VALUES }}
         run: |
           echo "HELM_DEBUG_FLAG: ${HELM_DEBUG_FLAG}"
           echo "working-directory: $(pwd)"
@@ -376,18 +393,19 @@ jobs:
           run_cmd
 
           _cmd=(helm lint "${CHART_NAME}" \
-          -f "./${CHART_NAME}/values.yaml" \
-          -f "./${VALUES_GLOBALS_YAML}" \
-          -f "./${CHART_NAME}/${VALUES_PREVIEW_YAML}" \
-          -f "./common/values.yaml" \
+          "${ARG_CHART_VALUES}" \
+          "${ARG_COMMON_VALUES}" \
+          "${ARG_PREVIEW_GLOBALS_VALUES}" \
+          "${ARG_PREVIEW_CHART_VALUES}" \
           "${HELM_DEBUG_FLAG}")
           run_cmd
 
           _cmd=(helm template "${CHART_NAME}" \
           --dry-run \
-          -f "./${CHART_NAME}/values.yaml" \
-          -f "./${VALUES_GLOBALS_YAML}" \
-          -f "./common/values.yaml" \
+          "${ARG_CHART_VALUES}" \
+          "${ARG_COMMON_VALUES}" \
+          "${ARG_PREVIEW_GLOBALS_VALUES}" \
+          "${ARG_PREVIEW_CHART_VALUES}" \
           "${HELM_DEBUG_FLAG}")
           run_cmd
 
@@ -412,9 +430,9 @@ jobs:
           BRANCH_NAME: ${{ inputs.SECRETS_SCRIPT_BRANCH }}
         working-directory: ${{ inputs.SCRIPTS_DIR }}
         run: |
-          wget -O ./${SCRIPT_NAME} ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${BRANCH_NAME}/scripts/${SCRIPT_NAME}
-          chmod 777 ./${SCRIPT_NAME}
-          ./${SCRIPT_NAME}
+          wget -O ./${{ inputs.SECRETS_SCRIPT_NAME }} ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${{ inputs.SECRETS_SCRIPT_BRANCH }}/scripts/${{ inputs.SECRETS_SCRIPT_NAME }}
+          chmod 777 ./${{ inputs.SECRETS_SCRIPT_NAME }}
+          ./${{ inputs.SECRETS_SCRIPT_NAME }}
 
       # TODO add in when working
       # - name: "☸ PREVIEW: Helm upgrade/install"
@@ -423,6 +441,10 @@ jobs:
       #     VALUES_GLOBALS_YAML: ${{ inputs.VALUES_GLOBALS_YAML }}
       #     HELM_PREVIEW_ARGS: ${{ inputs.HELM_PREVIEW_ARGS }}
       #     HELM_EXPERIMENTAL_OCI: 1
+      #     ARG_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_CHART_VALUES }}
+      #     ARG_COMMON_VALUES: ${{ steps.setup-variables.outputs.ARG_COMMON_VALUES }}
+      #     ARG_PREVIEW_GLOBALS_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_GLOBALS_VALUES }}
+      #     ARG_PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_CHART_VALUES }}
       #   working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
       #   run: |
       #     echo "CHART_NAME             : ${CHART_NAME}"
@@ -430,9 +452,10 @@ jobs:
       #     _cmd=(helm upgrade \
       #     "${DRY_RUN}" \
       #     --install "${CHART_NAME}" \
-      #     -f "./${CHART_NAME}/values.yaml" \
-      #     -f "./${VALUES_GLOBALS_YAML}" \
-      #     -f "./${CHART_NAME}/${VALUES_PREVIEW_YAML}" \
+      #     "${ARG_CHART_VALUES}" \
+      #     "${ARG_COMMON_VALUES}" \
+      #     "${ARG_PREVIEW_GLOBALS_VALUES}" \
+      #     "${ARG_PREVIEW_CHART_VALUES}" \
       #     "${HELM_PREVIEW_ARGS}" \
       #     "./${CHART_NAME}" \
       #     "${HELM_DEBUG_FLAG}")
