@@ -231,15 +231,6 @@ jobs:
           echo "CHART_APP_NAME=${CHART_APP_NAME}" >> $GITHUB_OUTPUT
           echo "CHARTS_WORKING_DIR=${CHARTS_WORKING_DIR}" >> $GITHUB_ENV
           echo "CHARTS_WORKING_DIR=${CHARTS_WORKING_DIR}" >> $GITHUB_OUTPUT
-          # DEBUG
-          echo "---"
-          pwd
-          echo "==="
-          ls -la
-          echo "~~~"
-          ls -laR
-          echo "@@@"
-          ls -la ${CHARTS_WORKING_DIR}
 
       - name: "🔧 Enable helm debug"
         if: inputs.HELM_ENABLE_DEBUG == true
@@ -272,8 +263,7 @@ jobs:
           project_id: ${{ inputs.CLUSTER_PROJECT_ID }}
 
       - name: "🔧 Update helm charts"
-        working-directory: ${{ inputs.CHARTS_DIR }}
-        # working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
+        working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
         env:
           NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
@@ -284,6 +274,9 @@ jobs:
           echo "VERSION                 : ${VERSION}"
           echo "DOCKER_REPOSITORY       : ${DOCKER_REPOSITORY}"
           echo "========================:========================"
+          ls -la
+          echo "${NAME} ---"
+          ls -la "${NAME}"
 
           envsubst < ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML_TPL }}> ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML }}
 
@@ -299,8 +292,7 @@ jobs:
       #   if: inputs.ENABLE_HELM_DEBUG == true
       #   env:
       #     GH_REF: ${{ github.ref }}
-      #   working-directory: ${{ inputs.CHARTS_DIR }}
-      #   # working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
+      #   working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
       #   run: |
       #     echo "DEBUG"
       #     echo "=================================="
@@ -331,8 +323,7 @@ jobs:
 
       - name: "🔧 [GAR] (oci://): Helm login"
         # if: ${{ !env.ACT }}
-        working-directory: ${{ inputs.CHARTS_DIR }}
-        # working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
+        working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
         env:
           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
           HELM_REGISTRY_NAME: ${{ inputs.HELM_REGISTRY_NAME }}
@@ -342,9 +333,8 @@ jobs:
           helm registry login -u oauth2accesstoken \
           --password-stdin https://${HELM_DOCKER_REGISTRY}
 
-      - name: "☸ Helm in ${{ inputs.CHARTS_DIR }}"
-        working-directory: ${{ inputs.CHARTS_DIR }}
-        # working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
+      - name: "☸ Helm in ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}"
+        working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
         env:
           CHART_NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
@@ -419,8 +409,7 @@ jobs:
       #     CHART_NAME: ${{ inputs.NAME }}
       #     VALUES_GLOBALS_YAML: ${{ inputs.VALUES_GLOBALS_YAML }}
       #     HELM_PREVIEW_ARGS: ${{ inputs.HELM_PREVIEW_ARGS }}
-      #   working-directory: ${{ inputs.CHARTS_DIR }}
-      #   # working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
+      #   working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
       #   run: |
       #     echo "CHART_NAME             : ${CHART_NAME}"
       #     echo "HELM_DEBUG_FLAG        : ${HELM_DEBUG_FLAG}"
