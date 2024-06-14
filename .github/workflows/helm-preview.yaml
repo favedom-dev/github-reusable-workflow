@@ -395,7 +395,7 @@ jobs:
               exit "${RC}"
             fi
             unset CMD
-            echo "${COLOR_END}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<${COLOR_END}"
+            echo -e "${COLOR_END}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<${COLOR_END}"
             echo ""
           }
 
