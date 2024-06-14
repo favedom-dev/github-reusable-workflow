@@ -448,34 +448,33 @@ jobs:
         run: |
           ../.github/scripts/preview_copy_secrets.sh -c "${CHART_NAME}" -p "${PREVIEW_NAMESPACE}" -n "${FROM_NAMESPACE}"
 
-      # TODO add in when working
-      # - name: "☸ PREVIEW: Helm upgrade/install"
-      #   env:
-      #     CHART_NAME: ${{ inputs.NAME }}
-      #     VALUES_GLOBALS_YAML: ${{ inputs.VALUES_GLOBALS_YAML }}
-      #     HELM_PREVIEW_ARGS: ${{ inputs.HELM_PREVIEW_ARGS }}
-      #     HELM_EXPERIMENTAL_OCI: 1
-      #     ARG_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_CHART_VALUES }}
-      #     ARG_COMMON_VALUES: ${{ steps.setup-variables.outputs.ARG_COMMON_VALUES }}
-      #     ARG_PREVIEW_GLOBALS_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_GLOBALS_VALUES }}
-      #     ARG_PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_CHART_VALUES }}
-      #   working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
-      #   run: |
-      #     echo "CHART_NAME             : ${CHART_NAME}"
-      #     echo "HELM_DEBUG_FLAG        : ${HELM_DEBUG_FLAG}"
-      #     _cmd=(helm upgrade \
-      #     "${DRY_RUN}" \
-      #     --install "${CHART_NAME}" \
-      #     "${ARG_CHART_VALUES}" \
-      #     "${ARG_COMMON_VALUES}" \
-      #     "${ARG_PREVIEW_GLOBALS_VALUES}" \
-      #     "${ARG_PREVIEW_CHART_VALUES}" \
-      #     "${HELM_PREVIEW_ARGS}" \
-      #     "./${CHART_NAME}" \
-      #     "${HELM_DEBUG_FLAG}")
+      - name: "☸ PREVIEW: Helm upgrade/install"
+        env:
+          CHART_NAME: ${{ inputs.NAME }}
+          VALUES_GLOBALS_YAML: ${{ inputs.VALUES_GLOBALS_YAML }}
+          HELM_PREVIEW_ARGS: ${{ inputs.HELM_PREVIEW_ARGS }}
+          HELM_EXPERIMENTAL_OCI: 1
+          ARG_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_CHART_VALUES }}
+          ARG_COMMON_VALUES: ${{ steps.setup-variables.outputs.ARG_COMMON_VALUES }}
+          ARG_PREVIEW_GLOBALS_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_GLOBALS_VALUES }}
+          ARG_PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_CHART_VALUES }}
+        working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
+        run: |
+          echo "CHART_NAME             : ${CHART_NAME}"
+          echo "HELM_DEBUG_FLAG        : ${HELM_DEBUG_FLAG}"
+          _cmd=(helm upgrade \
+          "${DRY_RUN}" \
+          --install "${CHART_NAME}" \
+          "${ARG_CHART_VALUES}" \
+          "${ARG_COMMON_VALUES}" \
+          "${ARG_PREVIEW_GLOBALS_VALUES}" \
+          "${ARG_PREVIEW_CHART_VALUES}" \
+          "${HELM_PREVIEW_ARGS}" \
+          "./${CHART_NAME}" \
+          "${HELM_DEBUG_FLAG}")
 
-      #     echo "${_cmd[*]}"
-      #     eval "${_cmd[@]}"
+          echo "${_cmd[*]}"
+          eval "${_cmd[@]}"
 
       - name: "🌐 PREVIEW: Link to Preview"
         env:
