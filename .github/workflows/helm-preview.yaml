@@ -381,25 +381,24 @@ jobs:
         run: |
           echo "HELM_DEBUG_FLAG: ${HELM_DEBUG_FLAG}"
           echo "working-directory: $(pwd)"
+          NOCOLOR='\033[0m'
+          COLOR_START='\033[1;32m'
+          COLOR_END='\033[0;32m'
+          COLOR_ERROR='\033[0;31m'
           run_cmd() {
-            echo "----------------------------------"
+            echo -e "${COLOR_START}>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>${COLOR_END}"
             echo "${_cmd[*]}"
             eval "${_cmd[@]}"
             RC=${?}
             if [ "${RC}" -ne 0 ]; then
-              echo "ERROR: rc = ${RC}"
+              echo -e "${COLOR_ERROR}ERROR: rc = ${RC}${COLOR_END}"
               exit "${RC}"
             fi
             unset CMD
-            echo "=================================="
+            echo "${COLOR_END}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<${COLOR_END}"
             echo ""
           }
-          echo "DEBUG......................."
-          echo "ARG_CHART_VALUES           : ${ARG_CHART_VALUES}"
-          echo "ARG_COMMON_VALUES          : ${ARG_COMMON_VALUES}"
-          echo "ARG_PREVIEW_GLOBALS_VALUES : ${ARG_PREVIEW_GLOBALS_VALUES}"
-          echo "ARG_PREVIEW_CHART_VALUES   : ${ARG_PREVIEW_CHART_VALUES}"
-          echo ".......................DEBUG"
+
           # _cmd=(helm repo list "${HELM_DEBUG_FLAG}")
           # run_cmd
 
