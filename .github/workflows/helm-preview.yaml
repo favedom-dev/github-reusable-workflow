@@ -302,9 +302,6 @@ jobs:
           echo "VERSION                 : ${VERSION}"
           echo "DOCKER_REPOSITORY       : ${DOCKER_REPOSITORY}"
           echo "========================:========================"
-          ls -la
-          echo "${NAME} ---"
-          ls -la "${NAME}"
 
           CHART_TPL="${PREVIEW_GENERAL_CHART_TPL}"
           if [ -e "${PREVIEW_CHART_TPL}" ]; then
