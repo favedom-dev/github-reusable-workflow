@@ -497,4 +497,4 @@ jobs:
           cat ${PR_BODY}
           echo "===="
           # END: body message file
-          gh pr comment ${{ github.event.number }} --body-file ${PR_BODY} --repo ${github.repository}
+          gh pr comment ${{ github.event.number }} --body-file ${PR_BODY} --repo ${{ github.repository }}
