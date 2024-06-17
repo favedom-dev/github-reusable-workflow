@@ -290,29 +290,30 @@ jobs:
       - name: "🔧 Update helm charts"
         working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
         env:
-          NAME: ${{ inputs.NAME }}
+          CHART_NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
           DOCKER_REPOSITORY: ${{ steps.setup-variables.outputs.DOCKER_REPOSITORY }}
           PREVIEW_CHART_TPL: ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML_TPL }}
           PREVIEW_GENERAL_CHART_TPL: ./${{ inputs.VALUES_PREVIEW_YAML_TPL }}
           PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.PREVIEW_CHART_VALUES }}
+          PR_NUMBER: ${{ github.event.number }}
         run: |
           echo "------------------------:------------------------"
-          echo "NAME                    : ${NAME}"
+          echo "CHART_NAME              : ${CHART_NAME}"
           echo "VERSION                 : ${VERSION}"
           echo "DOCKER_REPOSITORY       : ${DOCKER_REPOSITORY}"
+          echo "PR_NUMBER               : ${PR_NUMBER}"
           echo "========================:========================"
 
           CHART_TPL="${PREVIEW_GENERAL_CHART_TPL}"
           if [ -e "${PREVIEW_CHART_TPL}" ]; then
             CHART_TPL="${PREVIEW_CHART_TPL}"
           fi
-          echo "CHART_TPL : ${CHART_TPL}"
-          # envsubst < ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML_TPL }}> ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML }}
-          envsubst < ./${CHART_TPL}> ./${PREVIEW_CHART_VALUES}
+          echo "Using CHART_TPL : ${CHART_TPL}"
+          envsubst < "${CHART_TPL}"> "${PREVIEW_CHART_VALUES}"
 
-          echo "DEBUG ==================== ./${PREVIEW_CHART_VALUES}"
-          cat ./${PREVIEW_CHART_VALUES}
+          echo "DEBUG ==================== ${PREVIEW_CHART_VALUES}"
+          cat "${PREVIEW_CHART_VALUES}"
 
           # echo "forcing failure"
           # exit 9
