@@ -307,13 +307,16 @@ jobs:
             echo "requirements.yaml - version: ${VERSION}"
             echo "  version: ${VERSION}" >> requirements.yaml
             echo "DEBUG ==================== requirements.yaml"
+            pwd
             cat requirements.yaml
             fi
           echo "DEBUG ===================="
           ls -la
           echo "DEBUG ==================== Chart.yaml"
+          pwd
           cat Chart.yaml
           echo "DEBUG ==================== values.yaml"
+          pwd
           cat values.yaml
           # echo "forcing failure"
           # exit 9
@@ -487,6 +490,7 @@ jobs:
         run: |
           echo "NAME                   : ${NAME}"
           echo "HELM_DEBUG_FLAG        : ${HELM_DEBUG_FLAG}"
+          echo "helm upgrade --install ${NAME} -f ./values.yaml . ${HELM_PREVIEW_ARGS} ${HELM_DEBUG_FLAG}"
           helm upgrade --install ${NAME} -f ./values.yaml . ${HELM_PREVIEW_ARGS} ${HELM_DEBUG_FLAG}
 
       - name: "🌐 PREVIEW: Link to Preview"
