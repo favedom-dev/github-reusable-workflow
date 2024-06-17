@@ -296,13 +296,13 @@ jobs:
           PREVIEW_CHART_TPL: ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML_TPL }}
           PREVIEW_GENERAL_CHART_TPL: ./${{ inputs.VALUES_PREVIEW_YAML_TPL }}
           PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.PREVIEW_CHART_VALUES }}
-          PR_NUMBER: ${{ github.event.number }}
+          PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
         run: |
           echo "------------------------:------------------------"
           echo "CHART_NAME              : ${CHART_NAME}"
           echo "VERSION                 : ${VERSION}"
           echo "DOCKER_REPOSITORY       : ${DOCKER_REPOSITORY}"
-          echo "PR_NUMBER               : ${PR_NUMBER}"
+          echo "PREVIEW_NAMESPACE       : ${PREVIEW_NAMESPACE}"
           echo "========================:========================"
 
           CHART_TPL="${PREVIEW_GENERAL_CHART_TPL}"
