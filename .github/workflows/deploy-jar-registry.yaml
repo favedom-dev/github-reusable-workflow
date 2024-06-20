@@ -95,7 +95,7 @@ jobs:
           MVN_ARG_ARTIFACT_REGISTRY="-Dartifact.registry=${ARTIFACT_REGISTRY}"
           echo "MVN_ARG_ARTIFACT_REGISTRY : ${MVN_ARG_ARTIFACT_REGISTRY}"
           echo "MVN_ARG_ARTIFACT_REGISTRY=${MVN_ARG_ARTIFACT_REGISTRY}" >> $GITHUB_ENV
-          echo "MVN_ARG_ARTIFACT_REGISTRY=${ARTIFACT_REGISTRY}" >> $GITHUB_OUTPUT
+          echo "MVN_ARG_ARTIFACT_REGISTRY=${MVN_ARG_ARTIFACT_REGISTRY}" >> $GITHUB_OUTPUT
 
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
