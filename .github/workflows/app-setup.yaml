@@ -20,15 +20,6 @@ on:  # yamllint disable-line rule:truthy
         default: '.yaml'
         required: false
         type: string
-      # TODO: search the charts/++APP++/values.yaml
-      # API_FILE2:
-      #   default: 'values'
-      #   required: false
-      #   type: string
-      # API_FILE2_EXT:
-      #   default: '.yaml'
-      #   required: false
-      #   type: string
       API_SEARCH:
         default: 'context-path:'
         required: false
@@ -45,6 +36,7 @@ on:  # yamllint disable-line rule:truthy
         default: 'stackhawk-tmpl.yml'
         required: false
         type: string
+
     outputs:
       NAME:
         value: ${{ jobs.app-setup.outputs.NAME }}
@@ -110,9 +102,6 @@ jobs:
           OVERRIDE_API_PATH: ${{ inputs.OVERRIDE_API_PATH }}
           API_FILE: ${{ inputs.API_FILE }}${{ inputs.API_FILE_EXT }}
           API_SEARCH: ${{ inputs.API_SEARCH }}
-          # TODO: search the charts/++APP++/values.yaml
-          # API_FILE2: ${{ inputs.API_FILE2 }}${{ inputs.API_FILE2_EXT }}
-          # API_SEARCH2: ${{ inputs.API_SEARCH2 }}
         run: |
           API_PATH=""
           if [ -n "${OVERRIDE_API_PATH}" ]; then
