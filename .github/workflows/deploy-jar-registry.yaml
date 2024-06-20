@@ -88,6 +88,16 @@ jobs:
           echo "GAR_URL=${GAR_URL}" >> $GITHUB_ENV
           echo "GAR_URL=${GAR_URL}" >> $GITHUB_OUTPUT
 
+          ARTIFACT_REGISTRY="artifactregistry://${{ inputs.GAR_LOCATION }}-maven.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.MAVEN_REGISTRY }}"
+          echo "ARTIFACT_REGISTRY : ${ARTIFACT_REGISTRY}"
+          echo "ARTIFACT_REGISTRY=${ARTIFACT_REGISTRY}" >> $GITHUB_ENV
+          echo "ARTIFACT_REGISTRY=${ARTIFACT_REGISTRY}" >> $GITHUB_OUTPUT
+
+          MVN_ARG_ARTIFACT_REGISTRY="-Dartifact.registry=${ARTIFACT_REGISTRY}"
+          echo "MVN_ARG_ARTIFACT_REGISTRY : ${MVN_ARG_ARTIFACT_REGISTRY}"
+          echo "MVN_ARG_ARTIFACT_REGISTRY=${MVN_ARG_ARTIFACT_REGISTRY}" >> $GITHUB_ENV
+          echo "MVN_ARG_ARTIFACT_REGISTRY=${ARTIFACT_REGISTRY}" >> $GITHUB_OUTPUT
+
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
 
@@ -118,8 +128,10 @@ jobs:
 
       - name: "🔨 Build with Maven"
         working-directory: ${{ inputs.MAVEN_WORKING_DIR }}
+        env:
+          MVN_ARG_ARTIFACT_REGISTRY: ${{ steps.setup-variables.outputs.MVN_ARG_ARTIFACT_REGISTRY }}
         run: |
-          mvn -B ${{ inputs.MVN_ARGS }}
+          mvn -B ${{ inputs.MVN_ARGS }} ${MVN_ARG_ARTIFACT_REGISTRY}
 
       - name: "🌐 Link to Lib"
         env:
