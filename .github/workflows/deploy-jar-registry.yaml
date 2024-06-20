@@ -43,7 +43,6 @@ on:  # yamllint disable-line rule:truthy
         type: string
       MAVEN_REGISTRY:
         default: 'java'
-        # default: 'peeq-java'
         required: false
         type: string
       JAR_PATH:
@@ -61,11 +60,11 @@ on:  # yamllint disable-line rule:truthy
 
 
     secrets:
-      GH_TOKEN:  # GitHub token
+      GH_TOKEN:
         required: true
-      WIF_PROVIDER:  # Workload Identity Federation Provider
+      WIF_PROVIDER:
         required: true
-      WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
+      WIF_SERVICE_ACCOUNT:
         required: true
       SHIFTLEFT_ACCESS_TOKEN:
         required: false
@@ -136,10 +135,7 @@ jobs:
       - name: "🌐 Link to Lib"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-# yamllint disable rule:line-length
-          # https://console.cloud.google.com/artifacts/maven/favedom-dev/us-central1/peeq-java/com.peeq:peeq-shared-lib/0.0.0-SNAPSHOT-PR-147-2?project=favedom-dev
           GAR_URL: ${{ steps.setup-variables.outputs.GAR_URL }}
-# yamllint enable rule:line-length
         run: |-
           echo "${GAR_URL}"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
