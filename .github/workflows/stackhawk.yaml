@@ -3,7 +3,7 @@ name: Stackhawk
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      NAME:  # name of service, (ex: peeq-tracking)
+      NAME:  # name of service, (ex: users)
         required: true
         type: string
       NAMESPACE:
@@ -17,7 +17,8 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       BASE_DOMAIN:
-        default: 'dev.fanfuzenil.com'
+        default: 'tmp.dev.fanfuzenil.com'
+        # default: 'dev.fanfuzenil.com'  # TODO
         required: false
         type: string
       KEYCLOAK_REALM:
@@ -119,7 +120,7 @@ jobs:
           API_PATH: ${{ inputs.API_PATH }}
           TEST_USERNAME: ${{ inputs.TEST_USERNAME }}
           TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
-          KEYCLOAK_AUTH: https://identity.${{ inputs.BASE_DOMAIN }}/auth/realms/${{ inputs.KEYCLOAK_REALM }}/protocol/openid-connect/token
+          KEYCLOAK_AUTH: https://identity.${{ inputs.BASE_DOMAIN }}/realms/${{ inputs.KEYCLOAK_REALM }}/protocol/openid-connect/token
         run: |
           wget -O ${SCRIPT_NAME} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/stackhawk/${SCRIPT_NAME}
           chmod 777 ./${SCRIPT_NAME}
