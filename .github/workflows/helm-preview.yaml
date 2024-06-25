@@ -72,8 +72,7 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       DOCKER_REGISTRY_NAME:
-        default: 'peeq-docker'
-        # default: 'docker' # TODO use this registry
+        default: 'docker'
         required: false
         type: string
       DOCKER_PROJECT_ID:

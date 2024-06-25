@@ -23,7 +23,6 @@ on:  # yamllint disable-line rule:truthy
         type: string
       DOCKER_REGISTRY:
         default: 'docker'
-        # default: 'peeq-docker'
         required: false
         type: string
     secrets:
