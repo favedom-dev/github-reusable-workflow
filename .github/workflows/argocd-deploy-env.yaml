@@ -25,7 +25,7 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       ENV_REPO_SUBDIR_BASE:
-        # default: 'dev/fanfuzenil'
+        # default: 'dev/fanfuzenil' # TODO
         default: 'dev/tmp-fanfuze'
         required: false
         type: string
@@ -58,7 +58,8 @@ on:  # yamllint disable-line rule:truthy
         type: string
         description: "Only set when needing to use the script, otherwise leave blank"
       YAML_FILE:
-        default: 'requirements.yaml'
+        # default: 'requirements.yaml'
+        default: 'values.yaml'
         required: false
         type: string
       YAML_ELEMENT:
@@ -221,8 +222,10 @@ jobs:
           ROOT_ELEMENT: ${{ inputs.ROOT_ELEMENT }}
           SUB_ELEMENT: ${{ inputs.SUB_ELEMENT }}
           BASE_ELEMENT: ${{ inputs.BASE_ELEMENT }}
-# yamllint disable rule:line-length
+# TODO
         run: |
+          echo "TODO update values.yaml images.repository and images.tag"
+          exit 1
           if [ ${#VERSION_SCRIPT_NAME} -gt 0 ]; then
             wget ${VERSION_SCRIPT_DIR_URL}/${VERSION_SCRIPT_NAME}
             chmod 777 ./${VERSION_SCRIPT_NAME}
@@ -247,7 +250,6 @@ jobs:
             # TODO
             # -i ./${{ inputs.YAML_FILE }}
           fi
-# yamllint enable rule:line-length
 
       - name: "Updated: ./${{ inputs.YAML_FILE }}"
         if: github.ref == 'refs/heads/master'
