@@ -340,16 +340,12 @@ jobs:
           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
           HELM_EXPERIMENTAL_OCI: 1
           PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.PREVIEW_CHART_VALUES }}
-          # VALUES_GLOBALS_YAML: ${{ inputs.VALUES_GLOBALS_YAML }}
-          # VALUES_PREVIEW_YAML: ${{ inputs.VALUES_PREVIEW_YAML }}
-          # ARG_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_CHART_VALUES }}
-          # ARG_COMMON_VALUES: ${{ steps.setup-variables.outputs.ARG_COMMON_VALUES }}
-          # ARG_PREVIEW_GLOBALS_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_GLOBALS_VALUES }}
-          # ARG_PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_CHART_VALUES }}
         run: |
           echo "HELM_DEBUG_SCRIPT_FLAG: ${HELM_DEBUG_SCRIPT_FLAG}"
           echo "working-directory: $(pwd)"
           ./.github/scripts/run-helm.sh ${HELM_DEBUG_SCRIPT_FLAG} -t -p -c "${CHART_NAME}" -v "${VERSION}" -iv "${IMAGE_VERSION}"
+          echo ""
+          echo "./charts/${PREVIEW_CHART_VALUES}:"
           cat "./charts/${PREVIEW_CHART_VALUES}"
 
       - name: "☸ PREVIEW: Create namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
@@ -404,7 +400,7 @@ jobs:
           PREVIEW_URL: https://${{ inputs.PREVIEW_NAMESPACE }}.${{ inputs.PREVIEW_BASE_DOMAIN }}
           API_PATH: ${{ inputs.API_PATH }}
           PREVIEW_API_HEALTHCHECK: ${{ inputs.API_PATH }}${{ inputs.PREVIEW_HEALTHCHECK }}
-          PREVIEW_HEALTHCHECK_URL: https://${{ inputs.PREVIEW_NAMESPACE }}.${{ inputs.PREVIEW_BASE_DOMAIN }}${{ inputs.API_PATH }}${{ inputs.PREVIEW_HEALTHCHECK }}
+          PREVIEW_HEALTHCHECK_URL: "https://${{ inputs.PREVIEW_NAMESPACE }}.${{ inputs.PREVIEW_BASE_DOMAIN }}${{ inputs.API_PATH }}${{ inputs.PREVIEW_HEALTHCHECK }}"
           PR_BODY: pr_body.md
         run: |-
           echo "${PREVIEW_URL}"
@@ -413,7 +409,7 @@ jobs:
           echo "- 🌐 preview [link](${PREVIEW_URL})" >> ${PR_BODY}
           if [ ${#API_PATH}  -gt 0 ]; then
             echo "- 💓 healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_URL}${PREVIEW_API_HEALTHCHECK})" >> ${PR_BODY}
-            echo "- 💓 healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL)" >> ${PR_BODY}
+            # echo "- 💓 healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL)" >> ${PR_BODY}
           fi
           echo "- ☸ preview namespace: ${{ inputs.PREVIEW_NAMESPACE }}" >> ${PR_BODY}
           echo "===="
