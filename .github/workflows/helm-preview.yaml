@@ -262,6 +262,7 @@ jobs:
         if: inputs.HELM_ENABLE_DEBUG == true
         run: |
           echo "HELM_DEBUG_FLAG=--debug" >> $GITHUB_ENV
+          echo "HELM_DEBUG_SCRIPT_FLAG=-d" >> $GITHUB_ENV
 
       - name: "🔧 Setup helm version: ${{ inputs.HELM_VERSION }}"
         # https://github.com/Azure/setup-helm
@@ -365,7 +366,7 @@ jobs:
           --password-stdin https://${HELM_DOCKER_REGISTRY}
 
       - name: "☸ Helm in ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}"
-        working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
+        # working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
         env:
           CHART_NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
@@ -378,67 +379,9 @@ jobs:
           ARG_PREVIEW_GLOBALS_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_GLOBALS_VALUES }}
           ARG_PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_CHART_VALUES }}
         run: |
-          # TODO use run-helm.sh in helm-charts repo
-          echo "HELM_DEBUG_FLAG: ${HELM_DEBUG_FLAG}"
+          echo "HELM_DEBUG_SCRIPT_FLAG: ${HELM_DEBUG_SCRIPT_FLAG}"
           echo "working-directory: $(pwd)"
-          NOCOLOR='\033[0m'
-          COLOR_START='\033[1;32m'
-          COLOR_END='\033[0;32m'
-          COLOR_ERROR='\033[0;31m'
-          run_cmd() {
-            echo -e "${COLOR_START}>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>${COLOR_END}"
-            echo "${_cmd[*]}"
-            eval "${_cmd[@]}"
-            RC=${?}
-            if [ "${RC}" -ne 0 ]; then
-              echo -e "${COLOR_ERROR}ERROR: rc = ${RC}${COLOR_END}"
-              exit "${RC}"
-            fi
-            unset CMD
-            echo -e "${COLOR_END}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<${COLOR_END}"
-            echo ""
-          }
-
-          # _cmd=(helm repo list "${HELM_DEBUG_FLAG}")
-          # run_cmd
-
-          _cmd=(helm dependency update "${CHART_NAME}" "${HELM_DEBUG_FLAG}")
-          run_cmd
-
-          _cmd=(helm dependency build "${CHART_NAME}" "${HELM_DEBUG_FLAG}")
-          run_cmd
-
-          _cmd=(helm lint "${CHART_NAME}" \
-          "${ARG_CHART_VALUES}" \
-          "${ARG_COMMON_VALUES}" \
-          "${ARG_PREVIEW_GLOBALS_VALUES}" \
-          "${ARG_PREVIEW_CHART_VALUES}" \
-          "${HELM_DEBUG_FLAG}")
-          run_cmd
-
-          _cmd=(helm template "${CHART_NAME}" \
-          --dry-run \
-          "${ARG_CHART_VALUES}" \
-          "${ARG_COMMON_VALUES}" \
-          "${ARG_PREVIEW_GLOBALS_VALUES}" \
-          "${ARG_PREVIEW_CHART_VALUES}" \
-          "${HELM_DEBUG_FLAG}")
-          run_cmd
-
-          _cmd=(helm template "${CHART_NAME}" \
-          --dry-run \
-          "${ARG_CHART_VALUES}" \
-          "${ARG_COMMON_VALUES}" \
-          "${ARG_PREVIEW_GLOBALS_VALUES}" \
-          "${ARG_PREVIEW_CHART_VALUES}" \
-          "${HELM_DEBUG_FLAG}" \
-          -s templates/ksvc.yaml \> .preview.yaml)
-          run_cmd
-
-          _cmd=(helm package "${CHART_NAME}" \
-          --version "${VERSION}" \
-          "${HELM_DEBUG_FLAG}")
-          run_cmd
+          ./.github/scripts/run-helm.sh ${HELM_DEBUG_SCRIPT_FLAG} -t -p -c "${CHART_NAME}"
 
       - name: "☸ PREVIEW: Create namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
         env:
