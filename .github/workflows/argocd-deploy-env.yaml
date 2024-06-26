@@ -13,9 +13,6 @@ on:  # yamllint disable-line rule:truthy
         default: ''
         required: false
         type: string
-      ARGOCD_APP_NAME:
-        required: false
-        type: string
       ENV_REPO_NAME:
         default: 'favedom-dev/argocd-deployments'
         required: false
@@ -121,7 +118,6 @@ jobs:
           echo "NAME                    : ${{ inputs.NAME }}"
           echo "VERSION                 : ${{ inputs.VERSION }}"
           echo "MONOREPO_APP            : ${{ inputs.MONOREPO_APP }}"
-          echo "ARGOCD_APP_NAME         : ${{ inputs.ARGOCD_APP_NAME }}"
           echo "ENV_REPO_NAME           : ${{ inputs.ENV_REPO_NAME }}"
           echo "ENV_REPO_PATH           : ${{ inputs.ENV_REPO_PATH }}"
           echo "ENV_REPO_SUBDIR_BASE    : ${{ inputs.ENV_REPO_SUBDIR_BASE }}"
@@ -159,7 +155,7 @@ jobs:
         id: set-env-repo-subdir
         env:
           OVERRIDE_SUBDIR_NAME: ${{ inputs.OVERRIDE_SUBDIR_NAME }}
-          SUBDIR_NAME: ${{ inputs.ARGOCD_APP_NAME }}
+          SUBDIR_NAME: ${{ inputs.NAME }}
         run: |
           echo "SUBDIR_NAME         : ${SUBDIR_NAME}"
           echo "OVERRIDE_SUBDIR_NAME: ${OVERRIDE_SUBDIR_NAME}"
@@ -183,13 +179,13 @@ jobs:
           pwd
           cat ./${{ inputs.YAML_FILE }}
 
-      - name: "Update ${{ inputs.ARGOCD_APP_NAME }} version ${{ inputs.VERSION }} in environment repo: ${{ inputs.YAML_FILE }}"
+      - name: "Update ${{ inputs.NAME }} version ${{ inputs.VERSION }} in environment repo: ${{ inputs.YAML_FILE }}"
         if: github.ref == 'refs/heads/master'
         working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }}
         env:
           VERSION_SCRIPT_DIR_URL: ${{ inputs.VERSION_SCRIPT_BASE_URL }}/${{ inputs.VERSION_SCRIPT_BRANCH }}/${{ inputs.VERSION_SCRIPT_DIR }}
           VERSION_SCRIPT_NAME: ${{ inputs.VERSION_SCRIPT_NAME }}
-          NAME: ${{ inputs.ARGOCD_APP_NAME }}
+          NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
           YAML_FILE: ${{ inputs.YAML_FILE }}
           # REGISTRY_PROTOCOL: ${{ inputs.REGISTRY_PROTOCOL }}
@@ -218,9 +214,9 @@ jobs:
         if: github.ref == 'refs/heads/master'
         working-directory: ${{ inputs.ENV_REPO_PATH }}
         env:
-          NAME: ${{ inputs.ARGOCD_APP_NAME }}
+          NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
-          BRANCH_NAME: gha_${{ inputs.ARGOCD_APP_NAME }}_${{ inputs.VERSION }}
+          BRANCH_NAME: gha_${{ inputs.NAME }}_${{ inputs.VERSION }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           MONOREPO_APP: ${{ inputs.MONOREPO_APP }}
           DO_PR_MERGE: ${{ inputs.DO_PR_MERGE }}
