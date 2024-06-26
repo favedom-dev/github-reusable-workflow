@@ -162,7 +162,8 @@ on:  # yamllint disable-line rule:truthy
       #   required: false
       #   type: string
       SECRETS_FROM_NAMESPACE:
-        default: fanfuze
+        # default: fanfuze  # TODO
+        default: tmp-fanfuze
         required: false
         type: string
 
