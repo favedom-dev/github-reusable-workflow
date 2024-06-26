@@ -365,8 +365,10 @@ jobs:
           helm registry login -u oauth2accesstoken \
           --password-stdin https://${HELM_DOCKER_REGISTRY}
 
-      - name: "☸ Helm in ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}"
-        # working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
+      # - name: "☸ Helm in ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}"
+      #   working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
+      - name: "☸ Helm in ${{ inputs.HELM_CHARTS_GIT_REPO }}"
+        working-directory: ${{ inputs.HELM_CHARTS_GIT_REPO }}
         env:
           CHART_NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
