@@ -30,7 +30,6 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       ENV_REPO_SUBDIR:
-        # default: 'favedom-dev/peeq/${{ inputs.NAME }}'
         required: false
         type: string
       OVERRIDE_SUBDIR_NAME:
@@ -49,56 +48,62 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       VERSION_SCRIPT_DIR:
-        default: 'scripts'
+        default: '.github/scripts'
         required: false
         type: string
       VERSION_SCRIPT_NAME:
-        default: ''  # [update_tag.sh || update_image.sh]
+        default: 'update-values-tag.sh'
         required: false
         type: string
-        description: "Only set when needing to use the script, otherwise leave blank"
       YAML_FILE:
-        # default: 'requirements.yaml'
         default: 'values.yaml'
         required: false
         type: string
-      YAML_ELEMENT:
-        default: 'dependencies'
+      # YAML_ELEMENT:
+      #   default: 'dependencies'
+      #   required: false
+      #   type: string
+      #   description: "When VERSION_SCRIPT_NAME is null"
+      # YAML_UPDATE_ELEMENT:
+      #   default: 'version'
+      #   required: false
+      #   type: string
+      #   description: "When VERSION_SCRIPT_NAME is null"
+      # REGISTRY_PROTOCOL:
+      #   default: 'oci'
+      #   required: false
+      #   type: string
+      # REGISTRY:
+      #   default: 'us-central1-docker.pkg.dev'
+      #   required: false
+      #   type: string
+      #   description: "Override REGISTRY in VERSION_SCRIPT_NAME=[update_tag.sh || update_image.sh]"
+      # REPOSITORY:
+      #   default: 'favedom-dev/docker'
+      #   required: false
+      #   type: string
+      #   description: "Override REPOSITORY in VERSION_SCRIPT_NAME=[update_tag.sh || update_image.sh]"
+      # ROOT_ELEMENT:
+      #   required: false
+      #   type: string
+      #   description: "Override ROOT_ELEMENT in VERSION_SCRIPT_NAME=[update_tag.sh || update_image.sh]"
+      # SUB_ELEMENT:
+      #   required: false
+      #   type: string
+      #   description: "Override SUB_ELEMENT in VERSION_SCRIPT_NAME=update_tag.sh"
+      # BASE_ELEMENT:
+      #   required: false
+      #   type: string
+      #   description: "Override BASE_ELEMENT in VERSION_SCRIPT_NAME=update_tag.sh"
+
+      GH_USER_EMAIL:
+        default: 'github@powervz.com'
         required: false
         type: string
-        description: "When VERSION_SCRIPT_NAME is null"
-      YAML_UPDATE_ELEMENT:
-        default: 'version'
+      GH_USER_NAME:
+        default: 'PowerVZ GitHub Bot'
         required: false
         type: string
-        description: "When VERSION_SCRIPT_NAME is null"
-      REGISTRY_PROTOCOL:
-        default: 'oci'
-        required: false
-        type: string
-      REGISTRY:
-        default: 'us-central1-docker.pkg.dev'
-        required: false
-        type: string
-        description: "Override REGISTRY in VERSION_SCRIPT_NAME=[update_tag.sh || update_image.sh]"
-      REPOSITORY:
-        # default: 'favedom-dev/peeq-docker'
-        default: 'favedom-dev/docker'
-        required: false
-        type: string
-        description: "Override REPOSITORY in VERSION_SCRIPT_NAME=[update_tag.sh || update_image.sh]"
-      ROOT_ELEMENT:
-        required: false
-        type: string
-        description: "Override ROOT_ELEMENT in VERSION_SCRIPT_NAME=[update_tag.sh || update_image.sh]"
-      SUB_ELEMENT:
-        required: false
-        type: string
-        description: "Override SUB_ELEMENT in VERSION_SCRIPT_NAME=update_tag.sh"
-      BASE_ELEMENT:
-        required: false
-        type: string
-        description: "Override BASE_ELEMENT in VERSION_SCRIPT_NAME=update_tag.sh"
 
     secrets:
       GH_TOKEN:
@@ -127,44 +132,19 @@ jobs:
           echo "VERSION_SCRIPT_DIR      : ${{ inputs.VERSION_SCRIPT_DIR }}"
           echo "VERSION_SCRIPT_NAME     : ${{ inputs.VERSION_SCRIPT_NAME }}"
           echo "YAML_FILE               : ${{ inputs.YAML_FILE }}"
-          echo "YAML_ELEMENT            : ${{ inputs.YAML_ELEMENT }}"
-          echo "YAML_UPDATE_ELEMENT     : ${{ inputs.YAML_UPDATE_ELEMENT }}"
-          echo "REGISTRY                : ${{ inputs.REGISTRY }}"
-          echo "REPOSITORY              : ${{ inputs.REPOSITORY }}"
-          echo "ROOT_ELEMENT            : ${{ inputs.ROOT_ELEMENT }}"
-          echo "SUB_ELEMENT             : ${{ inputs.SUB_ELEMENT }}"
-          echo "BASE_ELEMENT            : ${{ inputs.BASE_ELEMENT }}"
-
-      - name: "Set ARGOCD_APP_NAME"
-        id: set-argocd-app-name
-        run: |
-          ARGOCD_APP_NAME=${{ inputs.ARGOCD_APP_NAME }}
-          if [ ! -n "${ARGOCD_APP_NAME}" ]; then
-            APP_PREFIX=$(echo ${{ inputs.name }} | cut -f 1 -d '-')
-            echo "APP_PREFIX : ${APP_PREFIX}"
-            case "${APP_PREFIX}" in
-              "pvz")
-                REMOVE_STR="pvz-";;
-              *)
-                echo "INFO: No string to remove"
-            esac
-
-            echo "REMOVE_STR  : \"${REMOVE_STR}\""
-            if [ -z "$REMOVE_STR" ]; then
-              echo "REMOVE_STR not set"
-              ARGOCD_APP_NAME=$(echo ${{ inputs.name }})
-            else
-            echo "REMOVE_STR set"
-            ARGOCD_APP_NAME=$(echo ${{ inputs.name }} | sed 's/'"${REMOVE_STR}"'//')
-            fi
-          fi
-          echo "ARGOCD_APP_NAME=${ARGOCD_APP_NAME}" >> $GITHUB_OUTPUT
+          # echo "YAML_ELEMENT            : ${{ inputs.YAML_ELEMENT }}"
+          # echo "YAML_UPDATE_ELEMENT     : ${{ inputs.YAML_UPDATE_ELEMENT }}"
+          # echo "REGISTRY                : ${{ inputs.REGISTRY }}"
+          # echo "REPOSITORY              : ${{ inputs.REPOSITORY }}"
+          # echo "ROOT_ELEMENT            : ${{ inputs.ROOT_ELEMENT }}"
+          # echo "SUB_ELEMENT             : ${{ inputs.SUB_ELEMENT }}"
+          # echo "BASE_ELEMENT            : ${{ inputs.BASE_ELEMENT }}"
 
       - name: "🔧 Git config"
         if: github.ref == 'refs/heads/master'
         run: |
           git config --global user.email ""
-          git config --global user.name "velocityz-0x-pq-github"
+          git config --global user.name "${{ inputs.GH_USER_NAME }}"
 
       - name: "☁️ Checkout environment repository: ${{ inputs.ENV_REPO_NAME }}"
         if: github.ref == 'refs/heads/master'
@@ -179,7 +159,7 @@ jobs:
         id: set-env-repo-subdir
         env:
           OVERRIDE_SUBDIR_NAME: ${{ inputs.OVERRIDE_SUBDIR_NAME }}
-          SUBDIR_NAME: ${{ steps.set-argocd-app-name.outputs.ARGOCD_APP_NAME }}
+          SUBDIR_NAME: ${{ inputs.ARGOCD_APP_NAME }}
         run: |
           echo "SUBDIR_NAME         : ${SUBDIR_NAME}"
           echo "OVERRIDE_SUBDIR_NAME: ${OVERRIDE_SUBDIR_NAME}"
@@ -198,62 +178,37 @@ jobs:
 
       - name: "PRE-update: ./${{ inputs.YAML_FILE }}"
         if: github.ref == 'refs/heads/master'
-        # working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ inputs.ENV_REPO_SUBDIR }}
-# yamllint disable-line
         working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }}
         run: |
           pwd
           cat ./${{ inputs.YAML_FILE }}
 
-      - name: "Update ${{ steps.set-argocd-app-name.outputs.ARGOCD_APP_NAME }} version ${{ inputs.VERSION }} in environment repo: ${{ inputs.YAML_FILE }}"
+      - name: "Update ${{ inputs.ARGOCD_APP_NAME }} version ${{ inputs.VERSION }} in environment repo: ${{ inputs.YAML_FILE }}"
         if: github.ref == 'refs/heads/master'
-        # working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ inputs.ENV_REPO_SUBDIR }}
-# yamllint disable-line
         working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }}
         env:
           VERSION_SCRIPT_DIR_URL: ${{ inputs.VERSION_SCRIPT_BASE_URL }}/${{ inputs.VERSION_SCRIPT_BRANCH }}/${{ inputs.VERSION_SCRIPT_DIR }}
           VERSION_SCRIPT_NAME: ${{ inputs.VERSION_SCRIPT_NAME }}
-          NAME: ${{ steps.set-argocd-app-name.outputs.ARGOCD_APP_NAME }}
+          NAME: ${{ inputs.ARGOCD_APP_NAME }}
           VERSION: ${{ inputs.VERSION }}
           YAML_FILE: ${{ inputs.YAML_FILE }}
-          REGISTRY_PROTOCOL: ${{ inputs.REGISTRY_PROTOCOL }}
-          REGISTRY: ${{ inputs.REGISTRY }}
-          REPOSITORY: ${{ inputs.REPOSITORY }}
-          ROOT_ELEMENT: ${{ inputs.ROOT_ELEMENT }}
-          SUB_ELEMENT: ${{ inputs.SUB_ELEMENT }}
-          BASE_ELEMENT: ${{ inputs.BASE_ELEMENT }}
-# TODO
+          # REGISTRY_PROTOCOL: ${{ inputs.REGISTRY_PROTOCOL }}
+          # REGISTRY: ${{ inputs.REGISTRY }}
+          # REPOSITORY: ${{ inputs.REPOSITORY }}
+          # ROOT_ELEMENT: ${{ inputs.ROOT_ELEMENT }}
+          # SUB_ELEMENT: ${{ inputs.SUB_ELEMENT }}
+          # BASE_ELEMENT: ${{ inputs.BASE_ELEMENT }}
         run: |
-          echo "TODO update values.yaml images.repository and images.tag"
-          exit 1
-          if [ ${#VERSION_SCRIPT_NAME} -gt 0 ]; then
-            wget ${VERSION_SCRIPT_DIR_URL}/${VERSION_SCRIPT_NAME}
-            chmod 777 ./${VERSION_SCRIPT_NAME}
-            ./${VERSION_SCRIPT_NAME}
-            rm ./${VERSION_SCRIPT_NAME}
-          else
-            echo "Updating version... ${{ inputs.VERSION }}"
-            yq \
-            eval \
-            --prettyPrint \
-            "(.${{ inputs.YAML_ELEMENT }}[] | select(has(\"name\")) | select(.name == \"${{ inputs.NAME }}\")).${{ inputs.YAML_UPDATE_ELEMENT }} = \"${{ inputs.VERSION }}\"" \
-            -i ./${{ inputs.YAML_FILE }}
-
-            FQ_REPOSITORY=${REGISTRY_PROTOCOL}://${REGISTRY}/${REPOSITORY}/${NAME}
-            echo "TODO: Updating repository... ${FQ_REPOSITORY}"
-            echo "TODO: Add in the \"-i\"" arg"
-            yq \
-            eval \
-            --prettyPrint \
-            "(.${{ inputs.YAML_ELEMENT }}[] | select(has(\"name\")) | select(.name == \"${{ inputs.NAME }}\")).repository = \""${FQ_REPOSITORY}"\"" \
-            ./${{ inputs.YAML_FILE }}
-            # TODO
-            # -i ./${{ inputs.YAML_FILE }}
-          fi
+          echo "Update values.yaml ${NAME}.image.tag"
+          wget -O ./${VERSION_SCRIPT_NAME} ${VERSION_SCRIPT_DIR_URL}/${VERSION_SCRIPT_NAME}
+          chmod 777 ./${VERSION_SCRIPT_NAME}
+          ./${VERSION_SCRIPT_NAME} . "${NAME}" "${VERSION}"
+          rm ./${VERSION_SCRIPT_NAME}
+          echo ""
+          echo "NOTE: MAY NEED TO EXPAND THIS!!!"
 
       - name: "Updated: ./${{ inputs.YAML_FILE }}"
         if: github.ref == 'refs/heads/master'
-        # yamllint disable-line
         working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }}
         run: |
           pwd
@@ -263,13 +218,12 @@ jobs:
         if: github.ref == 'refs/heads/master'
         working-directory: ${{ inputs.ENV_REPO_PATH }}
         env:
-          NAME: ${{ steps.set-argocd-app-name.outputs.ARGOCD_APP_NAME }}
+          NAME: ${{ inputs.ARGOCD_APP_NAME }}
           VERSION: ${{ inputs.VERSION }}
-          BRANCH_NAME: gha_${{ steps.set-argocd-app-name.outputs.ARGOCD_APP_NAME }}_${{ inputs.VERSION }}
+          BRANCH_NAME: gha_${{ inputs.ARGOCD_APP_NAME }}_${{ inputs.VERSION }}
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           MONOREPO_APP: ${{ inputs.MONOREPO_APP }}
           DO_PR_MERGE: ${{ inputs.DO_PR_MERGE }}
-# yamllint disable rule:line-length
         run: |
           git checkout -b ${BRANCH_NAME}
           git status
@@ -289,4 +243,3 @@ jobs:
           if [ "${DO_PR_MERGE}" = "true" ]; then
             gh pr merge ${BRANCH_NAME} --auto --squash
           fi
-# yamllint enable rule:line-length
