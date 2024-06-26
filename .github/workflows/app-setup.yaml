@@ -110,6 +110,7 @@ jobs:
             # Only find the 1st occurrence
             API_PATH=$(grep "${API_SEARCH}" ${API_FILE} | awk '{print $2}'  | head -1)
           fi
+          API_PATH=$(echo "${API_PATH}" | xargs)
           echo "API_PATH: ${API_PATH}"
           echo "API_PATH=${API_PATH}/" >> $GITHUB_OUTPUT
 
