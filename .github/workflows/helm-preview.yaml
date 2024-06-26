@@ -346,7 +346,7 @@ jobs:
           ./.github/scripts/run-helm.sh ${HELM_DEBUG_SCRIPT_FLAG} -t -p -c "${CHART_NAME}" -v "${VERSION}" -iv "${IMAGE_VERSION}"
           echo ""
           echo "./charts/${PREVIEW_CHART_VALUES}:"
-          cat "./charts/${PREVIEW_CHART_VALUES}"
+          cat "./charts/${PREVIEW_CHART_VALUES}" | yq
 
       - name: "☸ PREVIEW: Create namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
         env:
