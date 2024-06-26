@@ -377,6 +377,7 @@ jobs:
           ARG_PREVIEW_GLOBALS_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_GLOBALS_VALUES }}
           ARG_PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_CHART_VALUES }}
         run: |
+          # TODO use run-helm.sh in helm-charts repo
           echo "HELM_DEBUG_FLAG: ${HELM_DEBUG_FLAG}"
           echo "working-directory: $(pwd)"
           NOCOLOR='\033[0m'
@@ -421,6 +422,16 @@ jobs:
           "${ARG_PREVIEW_GLOBALS_VALUES}" \
           "${ARG_PREVIEW_CHART_VALUES}" \
           "${HELM_DEBUG_FLAG}")
+          run_cmd
+
+          _cmd=(helm template "${CHART_NAME}" \
+          --dry-run \
+          "${ARG_CHART_VALUES}" \
+          "${ARG_COMMON_VALUES}" \
+          "${ARG_PREVIEW_GLOBALS_VALUES}" \
+          "${ARG_PREVIEW_CHART_VALUES}" \
+          "${HELM_DEBUG_FLAG}" \
+          -s templates/ksvc.yaml \> .preview.yaml)
           run_cmd
 
           _cmd=(helm package "${CHART_NAME}" \
