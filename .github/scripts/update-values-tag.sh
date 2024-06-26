@@ -2,7 +2,7 @@
 
 # Check if the correct number of arguments is provided
 if [ "$#" -ne 3 ]; then
-  echo "Usage: $0 <path to Chart directory>  <dependency name or alias> <new image tag>"
+  echo "Usage: $0 <path to Chart directory> <dependency name or alias> <new image tag>"
   exit 1
 fi
 
@@ -15,6 +15,10 @@ REQUIREMENTS_YAML=${CHART_DIR}/requirements.yaml
 CHART_YAML=${CHART_DIR}/Chart.yaml
 VALUES_YAML=${CHART_DIR}/values.yaml
 DEPENDENCIES_YAML="${REQUIREMENTS_YAML}"
+
+if [ "${NEW_IMAGE_TAG:0:1}" != "\"" ]; then
+  NEW_IMAGE_TAG=\"${NEW_IMAGE_TAG}\"
+fi
 
 echo ""
 echo "CHART_DIR         : ${CHART_DIR}"
