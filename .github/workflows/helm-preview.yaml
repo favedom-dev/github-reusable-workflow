@@ -340,9 +340,13 @@ jobs:
           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
           HELM_EXPERIMENTAL_OCI: 1
           PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.PREVIEW_CHART_VALUES }}
+          PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
+          DOCKER_REPOSITORY: ${{ steps.setup-variables.outputs.DOCKER_REPOSITORY }}
         run: |
           echo "HELM_DEBUG_SCRIPT_FLAG: ${HELM_DEBUG_SCRIPT_FLAG}"
           echo "working-directory: $(pwd)"
+          env | sort
+          # NOTE: script uses env vars CHART_NAME, VERSION, PREVIEW_NAMESPACE, DOCKER_REPOSITORY
           ./.github/scripts/run-helm.sh ${HELM_DEBUG_SCRIPT_FLAG} -t -p -c "${CHART_NAME}" -v "${VERSION}" -iv "${IMAGE_VERSION}"
           echo ""
           echo "./charts/${PREVIEW_CHART_VALUES}:"
