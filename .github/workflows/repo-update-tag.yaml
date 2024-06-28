@@ -1,5 +1,6 @@
 name: Move Tag to Latest on Branch
 
+
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
@@ -15,11 +16,13 @@ on:  # yamllint disable-line rule:truthy
         required: true
 
 jobs:
+
   move-tag:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+
+      - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Fetch all history to ensure tags are included

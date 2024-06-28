@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # VARIABLES NEEDED FOR SCRIPT TO WORK
 # GITHUB_SHA=$(git rev-parse --short HEAD)

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Format for contents of file HELM_REPOS_FILENAME is:
 #    repo name + "," + repo url
@@ -23,7 +23,7 @@ echo "--------------------:-----------------"
 HELM_REPO_LIST=$(<"${HELM_REPOS_FILENAME}")
 echo "HELM_REPO_LIST: ${HELM_REPO_LIST}"
 
-for helm_repo_name in ${HELM_REPO_LIST[@]}; do
+for helm_repo_name in "${HELM_REPO_LIST[@]}"; do
   # clean array
   unset helm_repo_url
   # get helm_repo_name

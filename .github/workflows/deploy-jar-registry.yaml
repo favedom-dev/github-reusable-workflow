@@ -10,9 +10,13 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
       JDK_VERSION:
-        default: 11
+        default: 21
         required: false
         type: number
+      JDK_DISTRIBUTION:
+        default: 'temurin'
+        required: false
+        type: string
       MVN_ARGS:
         default: 'clean deploy'
         required: false
@@ -38,11 +42,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       MAVEN_REGISTRY:
-        default: 'peeq-java'
+        default: 'java'
         required: false
         type: string
       JAR_PATH:
-        default: 'com.peeq'
+        default: 'com.velocityz'
         required: false
         type: string
       SCAN_JAR:
@@ -56,11 +60,11 @@ on:  # yamllint disable-line rule:truthy
 
 
     secrets:
-      GH_TOKEN:  # GitHub token
+      GH_TOKEN:
         required: true
-      WIF_PROVIDER:  # Workload Identity Federation Provider
+      WIF_PROVIDER:
         required: true
-      WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
+      WIF_SERVICE_ACCOUNT:
         required: true
       SHIFTLEFT_ACCESS_TOKEN:
         required: false
@@ -83,6 +87,16 @@ jobs:
           echo "GAR_URL=${GAR_URL}" >> $GITHUB_ENV
           echo "GAR_URL=${GAR_URL}" >> $GITHUB_OUTPUT
 
+          ARTIFACT_REGISTRY="artifactregistry://${{ inputs.GAR_LOCATION }}-maven.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.MAVEN_REGISTRY }}"
+          echo "ARTIFACT_REGISTRY : ${ARTIFACT_REGISTRY}"
+          echo "ARTIFACT_REGISTRY=${ARTIFACT_REGISTRY}" >> $GITHUB_ENV
+          echo "ARTIFACT_REGISTRY=${ARTIFACT_REGISTRY}" >> $GITHUB_OUTPUT
+
+          MVN_ARG_ARTIFACT_REGISTRY="-Dartifact.registry=${ARTIFACT_REGISTRY}"
+          echo "MVN_ARG_ARTIFACT_REGISTRY : ${MVN_ARG_ARTIFACT_REGISTRY}"
+          echo "MVN_ARG_ARTIFACT_REGISTRY=${MVN_ARG_ARTIFACT_REGISTRY}" >> $GITHUB_ENV
+          echo "MVN_ARG_ARTIFACT_REGISTRY=${MVN_ARG_ARTIFACT_REGISTRY}" >> $GITHUB_OUTPUT
+
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
 
@@ -95,11 +109,11 @@ jobs:
           workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
           service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
-      - name: "🔧 Set up JDK ${{ inputs.JDK_VERSION }}"
+      - name: "🔧 Set up JDK ${{ inputs.JDK_VERSION }} ${{ inputs.JDK_DISTRIBUTION }}"
         uses: actions/setup-java@v4
         with:
           java-version: '${{ inputs.JDK_VERSION }}'
-          distribution: 'temurin'
+          distribution: '${{ inputs.JDK_DISTRIBUTION }}'
 
       - name: "🔧 Maven ~/.m2/settings.xml"
         run: |
@@ -113,15 +127,15 @@ jobs:
 
       - name: "🔨 Build with Maven"
         working-directory: ${{ inputs.MAVEN_WORKING_DIR }}
-        run: mvn -B ${{ inputs.MVN_ARGS }}
+        env:
+          MVN_ARG_ARTIFACT_REGISTRY: ${{ steps.setup-variables.outputs.MVN_ARG_ARTIFACT_REGISTRY }}
+        run: |
+          mvn -B ${{ inputs.MVN_ARGS }} ${MVN_ARG_ARTIFACT_REGISTRY}
 
       - name: "🌐 Link to Lib"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-# yamllint disable rule:line-length
-          # https://console.cloud.google.com/artifacts/maven/favedom-dev/us-central1/peeq-java/com.peeq:peeq-shared-lib/0.0.0-SNAPSHOT-PR-147-2?project=favedom-dev
           GAR_URL: ${{ steps.setup-variables.outputs.GAR_URL }}
-# yamllint enable rule:line-length
         run: |-
           echo "${GAR_URL}"
           if [ "${{ github.event_name }}" = "pull_request" ]; then

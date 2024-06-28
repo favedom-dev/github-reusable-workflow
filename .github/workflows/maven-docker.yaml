@@ -3,20 +3,24 @@ name: Maven and Docker
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      NAME:  # name of service, (ex: peeq-tracking)
+      NAME:  # name of service,
         required: true
         type: string
       VERSION:
         required: true
         type: string
-      APP_WORKING_DIR:  # -DmyVariable=someValue
+      APP_WORKING_DIR:
         default: '.'
         required: false
         type: string
       JDK_VERSION:
-        default: 11
+        default: 21
         required: false
         type: number
+      JDK_DISTRIBUTION:
+        default: 'temurin'
+        required: false
+        type: string
       MVN_ENV_VARS:  # -DmyVariable=someValue
         required: false
         type: string
@@ -44,7 +48,7 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       DOCKER_REGISTRY:
-        default: 'peeq-docker'
+        default: 'docker'
         required: false
         type: string
       CREATE_CREDENTIALS_FILE:
@@ -68,31 +72,18 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
-      AWS_REGION:  # set this to your preferred AWS region, e.g. us-west-2
-        default: us-west-2
-        required: false
-        type: string
-      ECR_REPOSITORY:  # set this to your Amazon ECR repository name
-        default: powervz
-        required: false
-        type: string
-
     secrets:
       GH_TOKEN:
         required: true
-      WIF_PROVIDER:  # Workload Identity Federation Provider
+      WIF_PROVIDER:
         required: true
-      WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
+      WIF_SERVICE_ACCOUNT:
         required: true
       MVN_ARGS_SECRETS:
         required: false
       GCP_JSON_KEY:
         required: false
       SHIFTLEFT_ACCESS_TOKEN:
-        required: false
-      AWS_ACCESS_KEY_ID:
-        required: false
-      AWS_SECRET_ACCESS_KEY:
         required: false
 
 jobs:
@@ -150,29 +141,11 @@ jobs:
           password: '${{ steps.auth-gcp-token.outputs.access_token }}'
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@0e613a0980cbf65ed5b322eb7a1e075d28913a83
-      #   with:
-      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #     aws-region: ${{ inputs.AWS_REGION }}
-
-      # - name: "🔧 Docker Auth: ECR"
-      #   uses: docker/login-action@v3
-      #   with:
-      #     registry: <aws-account-number>.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com
-      #     username: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #     password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      # - name: Login to Amazon ECR
-      #   id: login-pf-aws-ecr
-      #   uses: aws-actions/amazon-ecr-login@v1
-
-      - name: "🔧 Set up JDK ${{ inputs.JDK_VERSION }}"
+      - name: "🔧 Set up JDK ${{ inputs.JDK_VERSION }} ${{ inputs.JDK_DISTRIBUTION }}"
         uses: actions/setup-java@v4
         with:
           java-version: '${{ inputs.JDK_VERSION }}'
-          distribution: 'temurin'
+          distribution: '${{ inputs.JDK_DISTRIBUTION }}'
 
       - name: Cache local Maven repository
         uses: actions/cache@v4
@@ -234,16 +207,14 @@ jobs:
         id: docker-tags
         working-directory: ${{ inputs.APP_WORKING_DIR }}
         env:
-          # DOCKER_LOCATION: ${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}
           DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
         run: |-
           DOCKER_TAGS=${{ env.DOCKER_LOCATION }}:${{ inputs.VERSION }}
           if [ "${{ github.event_name }}" != "pull_request" ]; then
-            DOCKER_TAGS=$DOCKER_TAGS,${{ env.DOCKER_LOCATION }}:latest
-            # echo "IF: DOCKER_TAGS: $DOCKER_TAGS"
+            DOCKER_TAGS=${DOCKER_TAGS},${{ env.DOCKER_LOCATION }}:latest
           fi
-          echo "DOCKER_TAGS: $DOCKER_TAGS"
-          echo "tags=$DOCKER_TAGS" >> $GITHUB_OUTPUT
+          echo "DOCKER_TAGS: ${DOCKER_TAGS}"
+          echo "tags=${DOCKER_TAGS}" >> $GITHUB_OUTPUT
 
       - name: "🐳 Docker: build, tag, and push"
         uses: docker/build-push-action@v5

@@ -7,7 +7,10 @@ on:  # yamllint disable-line rule:truthy
         default: '.'
         required: false
         type: string
-
+      PYTHON_VERSION:
+        default: "3.8"
+        required: false
+        type: string
 jobs:
 
   lint-yaml:
@@ -21,7 +24,7 @@ jobs:
       - name: "Set up Python"
         uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: "${{ inputs.PYTHON_VERSION }}"
 
       # https://yamllint.readthedocs.io/en/stable/
       - name: "Install yamllint"
