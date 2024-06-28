@@ -10,7 +10,7 @@ fi
 CHART_DIR=$1
 TARGET_DEP=$2
 NEW_IMAGE_TAG=$3
-NEW_REPO=${4:-"us-central1-docker.pkg.dev/favedom-dev/docker/${CHART_DIR}"}
+NEW_REPO=${4:-"us-central1-docker.pkg.dev/favedom-dev/docker/${TARGET_DEP}"}
 # Build variables
 REQUIREMENTS_YAML=${CHART_DIR}/requirements.yaml
 CHART_YAML=${CHART_DIR}/Chart.yaml
