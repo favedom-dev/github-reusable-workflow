@@ -371,7 +371,8 @@ jobs:
             # echo "- 💓 healthcheck2 [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL)" >> ${PR_BODY}
           fi
           echo "4..."
-          # echo "- ☸ preview namespace: ${PREVIEW_NAMESPACE}" >> ${PR_BODY}
+          echo "- ☸ preview namespace: ${PREVIEW_NAMESPACE}" >> ${PR_BODY}
+          echo "===="
           echo ""
           echo "PR_BODY:"
           cat ${PR_BODY}
@@ -379,4 +380,3 @@ jobs:
           echo "===="
           echo "gh pr comment ${{ github.event.number }} --body-file ${PR_BODY} --repo ${{ github.repository }}"
           gh pr comment ${{ github.event.number }} --body-file ${PR_BODY} --repo ${{ github.repository }}
-          echo "DEBUG: #API_PATH = ${#API_PATH}"
