@@ -364,12 +364,12 @@ jobs:
           echo "1..."
           echo "- 🌐 preview [link](${PREVIEW_URL})" >> ${PR_BODY}
           echo "1b..."
-          if [ ${#API_PATH} -gt 0 ]; then
+          # if [ ${#API_PATH} -gt 0 ]; then
             echo "2..."
             echo "- 💓 healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_URL}${PREVIEW_API_HEALTHCHECK})" >> ${PR_BODY}
             echo "3..."
             echo "- 💓 healthcheck2 [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL)" >> ${PR_BODY}
-          fi
+          # fi
           echo "4..."
           echo "- ☸ preview namespace: ${{ inputs.PREVIEW_NAMESPACE }}" >> ${PR_BODY}
           echo ""
