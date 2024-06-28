@@ -12,7 +12,6 @@ on:  # yamllint disable-line rule:truthy
       PREVIEW_NAMESPACE:
         required: true
         type: string
-
       CHARTS_DIR:
         default: 'charts'
         type: string
@@ -37,7 +36,6 @@ on:  # yamllint disable-line rule:truthy
         default: 'PowerVZ GitHub Bot'
         required: false
         type: string
-
       HELM_REGISTRY_BASE_URL:
         default: "https://console.cloud.google.com/artifacts/docker"
         required: false
@@ -66,7 +64,6 @@ on:  # yamllint disable-line rule:truthy
         default: true
         required: false
         type: boolean
-
       DOCKER_REGISTRY:
         default: 'us-central1-docker.pkg.dev'  # GAR (oci://)
         required: false
@@ -79,8 +76,6 @@ on:  # yamllint disable-line rule:truthy
         default: 'favedom-dev'
         required: false
         type: string
-
-
       VALUES_GLOBALS_YAML:
         default: 'values-preview.yaml'
         required: false
@@ -93,16 +88,9 @@ on:  # yamllint disable-line rule:truthy
         default: 'values-preview.yaml.tpl'
         required: false
         type: string
-      # OVERRIDE_CHARTS_DIR:
-      #   required: false
-      #   type: string
-      # OVERRIDE_CHART_APP_DIR:
-      #   required: false
-      #   type: string
       OVERRIDE_CHART_APP_NAME:
         required: false
         type: string
-
       CLUSTER_PROJECT_ID:
         default: 'development-375017'
         required: false
@@ -115,20 +103,6 @@ on:  # yamllint disable-line rule:truthy
         default: 'us-central1-a'
         required: false
         type: string
-
-
-      # =============================
-
-
-
-      # HELM_ADD_REPOS:
-      #   default: false
-      #   required: false
-      #   type: boolean
-      # HELM_ADD_REPOS_SCRIPT_NAME:
-      #   default: 'helm_add_repos.sh'
-      #   required: false
-      #   type: string
       HELM_PREVIEW_ARGS:
         default: ''
         required: false
@@ -138,30 +112,10 @@ on:  # yamllint disable-line rule:truthy
         default: 'tmp.dev.fanfuzenil.com'
         required: false
         type: string
-      API_PATH:
-        default: ''  # /api/++SERVICE++/
-        required: false
-        type: string
       PREVIEW_HEALTHCHECK:
         default: 'actuator/health'
         required: false
         type: string
-      # SCRIPTS_DIR:
-      #   default: './scripts'
-      #   required: false
-      #   type: string
-      # SECRETS_SCRIPT_NAME:
-      #   default: 'preview_copy_secrets.sh'
-      #   required: false
-      #   type: string
-      # SECRETS_SCRIPT_BRANCH:
-      #   default: 'master'
-      #   required: false
-      #   type: string
-      # SCRIPTS_DOWNLOAD_BASE_URL:
-      #   default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
-      #   required: false
-      #   type: string
       SECRETS_FROM_NAMESPACE:
         # default: fanfuze  # TODO
         default: tmp-fanfuze
@@ -176,6 +130,10 @@ on:  # yamllint disable-line rule:truthy
       WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
         required: true
 
+    outputs:
+      API_PATH:
+        value: ${{ jobs.helm-preview.outputs.API_PATH }}
+
 jobs:
 
   helm-preview:
@@ -184,6 +142,8 @@ jobs:
       contents: 'read'
       id-token: 'write'
     runs-on: ubuntu-latest
+    outputs:
+      API_PATH: ${{ steps.get-api-path.outputs.API_PATH }}
     env:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
@@ -289,34 +249,6 @@ jobs:
           location: ${{ inputs.CLUSTER_LOCATION }}
           project_id: ${{ inputs.CLUSTER_PROJECT_ID }}
 
-      # - name: "🔧 Update helm charts"
-      #   working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
-      #   env:
-      #     CHART_NAME: ${{ inputs.NAME }}
-      #     VERSION: ${{ inputs.VERSION }}
-      #     DOCKER_REPOSITORY: ${{ steps.setup-variables.outputs.DOCKER_REPOSITORY }}
-      #     PREVIEW_CHART_TPL: ./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML_TPL }}
-      #     PREVIEW_GENERAL_CHART_TPL: ./${{ inputs.VALUES_PREVIEW_YAML_TPL }}
-      #     PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.PREVIEW_CHART_VALUES }}
-      #     PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
-      #   run: |
-      #     echo "------------------------:------------------------"
-      #     echo "CHART_NAME              : ${CHART_NAME}"
-      #     echo "VERSION                 : ${VERSION}"
-      #     echo "DOCKER_REPOSITORY       : ${DOCKER_REPOSITORY}"
-      #     echo "PREVIEW_NAMESPACE       : ${PREVIEW_NAMESPACE}"
-      #     echo "========================:========================"
-
-      #     CHART_TPL="${PREVIEW_GENERAL_CHART_TPL}"
-      #     if [ -e "${PREVIEW_CHART_TPL}" ]; then
-      #       CHART_TPL="${PREVIEW_CHART_TPL}"
-      #     fi
-      #     echo "Using CHART_TPL : ${CHART_TPL}"
-      #     envsubst < "${CHART_TPL}"> "${PREVIEW_CHART_VALUES}"
-
-      #     echo "DEBUG ==================== ${PREVIEW_CHART_VALUES}"
-      #     cat "${PREVIEW_CHART_VALUES}"
-
       - name: "🔧 [GAR] (oci://): Helm login"
         # if: ${{ !env.ACT }}
         working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
@@ -329,8 +261,6 @@ jobs:
           helm registry login -u oauth2accesstoken \
           --password-stdin https://${HELM_DOCKER_REGISTRY}
 
-      # - name: "☸ Helm in ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}"
-      #   working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
       - name: "☸ Helm in ${{ inputs.HELM_CHARTS_GIT_REPO }}"
         working-directory: ${{ inputs.HELM_CHARTS_GIT_REPO }}
         env:
@@ -397,23 +327,44 @@ jobs:
           echo "${_cmd[*]}"
           eval "${_cmd[@]}"
 
+      - name: "📜 Get API path"
+        id: get-api-path
+        env:
+          PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
+        run: |
+          API_PATH=$(kubectl get virtualservice -n ${PREVIEW_NAMESPACE} -o yaml ${{ inputs.NAME }} | yq -r '.spec.http[0].match[0].uri.prefix')
+          if [[ "${API_PATH}" != */ ]]; then
+            API_PATH="${API_PATH}/"
+          fi
+          echo "API_PATH                : ${API_PATH}"
+          echo "API_PATH=${API_PATH}" >> $GITHUB_OUTPUT
+          echo "API_PATH=${API_PATH}" >> $GITHUB_ENV
+
       - name: "🌐 PREVIEW: Link to Preview"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           PREVIEW_URL: https://${{ inputs.PREVIEW_NAMESPACE }}.${{ inputs.PREVIEW_BASE_DOMAIN }}
-          API_PATH: ${{ inputs.API_PATH }}
-          PREVIEW_API_HEALTHCHECK: ${{ inputs.API_PATH }}${{ inputs.PREVIEW_HEALTHCHECK }}
-          PREVIEW_HEALTHCHECK_URL: "https://${{ inputs.PREVIEW_NAMESPACE }}.${{ inputs.PREVIEW_BASE_DOMAIN }}${{ inputs.API_PATH }}${{ inputs.PREVIEW_HEALTHCHECK }}"
+          # API_PATH: ${{ steps.get-api-path.outputs.API_PATH }}
+          # PREVIEW_API_HEALTHCHECK: ${{ steps.get-api-path.outputs.API_PATH }}${{ inputs.PREVIEW_HEALTHCHECK }}
+          # PREVIEW_HEALTHCHECK_URL: "https://${{ inputs.PREVIEW_NAMESPACE }}.${{ inputs.PREVIEW_BASE_DOMAIN }}${{ steps.get-api-path.outputs.API_PATH }}${{ inputs.PREVIEW_HEALTHCHECK }}"
           PR_BODY: pr_body.md
         run: |-
           echo "${PREVIEW_URL}"
+          API_PATH=${{ steps.get-api-path.outputs.API_PATH }}
+          PREVIEW_API_HEALTHCHECK="${API_PATH}${{ inputs.PREVIEW_HEALTHCHECK }}"
+          PREVIEW_HEALTHCHECK_URL: "${PREVIEW_URL}${PREVIEW_API_HEALTHCHECK}"
+          echo "API_PATH                : ${API_PATH}"
+          echo "PREVIEW_API_HEALTHCHECK : ${PREVIEW_API_HEALTHCHECK}"
+          echo "PREVIEW_HEALTHCHECK_URL : ${PREVIEW_HEALTHCHECK_URL}"
+          echo "API_PATH=${API_PATH}" >> $GITHUB_OUTPUT
+
           # START: body message file
           echo "PR built and available in a preview environment ${{ inputs.NAME }} pr ${{ github.event.number }}:" > ${PR_BODY}
           echo "- 🌐 preview [link](${PREVIEW_URL})" >> ${PR_BODY}
           if [ ${#API_PATH}  -gt 0 ]; then
             echo "- 💓 healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_URL}${PREVIEW_API_HEALTHCHECK})" >> ${PR_BODY}
-            # echo "- 💓 healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL)" >> ${PR_BODY}
+            echo "- 💓 healthcheck2 [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL)" >> ${PR_BODY}
           fi
           echo "- ☸ preview namespace: ${{ inputs.PREVIEW_NAMESPACE }}" >> ${PR_BODY}
           echo "===="

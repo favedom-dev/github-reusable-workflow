@@ -9,21 +9,6 @@ on:  # yamllint disable-line rule:truthy
       OVERRIDE_PREVIEW_NAMESPACE:
         required: false
         type: string
-      OVERRIDE_API_PATH:  # '/api/++SERVICE++'
-        required: false
-        type: string
-      API_FILE:
-        default: 'src/main/resources/application'
-        required: false
-        type: string
-      API_FILE_EXT:
-        default: '.yaml'
-        required: false
-        type: string
-      API_SEARCH:
-        default: 'context-path:'
-        required: false
-        type: string
       IS_STACKHAWK_READY:
         default: true
         required: false
@@ -44,8 +29,6 @@ on:  # yamllint disable-line rule:truthy
         value: ${{ jobs.app-setup.outputs.PREVIEW_NAMESPACE }}
       IS_STACKHAWK_READY:
         value: ${{ jobs.app-setup.outputs.IS_STACKHAWK_READY }}
-      API_PATH:
-        value: ${{ jobs.app-setup.outputs.API_PATH }}
       STACKHAWK_DIRECTORY:
         value: ${{ jobs.app-setup.outputs.STACKHAWK_DIRECTORY }}
 
@@ -57,7 +40,6 @@ jobs:
     outputs:
       NAME: ${{ steps.set-name.outputs.NAME }}
       PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}
-      API_PATH: ${{ steps.get-api-path.outputs.API_PATH }}
       IS_STACKHAWK_READY: ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}
       STACKHAWK_DIRECTORY: ${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}
     steps:
@@ -96,24 +78,6 @@ jobs:
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
 
-      - name: "📜 Get API path"
-        id: get-api-path
-        env:
-          OVERRIDE_API_PATH: ${{ inputs.OVERRIDE_API_PATH }}
-          API_FILE: ${{ inputs.API_FILE }}${{ inputs.API_FILE_EXT }}
-          API_SEARCH: ${{ inputs.API_SEARCH }}
-        run: |
-          API_PATH=""
-          if [ -n "${OVERRIDE_API_PATH}" ]; then
-            API_PATH=${{ inputs.OVERRIDE_API_PATH }}
-          elif [ -f "${API_FILE}" ]; then
-            # Only find the 1st occurrence
-            API_PATH=$(grep "${API_SEARCH}" ${API_FILE} | awk '{print $2}'  | head -1)
-          fi
-          API_PATH=$(echo "${API_PATH}" | xargs)
-          echo "API_PATH: ${API_PATH}"
-          echo "API_PATH=${API_PATH}/" >> $GITHUB_OUTPUT
-
       - name: "🦅 Stackhawk ready repo"
         id: stackhawk-ready-repo
         env:
@@ -143,6 +107,5 @@ jobs:
         run: |
           echo "NAME                : ${{ steps.set-name.outputs.NAME }}"
           echo "PREVIEW_NAMESPACE   : ${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}"
-          echo "API_PATH            : ${{ steps.get-api-path.outputs.API_PATH }}"
           echo "IS_STACKHAWK_READY  : ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}"
           echo "STACKHAWK_DIRECTORY : ${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}"
