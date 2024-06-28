@@ -94,6 +94,8 @@ on:  # yamllint disable-line rule:truthy
         required: false
       AWS_SECRET_ACCESS_KEY:
         required: false
+      ACT_GCP_ACCESS_TOKEN:
+        required: false
 
 jobs:
 
@@ -117,10 +119,19 @@ jobs:
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_ENV
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_OUTPUT
 
+      - name: Install Act dependencies
+        if: ${{ env.ACT }}
+        run: |
+          apt-get update && apt-get -y install gettext-base
+          apt-get update && apt-get -y install maven
+          # apt-get update && apt-get -y install asdf
+          # apt-get update && apt-get -y install sudo
+
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
 
       - name: "🔧 Google Auth Token"
+        if: ${{ !env.ACT }}
         id: auth-gcp-token
         uses: 'google-github-actions/auth@v2'
         with:
@@ -131,15 +142,27 @@ jobs:
           export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
 
       - name: "🔧 Google Auth JSON Key"
+        if: ${{ !env.ACT && inputs.RUN_GCP_JSON_KEY }}
+        # if: inputs.RUN_GCP_JSON_KEY
         id: auth-gcp-key
-        if: inputs.RUN_GCP_JSON_KEY
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCP_JSON_KEY }}'
 
+      - name: "🔧 [ACT] Google Auth Token"
+        if: ${{ env.ACT }}
+        id: act-auth-gcp-token
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
       # https://github.com/google-github-actions/setup-gcloud
-      # - name: 'Set up Cloud SDK'
-      #   uses: 'google-github-actions/setup-gcloud@v0'
+      - name: '🔧 [ACT] Set up Cloud SDK'
+        if: ${{ env.ACT }}
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: '[ACT] Use gcloud CLI'
+        if: ${{ env.ACT }}
+        run: 'gcloud info'
 
       - name: "🔧 Docker Auth: GAR"
         if: ${{ !env.ACT }}
@@ -184,8 +207,25 @@ jobs:
 
       - name: "🔧 Maven ~/.m2/settings.xml"
         run: |
+          if [ ${ACT} ]; then
+            export GCP_ACCESS_TOKEN='${{ secrets.ACT_GCP_ACCESS_TOKEN }}'
+            echo "secrets.ACT_GCP_ACCESS_TOKEN : ${{ secrets.ACT_GCP_ACCESS_TOKEN }}"
+            echo "GCP_ACCESS_TOKEN             : ${GCP_ACCESS_TOKEN}"
+            echo "#GCP_ACCESS_TOKEN            : ${#GCP_ACCESS_TOKEN}"
+            echo "-------"
+            env | sort
+            echo "======="
+          fi
           wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
+          echo "./settings.xml"
+          cat ./settings.xml
+          echo "---"
           envsubst < ./settings.xml > ~/.m2/settings.xml
+          echo "==="
+          echo "~/.m2/settings.xml"
+          cat ~/.m2/settings.xml
+          echo "###"
+          cat ~/.m2/settings.xml | base64
 
       - name: "🔨 Maven set version"
         working-directory: ${{ inputs.APP_WORKING_DIR }}
@@ -196,10 +236,17 @@ jobs:
 
       - name: "🔨 Build with Maven"
         working-directory: ${{ inputs.APP_WORKING_DIR }}
-        env:
-          GCP_ACCESS_TOKEN: '${{ steps.auth-gcp-token.outputs.access_token }}'
-          GCP_ACCESS_TOKEN_EXPIRATION: '${{ steps.auth-gcp-token.outputs.access_token_expiration }}'
+        # env:
+        #   GCP_ACCESS_TOKEN: '${{ steps.auth-gcp-token.outputs.access_token }}'
+        #   GCP_ACCESS_TOKEN_EXPIRATION: '${{ steps.auth-gcp-token.outputs.access_token_expiration }}'
         run: |
+          if [ ! ${ACT} ]; then
+            export GCP_ACCESS_TOKEN="${{ steps.auth-gcp-token.outputs.access_token }}"
+            export GCP_ACCESS_TOKEN_EXPIRATION="${{ steps.auth-gcp-token.outputs.access_token_expiration }}"
+          else
+            env | sort
+            # export GCP_ACCESS_TOKEN="${{ steps.auth-gcp-token.outputs.access_token }}"
+          fi
           echo "MVN_ARGS        : ${{ inputs.MVN_ARGS }}"
           echo "MVN_ENV_VARS    : ${{ inputs.MVN_ENV_VARS }}"
           echo "MVN_ARGS_EXTRA  : ${{ inputs.MVN_ARGS_EXTRA }}"

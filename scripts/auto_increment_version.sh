@@ -80,12 +80,22 @@ echo ""
         exit ${rc}
       fi
     else
-      echo "RUNNING LOCALLY with act, skipped gh release create"
+      VNUM3=${VNUM3}act
+      NEW_VERSION=${NEW_VERSION}act
+      NEW_TAG=${NEW_TAG}act
+      echo "RUNNING LOCALLY with act, skipped \"gh release create\""
     fi
-    echo "${NEW_VERSION}" > VERSION
+
+    echo "VERSION_MAJOR = ${VNUM1}"
+    echo "VERSION_MINOR = ${VNUM2}"
+    echo "VERSION_PATCH = ${VNUM3}"
+    echo "VERSION       = ${NEW_VERSION}"
+    echo "TAG           = ${NEW_TAG}"
+
     echo "${VNUM1}" > VERSION_MAJOR
     echo "${VNUM2}" > VERSION_MINOR
     echo "${VNUM3}" > VERSION_PATCH
+    echo "${NEW_VERSION}" > VERSION
     echo "${NEW_TAG}" > TAG
 # else
 #     echo "Already a tag on this commit"
