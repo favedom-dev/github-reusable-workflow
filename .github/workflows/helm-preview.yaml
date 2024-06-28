@@ -368,10 +368,10 @@ jobs:
             echo "2..."
             echo "- 💓 healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_URL}${PREVIEW_API_HEALTHCHECK})" >> ${PR_BODY}
             echo "3..."
-            echo "- 💓 healthcheck2 [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL)" >> ${PR_BODY}
+            # echo "- 💓 healthcheck2 [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL)" >> ${PR_BODY}
           # fi
           echo "4..."
-          echo "- ☸ preview namespace: ${PREVIEW_NAMESPACE}" >> ${PR_BODY}
+          # echo "- ☸ preview namespace: ${PREVIEW_NAMESPACE}" >> ${PR_BODY}
           echo ""
           echo "PR_BODY:"
           cat ${PR_BODY}
