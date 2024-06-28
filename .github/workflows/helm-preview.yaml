@@ -361,18 +361,15 @@ jobs:
           # START: body message file
           echo "PR built and available in a preview environment ${{ inputs.NAME }} pr ${{ github.event.number }}:" > ${PR_BODY}
           echo "- 🌐 preview [link](${PREVIEW_URL})" >> ${PR_BODY}
-          if [ ${#API_PATH} -gt 0 ]; then
-            echo "2..."
-            echo "- 💓 healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_URL}${PREVIEW_API_HEALTHCHECK})" >> ${PR_BODY}
-            echo "3..."
-            echo "- 💓 healthcheck2 [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL})" >> ${PR_BODY}
+          if [ ${#API_PATH} -gt 1 ]; then
+            echo "- 💓 healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL})" >> ${PR_BODY}
           fi
-          echo "4..."
           echo "- ☸ preview namespace: ${PREVIEW_NAMESPACE}" >> ${PR_BODY}
           echo "===="
           echo "PR_BODY:"
           cat ${PR_BODY}
           # END: body message file
           echo "===="
+
           echo "gh pr comment ${{ github.event.number }} --body-file ${PR_BODY} --repo ${{ github.repository }}"
           gh pr comment ${{ github.event.number }} --body-file ${PR_BODY} --repo ${{ github.repository }}
