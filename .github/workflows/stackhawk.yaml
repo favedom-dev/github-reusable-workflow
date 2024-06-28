@@ -40,6 +40,10 @@ on:  # yamllint disable-line rule:truthy
         default: ''
         required: false
         type: string
+      JDK_VERSION:
+        default: 17
+        required: false
+        type: number
       STACKHAWK_SLEEP_DELAY:
         required: false
         type: number
@@ -108,6 +112,12 @@ jobs:
 
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
+
+      - name: "🔧 Set up JDK ${{ inputs.JDK_VERSION }}"
+        uses: actions/setup-java@v4
+        with:
+          java-version: '${{ inputs.JDK_VERSION }}'
+          distribution: 'temurin'
 
       - name: "🔧 Setup stackhawk"
         working-directory: ${{ inputs.STACKHAWK_DIRECTORY }}
