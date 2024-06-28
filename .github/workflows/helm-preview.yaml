@@ -357,7 +357,6 @@ jobs:
           echo "API_PATH                : ${API_PATH}"
           echo "PREVIEW_API_HEALTHCHECK : ${PREVIEW_API_HEALTHCHECK}"
           echo "PREVIEW_HEALTHCHECK_URL : ${PREVIEW_HEALTHCHECK_URL}"
-          echo "API_PATH=${API_PATH}" >> $GITHUB_OUTPUT
 
           # START: body message file
           echo "PR built and available in a preview environment ${{ inputs.NAME }} pr ${{ github.event.number }}:" > ${PR_BODY}
