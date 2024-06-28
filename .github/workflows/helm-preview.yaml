@@ -151,7 +151,6 @@ jobs:
       - name: "🔧 Git config"
         run: |
           git config --global user.email ""
-          # git config --global user.name "velocityz-0x-pq-github"
           git config --global user.name "${{ inputs.GH_USER_NAME }}"
 
       - name: "☁️ Checkout helm repository: ${{ inputs.HELM_CHARTS_GIT_REPO }}"
@@ -361,19 +360,16 @@ jobs:
           echo "START: body message file"
           # START: body message file
           echo "PR built and available in a preview environment ${{ inputs.NAME }} pr ${{ github.event.number }}:" > ${PR_BODY}
-          echo "1..."
           echo "- 🌐 preview [link](${PREVIEW_URL})" >> ${PR_BODY}
-          echo "1b..."
           if [ ${#API_PATH} -gt 0 ]; then
             echo "2..."
             echo "- 💓 healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_URL}${PREVIEW_API_HEALTHCHECK})" >> ${PR_BODY}
             echo "3..."
-            # echo "- 💓 healthcheck2 [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL)" >> ${PR_BODY}
+            echo "- 💓 healthcheck2 [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL})" >> ${PR_BODY}
           fi
           echo "4..."
           echo "- ☸ preview namespace: ${PREVIEW_NAMESPACE}" >> ${PR_BODY}
           echo "===="
-          echo ""
           echo "PR_BODY:"
           cat ${PR_BODY}
           # END: body message file
