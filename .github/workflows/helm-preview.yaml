@@ -352,15 +352,19 @@ jobs:
           PREVIEW_API_HEALTHCHECK="${API_PATH}${{ inputs.PREVIEW_HEALTHCHECK }}"
           PREVIEW_HEALTHCHECK_URL="${PREVIEW_URL}${PREVIEW_API_HEALTHCHECK}"
           echo "API_PATH                : ${API_PATH}"
+          echo "PREVIEW_NAMESPACE       : ${PREVIEW_NAMESPACE}"
+          echo "PREVIEW_URL             : ${PREVIEW_URL}"
           echo "PREVIEW_API_HEALTHCHECK : ${PREVIEW_API_HEALTHCHECK}"
           echo "PREVIEW_HEALTHCHECK_URL : ${PREVIEW_HEALTHCHECK_URL}"
+          echo "PR_BODY                 : ${PR_BODY}"
 
           echo "START: body message file"
           # START: body message file
           echo "PR built and available in a preview environment ${{ inputs.NAME }} pr ${{ github.event.number }}:" > ${PR_BODY}
           echo "1..."
           echo "- 🌐 preview [link](${PREVIEW_URL})" >> ${PR_BODY}
-          if [ ${#API_PATH}  -gt 0 ]; then
+          echo "1b..."
+          if [ ${#API_PATH} -gt 0 ]; then
             echo "2..."
             echo "- 💓 healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_URL}${PREVIEW_API_HEALTHCHECK})" >> ${PR_BODY}
             echo "3..."
