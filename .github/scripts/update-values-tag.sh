@@ -82,10 +82,9 @@ echo ""
 echo "Updated image tag in ${VALUES_YAML} to ${NEW_IMAGE_TAG} for dependency: ${TARGET_DEP}"
 echo ""
 
-echo "TODO: update repository... to: ${NEW_REPO}"
-# sed -i '/'"${ESCAPED_DEP}"':/,/^[^ ]/ s/\(repository:\s*\).*/\1'"${NEW_REPO}"'/' "${VALUES_YAML}"
-# echo ""
-# echo "Updated image repository in ${VALUES_YAML} to ${NEW_REPO} for dependency: ${TARGET_DEP}"
+sed -i '/'"${ESCAPED_DEP}"':/,/^[^ ]/ s/\(repository:\s*\).*/\1'"${NEW_REPO}"'/' "${VALUES_YAML}"
+echo ""
+echo "Updated image repository in ${VALUES_YAML} to ${NEW_REPO} for dependency: ${TARGET_DEP}"
 
 echo ""
 echo "${VALUES_YAML}:"
