@@ -7,15 +7,15 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
 
-  app-setup:
+  setup:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/app-setup.yaml@master
 
   preview-cleanup:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/preview-env-cleanup.yaml@master
-    needs: [app-setup]
+    needs: [setup]
     with:
-      NAME: ${{ needs.app-setup.outputs.NAME }}
-      PREVIEW_NAMESPACE: ${{ needs.app-setup.outputs.PREVIEW_NAMESPACE }}
+      NAME: ${{ needs.setup.outputs.NAME }}
+      PREVIEW_NAMESPACE: ${{ needs.setup.outputs.PREVIEW_NAMESPACE }}
     secrets:
       WIF_PROVIDER: '${{ secrets.WIF_PROVIDER }}'
       WIF_SERVICE_ACCOUNT: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
