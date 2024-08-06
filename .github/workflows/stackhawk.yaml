@@ -12,6 +12,9 @@ on:  # yamllint disable-line rule:truthy
       API_PATH:
         required: true
         type: string
+      APP_HOST:
+        required: false
+        type: string
       TEST_USERNAME:
         default: 'stackhawk@velocityz.com'
         required: false
@@ -72,6 +75,9 @@ on:  # yamllint disable-line rule:truthy
         default: 'stackhawk'
         required: false
         type: string
+      STACKHAWK_APP_ID:
+        required: false
+        type: string
       STACKHAWK_APP_ENV:
         default: 'Preview'
         required: false
@@ -124,12 +130,27 @@ jobs:
           java-version: '${{ inputs.JDK_VERSION }}'
           distribution: '${{ inputs.JDK_DISTRIBUTION }}'
 
+
+      - name: "📜 Set Values"
+        id: set-values
+        env:
+          INPUT_APP_HOST: ${{ inputs.APP_HOST }}
+          DEFAULT_APP_HOST: https://${{ inputs.NAMESPACE }}.${{ inputs.BASE_DOMAIN }}
+        run: |
+          APP_HOST=${DEFAULT_APP_HOST}
+          echo "APP_HOST: ${APP_HOST}"
+          if [ -n "${INPUT_APP_HOST}" ]; then
+            APP_HOST=${INPUT_APP_HOST}
+          fi
+          echo "APP_HOST: ${APP_HOST}"
+          echo "APP_HOST=${APP_HOST}" >> $GITHUB_OUTPUT
+
       - name: "🔧 Setup stackhawk"
         working-directory: ${{ inputs.STACKHAWK_DIRECTORY }}
         env:
           SCRIPT_NAME: ${{ inputs.STACKHAWK_SETUP_SCRIPT_NAME }}
           APP_NAME: ${{ inputs.NAME }}
-          APP_HOST: https://${{ inputs.NAMESPACE }}.${{ inputs.BASE_DOMAIN }}
+          APP_HOST: ${{ steps.set-values.outputs.APP_HOST }}
           NAMESPACE: ${{ inputs.NAMESPACE }}
           API_PATH: ${{ inputs.API_PATH }}
           TEST_USERNAME: ${{ inputs.TEST_USERNAME }}
@@ -168,7 +189,7 @@ jobs:
 
       - name: "💓 Check that service is alive"
         env:
-          APP_HOST: https://${{ inputs.NAMESPACE }}.${{ inputs.BASE_DOMAIN }}
+          APP_HOST: ${{ steps.set-values.outputs.APP_HOST }}
           API_PATH: ${{ inputs.API_PATH }}
           HEALTH_PATH: ${{ inputs.HEALTH_PATH }}
           HEALTH_RETRIES: ${{ inputs.HEALTH_RETRIES }}
@@ -181,7 +202,7 @@ jobs:
 
       - name: "🦅 Run Stackhawk (timeout ${{ inputs.JOBS_TIMEOUT }} minutes)"
         env:
-          APP_HOST: https://${{ inputs.NAMESPACE }}.${{ inputs.BASE_DOMAIN }}
+          APP_HOST: ${{ steps.set-values.outputs.APP_HOST }}
           # APP_ID: ${{ inputs.STACKHAWK_APP_ID }}
           APP_ENV: ${{ inputs.STACKHAWK_APP_ENV }}
         # uses: stackhawk/hawkscan-action@v2.0.0
