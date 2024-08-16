@@ -179,7 +179,7 @@ jobs:
           ARG_CHART_VALUES="-f ./${CHART_NAME}/values.yaml"
           ARG_COMMON_VALUES="-f ./common/values.yaml"
           ARG_PREVIEW_GLOBALS_VALUES="-f ./${{ inputs.VALUES_PREVIEW_YAML }}"
-          PREVIEW_CHART_VALUES="./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML }}"
+          PREVIEW_CHART_VALUES="./${CHART_NAME}/${{ inputs.VALUES_PREVIEW_YAML }}"
           ARG_PREVIEW_CHART_VALUES="-f ${PREVIEW_CHART_VALUES}"
 
           # Display values
