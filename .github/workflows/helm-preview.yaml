@@ -176,7 +176,7 @@ jobs:
           if [ -n "${OVERRIDE_CHART_NAME}" ]; then
             CHART_NAME=${OVERRIDE_CHART_NAME}
           fi
-          ARG_CHART_VALUES="-f ./${{ inputs.NAME }}/values.yaml"
+          ARG_CHART_VALUES="-f ./${CHART_NAME}/values.yaml"
           ARG_COMMON_VALUES="-f ./common/values.yaml"
           ARG_PREVIEW_GLOBALS_VALUES="-f ./${{ inputs.VALUES_PREVIEW_YAML }}"
           PREVIEW_CHART_VALUES="./${{ inputs.NAME }}/${{ inputs.VALUES_PREVIEW_YAML }}"
