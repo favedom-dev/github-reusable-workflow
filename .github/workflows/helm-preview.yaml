@@ -330,8 +330,9 @@ jobs:
         id: get-api-path
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
+          CHART_NAME: ${{ steps.setup-variables.outputs.CHART_NAME }}
         run: |
-          API_PATH=$(kubectl get virtualservice -n ${PREVIEW_NAMESPACE} -o yaml ${{ inputs.NAME }} | yq -r '.spec.http[0].match[0].uri.prefix')
+          API_PATH=$(kubectl get virtualservice -n ${PREVIEW_NAMESPACE} -o yaml ${CHART_NAME} | yq -r '.spec.http[0].match[0].uri.prefix')
           echo "API_PATH : ${API_PATH}"
           if [[ "${API_PATH}" != */ ]]; then
             API_PATH="${API_PATH}/"
