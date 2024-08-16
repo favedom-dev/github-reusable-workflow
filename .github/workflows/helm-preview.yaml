@@ -334,10 +334,13 @@ jobs:
         run: |
           API_PATH=$(kubectl get virtualservice -n ${PREVIEW_NAMESPACE} -o yaml ${CHART_NAME} | yq -r '.spec.http[0].match[0].uri.prefix')
           echo "API_PATH : ${API_PATH}"
-          if [[ "${API_PATH}" != */ ]]; then
+          if [ "${API_PATH}" = "null" ]; then
+            API_PATH=""
+          elif [[ "${API_PATH}" != */ ]]; then
             API_PATH="${API_PATH}/"
           fi
           echo "API_PATH                : ${API_PATH}"
+          echo "#API_PATH               : ${#API_PATH}"
           echo "API_PATH=${API_PATH}" >> $GITHUB_OUTPUT
           echo "API_PATH=${API_PATH}" >> $GITHUB_ENV
 
