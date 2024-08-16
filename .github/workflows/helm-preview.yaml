@@ -88,7 +88,7 @@ on:  # yamllint disable-line rule:truthy
         default: 'values-preview.yaml.tpl'
         required: false
         type: string
-      OVERRIDE_CHART_APP_NAME:
+      OVERRIDE_CHART_NAME:
         required: false
         type: string
       CLUSTER_PROJECT_ID:
@@ -165,16 +165,16 @@ jobs:
         id: setup-variables
         env:
           GH_REF: ${{ github.ref }}
-          CHART_APP_NAME: ${{ inputs.NAME }}
-          OVERRIDE_CHART_APP_NAME: ${{ inputs.OVERRIDE_CHART_APP_NAME }}
+          CHART_NAME: ${{ inputs.NAME }}
+          OVERRIDE_CHART_NAME: ${{ inputs.OVERRIDE_CHART_NAME }}
         run: |
           HELM_REGISTRY_LOCATION=${{ inputs.HELM_DOCKER_REGISTRY }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}
           HELM_REGISTRY_URL="${{ inputs.HELM_REGISTRY_BASE_URL }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_LOCATION }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}?project=${{ inputs.HELM_PROJECT_ID }}/"
           DOCKER_REPOSITORY=${{ inputs.DOCKER_REGISTRY }}/${{ inputs.DOCKER_PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY_NAME }}/${{ inputs.NAME }}
           CHARTS_WORKING_DIR=${{ inputs.HELM_CHARTS_GIT_REPO }}/${{ inputs.CHARTS_DIR }}
-          # echo "OVERRIDE_CHART_APP_NAME: ${OVERRIDE_CHART_APP_NAME}"
-          if [ -n "${OVERRIDE_CHART_APP_NAME}" ]; then
-            CHART_APP_NAME=${OVERRIDE_CHART_APP_NAME}
+          # echo "OVERRIDE_CHART_NAME: ${OVERRIDE_CHART_NAME}"
+          if [ -n "${OVERRIDE_CHART_NAME}" ]; then
+            CHART_NAME=${OVERRIDE_CHART_NAME}
           fi
           ARG_CHART_VALUES="-f ./${{ inputs.NAME }}/values.yaml"
           ARG_COMMON_VALUES="-f ./common/values.yaml"
@@ -187,7 +187,7 @@ jobs:
           echo "HELM_REGISTRY_LOCATION     : ${HELM_REGISTRY_LOCATION}"
           echo "HELM_REGISTRY_URL          : ${HELM_REGISTRY_URL}"
           echo "DOCKER_REPOSITORY          : ${DOCKER_REPOSITORY}"
-          echo "?CHART_APP_NAME             : ${CHART_APP_NAME}"
+          echo "CHART_NAME                 : ${CHART_NAME}"
           echo "CHARTS_WORKING_DIR         : ${CHARTS_WORKING_DIR}"
           echo "ARG_CHART_VALUES           : ${ARG_CHART_VALUES}"
           echo "ARG_COMMON_VALUES          : ${ARG_COMMON_VALUES}"
@@ -202,8 +202,8 @@ jobs:
           echo "HELM_REGISTRY_URL=${HELM_REGISTRY_URL}" >> $GITHUB_OUTPUT
           echo "DOCKER_REPOSITORY=${DOCKER_REPOSITORY}" >> $GITHUB_ENV
           echo "DOCKER_REPOSITORY=${DOCKER_REPOSITORY}" >> $GITHUB_OUTPUT
-          echo "CHART_APP_NAME=${CHART_APP_NAME}" >> $GITHUB_ENV
-          echo "CHART_APP_NAME=${CHART_APP_NAME}" >> $GITHUB_OUTPUT
+          echo "CHART_NAME=${CHART_NAME}" >> $GITHUB_ENV
+          echo "CHART_NAME=${CHART_NAME}" >> $GITHUB_OUTPUT
           echo "CHARTS_WORKING_DIR=${CHARTS_WORKING_DIR}" >> $GITHUB_ENV
           echo "CHARTS_WORKING_DIR=${CHARTS_WORKING_DIR}" >> $GITHUB_OUTPUT
           echo "ARG_CHART_VALUES=${ARG_CHART_VALUES}" >> $GITHUB_ENV
@@ -263,7 +263,7 @@ jobs:
       - name: "☸ Helm in ${{ inputs.HELM_CHARTS_GIT_REPO }}"
         working-directory: ${{ inputs.HELM_CHARTS_GIT_REPO }}
         env:
-          CHART_NAME: ${{ inputs.NAME }}
+          CHART_NAME: ${{ steps.setup-variables.outputs.CHARTS_NAME }}
           VERSION: ${{ inputs.VERSION }}
           IMAGE_VERSION: ${{ inputs.VERSION }}
           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
@@ -292,7 +292,7 @@ jobs:
       - name: "🔐 PREVIEW: Copy secrets"
         working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
         env:
-          CHART_NAME: ${{ inputs.NAME }}
+          CHART_NAME: ${{ steps.setup-variables.outputs.CHARTS_NAME }}
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           FROM_NAMESPACE: ${{ inputs.SECRETS_FROM_NAMESPACE }}
         run: |
@@ -300,7 +300,7 @@ jobs:
 
       - name: "☸ PREVIEW: Helm upgrade/install"
         env:
-          CHART_NAME: ${{ inputs.NAME }}
+          CHART_NAME: ${{ steps.setup-variables.outputs.CHARTS_NAME }}
           VALUES_GLOBALS_YAML: ${{ inputs.VALUES_GLOBALS_YAML }}
           HELM_PREVIEW_ARGS: ${{ inputs.HELM_PREVIEW_ARGS }}
           HELM_EXPERIMENTAL_OCI: 1
