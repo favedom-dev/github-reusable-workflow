@@ -9,6 +9,10 @@ on:  # yamllint disable-line rule:truthy
       VERSION:
         required: true
         type: string
+      EXTRA_VARS:
+        default: ''
+        required: false
+        type: string
       PREVIEW_NAMESPACE:
         required: true
         type: string
@@ -176,6 +180,9 @@ jobs:
           if [ -n "${OVERRIDE_CHART_NAME}" ]; then
             CHART_NAME=${OVERRIDE_CHART_NAME}
           fi
+          if [ -n "${EXTRA_VARS}" ]; then
+            ARG_EXTRA_VARS="-ev ${EXTRA_VARS}"
+          fi
           ARG_CHART_VALUES="-f ./${CHART_NAME}/values.yaml"
           ARG_COMMON_VALUES="-f ./common/values.yaml"
           ARG_PREVIEW_GLOBALS_VALUES="-f ./${{ inputs.VALUES_PREVIEW_YAML }}"
@@ -189,6 +196,7 @@ jobs:
           echo "DOCKER_REPOSITORY          : ${DOCKER_REPOSITORY}"
           echo "CHART_NAME                 : ${CHART_NAME}"
           echo "CHARTS_WORKING_DIR         : ${CHARTS_WORKING_DIR}"
+          echo "ARG_EXTRA_VARS             : ${ARG_EXTRA_VARS}"
           echo "ARG_CHART_VALUES           : ${ARG_CHART_VALUES}"
           echo "ARG_COMMON_VALUES          : ${ARG_COMMON_VALUES}"
           echo "ARG_PREVIEW_GLOBALS_VALUES : ${ARG_PREVIEW_GLOBALS_VALUES}"
@@ -206,6 +214,8 @@ jobs:
           echo "CHART_NAME=${CHART_NAME}" >> $GITHUB_OUTPUT
           echo "CHARTS_WORKING_DIR=${CHARTS_WORKING_DIR}" >> $GITHUB_ENV
           echo "CHARTS_WORKING_DIR=${CHARTS_WORKING_DIR}" >> $GITHUB_OUTPUT
+          echo "ARG_EXTRA_VARS=${ARG_EXTRA_VARS}" >> $GITHUB_ENV
+          echo "ARG_EXTRA_VARS=${ARG_EXTRA_VARS}" >> $GITHUB_OUTPUT
           echo "ARG_CHART_VALUES=${ARG_CHART_VALUES}" >> $GITHUB_ENV
           echo "ARG_CHART_VALUES=${ARG_CHART_VALUES}" >> $GITHUB_OUTPUT
           echo "ARG_COMMON_VALUES=${ARG_COMMON_VALUES}" >> $GITHUB_ENV
@@ -271,12 +281,13 @@ jobs:
           PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.PREVIEW_CHART_VALUES }}
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           DOCKER_REPOSITORY: ${{ steps.setup-variables.outputs.DOCKER_REPOSITORY }}
+          ARG_EXTRA_VARS: ${{ steps.setup-variables.outputs.ARG_EXTRA_VARS }}
         run: |
           echo "HELM_DEBUG_SCRIPT_FLAG: ${HELM_DEBUG_SCRIPT_FLAG}"
           echo "working-directory: $(pwd)"
           env | sort
           # NOTE: script uses env vars CHART_NAME, VERSION, PREVIEW_NAMESPACE, DOCKER_REPOSITORY
-          ./.github/scripts/run-helm.sh ${HELM_DEBUG_SCRIPT_FLAG} -t -p -c "${CHART_NAME}" -v "${VERSION}" -iv "${IMAGE_VERSION}"
+          ./.github/scripts/run-helm.sh ${HELM_DEBUG_SCRIPT_FLAG} -t -p -c "${CHART_NAME}" -v "${VERSION}" -iv "${IMAGE_VERSION}" ${ARG_EXTRA_VARS}
           echo ""
           echo "./charts/${PREVIEW_CHART_VALUES}:"
           cat "./charts/${PREVIEW_CHART_VALUES}" | yq
