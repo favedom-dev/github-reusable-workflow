@@ -52,12 +52,8 @@ fi
 echo "DEPENDENCIES_YAML : ${DEPENDENCIES_YAML}"
 
 # Determine if the file is Chart.yaml or requirements.yaml
-if grep -q "apiVersion" "${DEPENDENCIES_YAML}"; then
-  DEPENDENCIES=$(yq '.dependencies[] | (.alias // .name)' "${DEPENDENCIES_YAML}")
-  # echo "IF - DEPENDENCIES : ${DEPENDENCIES}"
-elif grep -q "dependencies" "${DEPENDENCIES_YAML}"; then
-  DEPENDENCIES=$(yq '.dependencies[] | (.alias // .name)' "${DEPENDENCIES_YAML}")
-  # echo "EL - DEPENDENCIES : ${DEPENDENCIES}"
+if grep -q "apiVersion" "${DEPENDENCIES_YAML}" || grep -q "dependencies" "${DEPENDENCIES_YAML}"; then
+  DEPENDENCIES=$(yq '.dependencies[] | (.alias // .name) | select(. == "'${TARGET_DEP}'")'  "${DEPENDENCIES_YAML}")
 else
   echo ""
   echo "The file ${DEPENDENCIES_YAML} is neither a valid Chart.yaml nor a requirements.yaml."
