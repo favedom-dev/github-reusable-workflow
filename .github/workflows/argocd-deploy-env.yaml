@@ -235,7 +235,7 @@ jobs:
           {{.body}}
           ' >> ./GH_RELEASE_NOTES.txt
           GH_BODY=$(cat ./GH_RELEASE_NOTES.txt)
-          gh pr create --label "approved" --title "chore: bump ${NAME} to ${VERSION}" --body "${GH_BODY}"
+          gh pr create --label "approved" --title "chore: bump image.tag ${NAME} to ${VERSION}" --body "${GH_BODY}"
           if [ "${DO_PR_MERGE}" = "true" ]; then
             gh pr merge ${BRANCH_NAME} --auto --squash
           fi
