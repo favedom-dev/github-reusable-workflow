@@ -22,8 +22,7 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       ENV_REPO_SUBDIR_BASE:
-        # default: 'dev/fanfuzenil' # TODO
-        default: 'dev/tmp-fanfuze'
+        default: 'dev/fanfuzenil'
         required: false
         type: string
       ENV_REPO_SUBDIR:
