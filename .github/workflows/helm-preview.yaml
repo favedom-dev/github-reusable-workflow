@@ -112,8 +112,7 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       PREVIEW_BASE_DOMAIN:
-        # default: 'dev.fanfuzenil.com' # TODO replace when dev
-        default: 'tmp.dev.fanfuzenil.com'
+        default: 'dev.fanfuzenil.com'
         required: false
         type: string
       PREVIEW_HEALTHCHECK:
@@ -121,8 +120,7 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
       SECRETS_FROM_NAMESPACE:
-        # default: fanfuze  # TODO
-        default: tmp-fanfuze
+        default: fanfuze
         required: false
         type: string
 
