@@ -17,11 +17,12 @@ CHART_YAML=${CHART_DIR}/Chart.yaml
 VALUES_YAML=${CHART_DIR}/values.yaml
 DEPENDENCIES_YAML="${REQUIREMENTS_YAML}"
 
-if [ "${NEW_IMAGE_TAG:0:1}" != "\"" ]; then
-  NEW_IMAGE_TAG=\"${NEW_IMAGE_TAG}\"
-fi
+# if [ "${NEW_IMAGE_TAG:0:1}" != "\"" ]; then
+#   NEW_IMAGE_TAG=\"${NEW_IMAGE_TAG}\"
+# fi
 
 echo ""
+echo "------------------:--------------"
 echo "CHART_DIR         : ${CHART_DIR}"
 echo "TARGET_DEP        : ${TARGET_DEP}"
 echo "NEW_IMAGE_TAG     : ${NEW_IMAGE_TAG}"
@@ -31,12 +32,13 @@ echo "DEPENDENCIES_YAML : ${DEPENDENCIES_YAML}"
 echo "REQUIREMENTS_YAML : ${REQUIREMENTS_YAML}"
 echo "CHART_YAML        : ${CHART_YAML}"
 echo "VALUES_YAML       : ${VALUES_YAML}"
+echo "===================:=============="
 echo ""
 
 # Check if yq is installed
 if ! command -v yq &> /dev/null
 then
-  echo "yq could not be found, please install it first."
+  echo "ERROR: yq could not be found, please install it first."
   exit 1
 fi
 
@@ -45,7 +47,7 @@ if [ ! -f "${REQUIREMENTS_YAML}" ]; then
   echo "File not found: $CHART_YAML"
   DEPENDENCIES_YAML="${CHART_YAML}"
   if [ ! -f "${CHART_YAML}" ]; then
-    echo "File not found: $CHART_YAML"
+    echo "ERROR: File not found: $CHART_YAML"
     exit 1
   fi
 fi
@@ -56,7 +58,7 @@ if grep -q "apiVersion" "${DEPENDENCIES_YAML}" || grep -q "dependencies" "${DEPE
   DEPENDENCIES=$(yq '.dependencies[] | (.alias // .name) | select(. == "'${TARGET_DEP}'")'  "${DEPENDENCIES_YAML}")
 else
   echo ""
-  echo "The file ${DEPENDENCIES_YAML} is neither a valid Chart.yaml nor a requirements.yaml."
+  echo "ERROR: The file ${DEPENDENCIES_YAML} is neither a valid Chart.yaml nor a requirements.yaml."
   exit 1
 fi
 echo "DEPENDENCIES      : ${DEPENDENCIES}"
@@ -64,7 +66,7 @@ echo "DEPENDENCIES      : ${DEPENDENCIES}"
 # Check if the target dependency exists in the dependencies list
 if ! echo "${DEPENDENCIES}" | grep -q "${TARGET_DEP}"; then
   echo ""
-  echo "Dependency ${TARGET_DEP} not found in ${DEPENDENCIES}"
+  echo "ERROR: Dependency ${TARGET_DEP} not found in ${DEPENDENCIES}"
   exit 1
 fi
 
