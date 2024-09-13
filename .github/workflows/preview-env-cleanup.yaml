@@ -128,7 +128,7 @@ jobs:
 
       # https://github.com/google-github-actions/setup-gcloud
       - name: '🔧 Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v1'
+        uses: 'google-github-actions/setup-gcloud@v2'
 
       - name: "🗑️ Delete PR ${{ steps.setup-variables.outputs.PR_NUM }} container(s)"
         run: |
