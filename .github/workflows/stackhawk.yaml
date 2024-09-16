@@ -85,6 +85,10 @@ on:  # yamllint disable-line rule:truthy
         default: false
         required: false
         type: boolean
+      STACKHAWK_VERBOSE:
+        default: true
+        required: false
+        type: boolean
       STACKHAWK_DEBUG:
         default: true
         required: false
@@ -211,7 +215,10 @@ jobs:
           apiKey: ${{ secrets.HAWK_API_KEY }}
           dryRun: ${{ inputs.STACKHAWK_DRYRUN }}
           workspace: ./${{ inputs.STACKHAWK_DIRECTORY }}
-          debug: ${{ inputs.STACKHAWK_DEBUG }}
+          verbose: true
+          debug: true
+          # verbose: ${{ inputs.STACKHAWK_VERBOSE }}
+          # debug: ${{ inputs.STACKHAWK_DEBUG }}
           # codeScanningAlerts: ${{ inputs.STACKHAWK_CODESCANNINGALERTS }}
           githubToken: ${{ secrets.GH_TOKEN }}
           configurationFiles: |
