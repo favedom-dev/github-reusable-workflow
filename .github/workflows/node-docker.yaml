@@ -111,6 +111,8 @@ jobs:
 
       - name: "🔧 Setup variables"
         id: setup-variables
+        env:
+          DOCKER_NAME: ${{ inputs.DOCKER_NAME }}
         run: |
           if [ -n "${DOCKER_NAME}" ]; then
             D_NAME=${{ inputs.DOCKER_NAME }}
