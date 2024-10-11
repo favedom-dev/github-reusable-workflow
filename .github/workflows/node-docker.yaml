@@ -25,6 +25,9 @@ on:  # yamllint disable-line rule:truthy
         default: 'peeq-public-assets.joinpeeq.com'
         required: false
         type: string
+      DOCKER_NAME:
+        required: false
+        type: string
       DOCKERFILE_FILE:
         default: './Dockerfile'
         required: false
@@ -109,11 +112,17 @@ jobs:
       - name: "🔧 Setup variables"
         id: setup-variables
         run: |
-          DOCKER_LOCATION=${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}
+          if [ -n "${DOCKER_NAME}" ]; then
+            D_NAME=${{ inputs.DOCKER_NAME }}
+          else
+            D_NAME=${{ inputs.NAME }}
+          fi
+          echo "D_NAME : ${D_NAME}"
+          DOCKER_LOCATION=${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${D_NAME}
           echo "DOCKER_LOCATION : ${DOCKER_LOCATION}"
           echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_ENV
           echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_OUTPUT
-          DOCKER_URL="https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
+          DOCKER_URL="https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.DOCKER_REGISTRY }}/${D_NAME}?project=${{ inputs.PROJECT_ID }}/"
           echo "DOCKER_URL : ${DOCKER_URL}"
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_ENV
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_OUTPUT
