@@ -259,6 +259,9 @@ jobs:
           location: ${{ inputs.CLUSTER_LOCATION }}
           project_id: ${{ inputs.CLUSTER_PROJECT_ID }}
 
+      - name: '🔧 Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
       - name: "🔧 [GAR] (oci://): Helm login"
         # if: ${{ !env.ACT }}
         working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
