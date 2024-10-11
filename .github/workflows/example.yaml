@@ -23,3 +23,16 @@ jobs:
           echo "github.run_number  : ${{ github.run_number }}"
           echo "--------------------------------------"
           echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
+
+      - name: Fetch workflow runs for PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pr_number=${{ github.event.number }}
+          repo_name=${{ github.repository }}
+
+          # Get the workflow runs for the PR
+          runs=$(curl -s -H "Authorization: token ${GITHUB_TOKEN}" \
+          "https://api.github.com/repos/${repo_name}/actions/runs?event=pull_request&branch=${{ github.head_ref }}")
+
+          echo "Workflow runs: ${runs}"
