@@ -15,6 +15,9 @@ on:  # yamllint disable-line rule:truthy
       APP_HOST:
         required: false
         type: string
+      APP_ID:
+        required: false
+        type: string
       TEST_USERNAME:
         default: 'stackhawk@velocityz.com'
         required: false
@@ -154,6 +157,7 @@ jobs:
           SCRIPT_NAME: ${{ inputs.STACKHAWK_SETUP_SCRIPT_NAME }}
           APP_NAME: ${{ inputs.NAME }}
           APP_HOST: ${{ steps.set-values.outputs.APP_HOST }}
+          APP_ID: ${{ inputs.APP_ID }}
           NAMESPACE: ${{ inputs.NAMESPACE }}
           API_PATH: ${{ inputs.API_PATH }}
           TEST_USERNAME: ${{ inputs.TEST_USERNAME }}
