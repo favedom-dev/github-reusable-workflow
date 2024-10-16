@@ -215,7 +215,7 @@ jobs:
           PREVIEW_DOMAIN="${PREVIEW_SUBDOMAIN}.${{ inputs.PREVIEW_BASE_DOMAIN }}"
           if [ -n "${ARG_PREVIEW_SUBDOMAIN}" ]; then
             PREVIEW_DOMAIN=${ARG_PREVIEW_DOMAIN}
-            HELM_VALUES_ISTIO_HOST="--set istio.host="${PREVIEW_DOMAIN}"
+            HELM_VALUES_ISTIO_HOST="--set istio.host=${PREVIEW_DOMAIN}"
           fi
 
           # PREVIEW_URL=https://${PREVIEW_SUBDOMAIN}.${{ inputs.PREVIEW_BASE_DOMAIN }}
