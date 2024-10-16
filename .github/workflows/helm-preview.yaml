@@ -149,6 +149,8 @@ on:  # yamllint disable-line rule:truthy
     outputs:
       API_PATH:
         value: ${{ jobs.helm-preview.outputs.API_PATH }}
+      APP_HOST:
+        value: ${{ jobs.helm-preview.outputs.APP_HOST }}
 
 jobs:
 
@@ -160,6 +162,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       API_PATH: ${{ steps.get-api-path.outputs.API_PATH }}
+      APP_HOST: ${{ steps.setup-variables.outputs.PREVIEW_URL }}
     env:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
