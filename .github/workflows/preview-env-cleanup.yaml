@@ -6,6 +6,9 @@ on:  # yamllint disable-line rule:truthy
       NAME:  # name of service, (ex: peeq-tracking)
         required: true
         type: string
+      NAMES:  # names of services space separated (ex: admin-fe celeb-fe)
+        required: true
+        type: string
       PREVIEW_NAMESPACE:
         required: true
         type: string
@@ -89,7 +92,11 @@ jobs:
           echo "GAR=${GAR}" >> $GITHUB_ENV
           echo "GAR=${GAR}" >> $GITHUB_OUTPUT
           # ===
-          DOCKER_LOCATION=${GAR}/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}
+          DOCKER_BASE_LOCATION=${GAR}/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}
+          echo "DOCKER_BASE_LOCATION=${DOCKER_BASE_LOCATION}" >> $GITHUB_ENV
+          echo "DOCKER_BASE_LOCATION=${DOCKER_BASE_LOCATION}" >> $GITHUB_OUTPUT
+          # ===
+          DOCKER_LOCATION=${DOCKER_BASE_LOCATION}/${{ inputs.NAME }}
           echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_ENV
           echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_OUTPUT
           # ===
@@ -100,13 +107,14 @@ jobs:
           DOCKER_TAG_PREFIX="${PR_VERSION}-"
           echo "DOCKER_TAG_PREFIX=${DOCKER_TAG_PREFIX}" >> $GITHUB_ENV
           echo "DOCKER_TAG_PREFIX=${DOCKER_TAG_PREFIX}" >> $GITHUB_OUTPUT
-          echo "==================="
-          echo "GAR               : ${GAR}"
-          echo "PR_NUM            : ${PR_NUM}"
-          echo "PR_VERSION        : ${PR_VERSION}"
-          echo "DOCKER_LOCATION   : ${DOCKER_LOCATION}"
-          echo "DOCKER_URL        : ${DOCKER_URL}"
-          echo "DOCKER_TAG_PREFIX : ${DOCKER_TAG_PREFIX}"
+          echo "======================"
+          echo "GAR                  : ${GAR}"
+          echo "PR_NUM               : ${PR_NUM}"
+          echo "PR_VERSION           : ${PR_VERSION}"
+          echo "DOCKER_BASE_LOCATION : ${DOCKER_BASE_LOCATION}"
+          echo "DOCKER_LOCATION      : ${DOCKER_LOCATION}"
+          echo "DOCKER_URL           : ${DOCKER_URL}"
+          echo "DOCKER_TAG_PREFIX    : ${DOCKER_TAG_PREFIX}"
 
       - name: "🔧 Google Auth Token"
         id: auth-gcp-token
@@ -131,23 +139,50 @@ jobs:
         uses: 'google-github-actions/setup-gcloud@v2'
 
       - name: "🗑️ Delete PR ${{ steps.setup-variables.outputs.PR_NUM }} container(s)"
+        env:
+          NAMES: ${{ inputs.NAMES }}
         run: |
-          declare -a PR_TAG_LIST
-          for tag in $(gcloud artifacts docker tags list ${DOCKER_LOCATION} | grep "${DOCKER_TAG_PREFIX}" | cut -f1 -d ' '); do
-            CURRENT_CONTAINER="${DOCKER_LOCATION}:${tag}"
-            PR_TAG_LIST[${#PR_TAG_LIST[@]}]="${tag}"
+          delete_images() {
+            declare -a PR_TAG_LIST
+            for tag in $(gcloud artifacts docker tags list ${CURRENT_DOCKER_LOCATION} | grep "${DOCKER_TAG_PREFIX}" | cut -f1 -d ' '); do
+              CURRENT_CONTAINER="${CURRENT_DOCKER_LOCATION}:${tag}"
+              PR_TAG_LIST[${#PR_TAG_LIST[@]}]="${tag}"
+              echo ""
+              echo ">>>>>>>>>>>>>>"
+              echo "START DELETING: ${CURRENT_CONTAINER}"
+              gcloud artifacts docker images delete "${CURRENT_CONTAINER}" --delete-tags --quiet
+              echo "DONE  DELETING: ${CURRENT_CONTAINER}"
+              echo "<<<<<<<<<<<<<<"
+            done
             echo ""
-            echo ">>>>>>>>>>>>>>"
-            echo "START DELETING: ${CURRENT_CONTAINER}"
-            gcloud artifacts docker images delete "${CURRENT_CONTAINER}" --delete-tags --quiet
-            echo "DONE  DELETING: ${CURRENT_CONTAINER}"
-            echo "<<<<<<<<<<<<<<"
+            echo "Can verify PR containters \"${PR_VERSION}*\" deleted at URL:"
+            echo "${DOCKER_URL}"
+            echo "Containers removed had tags:"
+            printf '%s\n' "${PR_TAG_LIST[@]}"
+          }
+
+          declare -a ARR_DOCKER_LOCATIONS
+          if [ "${#NAMES}" -gt 0 ]; then
+            read -a ARR_NAMES <<< "${NAMES}"
+            for name in "${ARR_NAMES[@]}"; do
+              echo "Adding ${DOCKER_BASE_LOCATION}/${name}"
+              ARR_DOCKER_LOCATIONS+=("${DOCKER_BASE_LOCATION}/${name}")
+            done
+          else
+            echo "Adding DOCKER_LOCATION ${DOCKER_LOCATION}"
+            ARR_DOCKER_LOCATIONS+=("${DOCKER_LOCATION}")
+          fi
+
+          echo "ARR_DOCKER_LOCATIONS:"
+          printf '%s\n' "${ARR_DOCKER_LOCATIONS[@]}"
+
+          # delete for each item in ARR_DOCKER_LOCATIONS
+          for CURRENT_DOCKER_LOCATION in "${ARR_DOCKER_LOCATIONS[@]}"; do
+            echo ""
+            echo ">>> START >>>"
+            delete_images
+            echo "<<<  END  <<<"
           done
-          echo ""
-          echo "Can verify PR containters \"${PR_VERSION}*\" deleted at URL:"
-          echo "${DOCKER_URL}"
-          echo "Containers removed had tags:"
-          printf '%s\n' "${PR_TAG_LIST[@]}"
 
       - name: "🔧 Get GKE Credentials"
         id: 'get-credentials'
