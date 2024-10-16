@@ -66,13 +66,14 @@ jobs:
         env:
           OVERRIDE_PREVIEW_NAMESPACE: ${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
           GH_EVENT_NUMBER: ${{ github.event.number }}
+          USE_REPO_NAME_PREVIEW_NAMESPACE: ${{ inputs.USE_REPO_NAME_PREVIEW_NAMESPACE }}
         run: |
           echo "DEBUG: OVERRIDE_PREVIEW_NAMESPACE = ${OVERRIDE_PREVIEW_NAMESPACE}"
           echo "DEBUG: GH_EVENT_NUMBER = ${GH_EVENT_NUMBER}"
           if [ -n "${OVERRIDE_PREVIEW_NAMESPACE}" ]; then
             PREVIEW_NAMESPACE=${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
             echo "OVERRIDE: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
-          elif [ -n "${USE_REPO_NAME_PREVIEW_NAMESPACE}"  ]; then
+          elif [ -n "${USE_REPO_NAME_PREVIEW_NAMESPACE}" ]; then
             PREVIEW_NAMESPACE=pr-$(basename ${{ github.repository }})-${{ github.event.number }}
             echo "REPO NAME: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
           else
