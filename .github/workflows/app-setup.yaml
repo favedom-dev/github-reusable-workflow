@@ -9,6 +9,10 @@ on:  # yamllint disable-line rule:truthy
       OVERRIDE_PREVIEW_NAMESPACE:
         required: false
         type: string
+      USE_REPO_NAME_PREVIEW_NAMESPACE:
+        default: false
+        required: false
+        type: boolean
       IS_STACKHAWK_READY:
         default: true
         required: false
@@ -68,6 +72,9 @@ jobs:
           if [ -n "${OVERRIDE_PREVIEW_NAMESPACE}" ]; then
             PREVIEW_NAMESPACE=${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
             echo "OVERRIDE: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
+          elif [ -n "${USE_REPO_NAME_PREVIEW_NAMESPACE}"  ]; then
+            PREVIEW_NAMESPACE=pr-$(basename ${{ github.repository }})-${{ github.event.number }}
+            echo "REPO NAME: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
           else
             PREVIEW_NAMESPACE=pr-${{ steps.set-name.outputs.NAME }}-${{ github.event.number }}
             echo "DEFAULT: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
