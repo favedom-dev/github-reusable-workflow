@@ -9,14 +9,14 @@ on:  # yamllint disable-line rule:truthy
       VERSION:
         required: true
         type: string
-      IS_FRONTEND:
-        default: false
-        required: false
-        type: boolean
-      IS_MONOREPO:
-        default: false
-        required: false
-        type: boolean
+      # IS_FRONTEND:
+      #   default: false
+      #   required: false
+      #   type: boolean
+      # IS_MONOREPO:
+      #   default: false
+      #   required: false
+      #   type: boolean
       EXTRA_VARS:
         default: ''
         required: false
