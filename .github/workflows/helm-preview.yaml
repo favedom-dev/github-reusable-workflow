@@ -9,12 +9,23 @@ on:  # yamllint disable-line rule:truthy
       VERSION:
         required: true
         type: string
+      IS_FRONTEND:
+        default: false
+        required: false
+        type: boolean
+      IS_MONOREPO:
+        default: false
+        required: false
+        type: boolean
       EXTRA_VARS:
         default: ''
         required: false
         type: string
       PREVIEW_NAMESPACE:
         required: true
+        type: string
+      PREVIEW_SUBDOMAIN:
+        required: false
         type: string
       CHARTS_DIR:
         default: 'charts'
@@ -170,6 +181,7 @@ jobs:
           CHART_NAME: ${{ inputs.NAME }}
           OVERRIDE_CHART_NAME: ${{ inputs.OVERRIDE_CHART_NAME }}
           EXTRA_VARS: ${{ inputs.EXTRA_VARS }}
+          ARG_PREVIEW_SUBDOMAIN: ${{ inputs.PREVIEW_SUBDOMAIN }}
         run: |
           HELM_REGISTRY_LOCATION=${{ inputs.HELM_DOCKER_REGISTRY }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}
           HELM_REGISTRY_URL="${{ inputs.HELM_REGISTRY_BASE_URL }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_LOCATION }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}?project=${{ inputs.HELM_PROJECT_ID }}/"
@@ -190,6 +202,12 @@ jobs:
           PREVIEW_CHART_VALUES="./${CHART_NAME}/${{ inputs.VALUES_PREVIEW_YAML }}"
           ARG_PREVIEW_CHART_VALUES="-f ${PREVIEW_CHART_VALUES}"
 
+          PREVIEW_SUBDOMAIN=${{ inputs.PREVIEW_NAMESPACE }}
+          if [ -n "${ARG_PREVIEW_SUBDOMAIN}" ]; then
+            PREVIEW_SUBDOMAIN=${PREVIEW_SUBDOMAIN}${ARG_PREVIEW_SUBDOMAIN}
+          fi
+          PREVIEW_URL=https://${PREVIEW_SUBDOMAIN}.${{ inputs.PREVIEW_BASE_DOMAIN }}
+
           # Display values
           echo "ACT                        : ${ACT}"
           echo "HELM_REGISTRY_LOCATION     : ${HELM_REGISTRY_LOCATION}"
@@ -203,6 +221,7 @@ jobs:
           echo "ARG_PREVIEW_GLOBALS_VALUES : ${ARG_PREVIEW_GLOBALS_VALUES}"
           echo "ARG_PREVIEW_CHART_VALUES   : ${ARG_PREVIEW_CHART_VALUES}"
           echo "PREVIEW_CHART_VALUES       : ${PREVIEW_CHART_VALUES}"
+          echo "PREVIEW_URL                : ${PREVIEW_URL}"
 
           # set to output and env
           echo "HELM_REGISTRY_LOCATION=${HELM_REGISTRY_LOCATION}" >> $GITHUB_ENV
@@ -227,6 +246,8 @@ jobs:
           echo "ARG_PREVIEW_CHART_VALUES=${ARG_PREVIEW_CHART_VALUES}" >> $GITHUB_OUTPUT
           echo "PREVIEW_CHART_VALUES=${PREVIEW_CHART_VALUES}" >> $GITHUB_ENV
           echo "PREVIEW_CHART_VALUES=${PREVIEW_CHART_VALUES}" >> $GITHUB_OUTPUT
+          echo "PREVIEW_URL=${PREVIEW_URL}" >> $GITHUB_ENV
+          echo "PREVIEW_URL=${PREVIEW_URL}" >> $GITHUB_OUTPUT
 
       - name: "🔧 Enable helm debug"
         if: inputs.HELM_ENABLE_DEBUG == true
@@ -363,7 +384,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
-          PREVIEW_URL: https://${{ inputs.PREVIEW_NAMESPACE }}.${{ inputs.PREVIEW_BASE_DOMAIN }}
+          PREVIEW_URL: ${{ steps.setup-variables.outputs.PREVIEW_URL }}
           API_PATH: ${{ steps.get-api-path.outputs.API_PATH }}
           PR_BODY: pr_body.md
         run: |-
@@ -380,7 +401,7 @@ jobs:
           echo "START: body message file"
           # START: body message file
           echo "PR built and available in a preview environment ${{ inputs.NAME }} pr ${{ github.event.number }}:" > ${PR_BODY}
-          echo "- 🌐 preview [link](${PREVIEW_URL})" >> ${PR_BODY}
+          echo "- 🌐 preview [${PREVIEW_URL}](${PREVIEW_URL})" >> ${PR_BODY}
           if [ ${#API_PATH} -gt 1 ]; then
             echo "- 💓 healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL})" >> ${PR_BODY}
           fi
