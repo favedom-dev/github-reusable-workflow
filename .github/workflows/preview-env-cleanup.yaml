@@ -4,10 +4,10 @@ on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       NAME:  # name of service, (ex: peeq-tracking)
-        required: true
+        required: false
         type: string
       NAMES:  # names of services space separated (ex: admin-fe celeb-fe)
-        required: true
+        required: false
         type: string
       PREVIEW_NAMESPACE:
         required: true
