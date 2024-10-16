@@ -17,6 +17,9 @@ on:  # yamllint disable-line rule:truthy
       #   default: false
       #   required: false
       #   type: boolean
+      # VALUES_ISTIO_HOST:
+      #   required: false
+      #   type: string
       EXTRA_VARS:
         default: ''
         required: false
@@ -182,6 +185,7 @@ jobs:
           OVERRIDE_CHART_NAME: ${{ inputs.OVERRIDE_CHART_NAME }}
           EXTRA_VARS: ${{ inputs.EXTRA_VARS }}
           ARG_PREVIEW_SUBDOMAIN: ${{ inputs.PREVIEW_SUBDOMAIN }}
+          # ARG_VALUES_ISTIO_HOST: ${{ inputs.VALUES_ISTIO_HOST }}
         run: |
           HELM_REGISTRY_LOCATION=${{ inputs.HELM_DOCKER_REGISTRY }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}
           HELM_REGISTRY_URL="${{ inputs.HELM_REGISTRY_BASE_URL }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_LOCATION }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}?project=${{ inputs.HELM_PROJECT_ID }}/"
@@ -204,9 +208,18 @@ jobs:
 
           PREVIEW_SUBDOMAIN=${{ inputs.PREVIEW_NAMESPACE }}
           if [ -n "${ARG_PREVIEW_SUBDOMAIN}" ]; then
-            PREVIEW_SUBDOMAIN=${PREVIEW_SUBDOMAIN}${ARG_PREVIEW_SUBDOMAIN}
+            # PREVIEW_SUBDOMAIN=${PREVIEW_SUBDOMAIN}-${CHART_NAME}
+            PREVIEW_SUBDOMAIN=${PREVIEW_SUBDOMAIN}-${{ inputs.NAME }}
           fi
-          PREVIEW_URL=https://${PREVIEW_SUBDOMAIN}.${{ inputs.PREVIEW_BASE_DOMAIN }}
+
+          PREVIEW_DOMAIN="${PREVIEW_SUBDOMAIN}.${{ inputs.PREVIEW_BASE_DOMAIN }}"
+          if [ -n "${ARG_PREVIEW_SUBDOMAIN}" ]; then
+            PREVIEW_DOMAIN=${ARG_PREVIEW_DOMAIN}
+            HELM_VALUES_ISTIO_HOST="--set istio.host="${PREVIEW_DOMAIN}"
+          fi
+
+          # PREVIEW_URL=https://${PREVIEW_SUBDOMAIN}.${{ inputs.PREVIEW_BASE_DOMAIN }}
+          PREVIEW_URL=https://${PREVIEW_DOMAIN}
 
           # Display values
           echo "ACT                        : ${ACT}"
@@ -221,7 +234,10 @@ jobs:
           echo "ARG_PREVIEW_GLOBALS_VALUES : ${ARG_PREVIEW_GLOBALS_VALUES}"
           echo "ARG_PREVIEW_CHART_VALUES   : ${ARG_PREVIEW_CHART_VALUES}"
           echo "PREVIEW_CHART_VALUES       : ${PREVIEW_CHART_VALUES}"
+          echo "PREVIEW_SUBDOMAIN          : ${PREVIEW_SUBDOMAIN}"
+          echo "PREVIEW_DOMAIN             : ${PREVIEW_DOMAIN}"
           echo "PREVIEW_URL                : ${PREVIEW_URL}"
+          echo "HELM_VALUES_ISTIO_HOST     : ${HELM_VALUES_ISTIO_HOST}"
 
           # set to output and env
           echo "HELM_REGISTRY_LOCATION=${HELM_REGISTRY_LOCATION}" >> $GITHUB_ENV
@@ -246,8 +262,12 @@ jobs:
           echo "ARG_PREVIEW_CHART_VALUES=${ARG_PREVIEW_CHART_VALUES}" >> $GITHUB_OUTPUT
           echo "PREVIEW_CHART_VALUES=${PREVIEW_CHART_VALUES}" >> $GITHUB_ENV
           echo "PREVIEW_CHART_VALUES=${PREVIEW_CHART_VALUES}" >> $GITHUB_OUTPUT
+          echo "PREVIEW_DOMAIN=${PREVIEW_DOMAIN}" >> $GITHUB_ENV
+          echo "PREVIEW_DOMAIN=${PREVIEW_DOMAIN}" >> $GITHUB_OUTPUT
           echo "PREVIEW_URL=${PREVIEW_URL}" >> $GITHUB_ENV
           echo "PREVIEW_URL=${PREVIEW_URL}" >> $GITHUB_OUTPUT
+          echo "HELM_VALUES_ISTIO_HOST=${HELM_VALUES_ISTIO_HOST}" >> $GITHUB_ENV
+          echo "HELM_VALUES_ISTIO_HOST=${HELM_VALUES_ISTIO_HOST}" >> $GITHUB_OUTPUT
 
       - name: "🔧 Enable helm debug"
         if: inputs.HELM_ENABLE_DEBUG == true
@@ -344,6 +364,7 @@ jobs:
           ARG_COMMON_VALUES: ${{ steps.setup-variables.outputs.ARG_COMMON_VALUES }}
           ARG_PREVIEW_GLOBALS_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_GLOBALS_VALUES }}
           ARG_PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_CHART_VALUES }}
+          HELM_VALUES_ISTIO_HOST: ${{ steps.setup-variables.outputs.HELM_VALUES_ISTIO_HOST }}
         working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
         run: |
           echo "CHART_NAME             : ${CHART_NAME}"
@@ -355,6 +376,7 @@ jobs:
           "${ARG_COMMON_VALUES}" \
           "${ARG_PREVIEW_GLOBALS_VALUES}" \
           "${ARG_PREVIEW_CHART_VALUES}" \
+          "${HELM_VALUES_ISTIO_HOST}" \
           "${HELM_PREVIEW_ARGS}" \
           "./${CHART_NAME}" \
           "${HELM_DEBUG_FLAG}")
