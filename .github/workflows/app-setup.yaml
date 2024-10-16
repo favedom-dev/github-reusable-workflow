@@ -25,6 +25,14 @@ on:  # yamllint disable-line rule:truthy
         default: 'stackhawk-tmpl.yml'
         required: false
         type: string
+      IS_FRONTEND:
+        default: false
+        required: false
+        type: boolean
+      IS_MONOREPO:
+        default: false
+        required: false
+        type: boolean
 
     outputs:
       NAME:
@@ -46,6 +54,8 @@ jobs:
       PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}
       IS_STACKHAWK_READY: ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}
       STACKHAWK_DIRECTORY: ${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}
+      IS_FRONTEND: ${{ steps.extra-vars.outputs.IS_FRONTEND }}
+      IS_MONOREPO: ${{ steps.extra-vars.outputs.IS_MONOREPO }}
     steps:
 
       - name: "📜 Set Name"
@@ -61,6 +71,19 @@ jobs:
           echo "NAME: ${NAME}"
           echo "NAME=${NAME}" >> $GITHUB_OUTPUT
 
+      - name: "📜 Extra Vars"
+        id: extra-vars
+        env:
+          IS_FRONTEND: ${{ inputs.IS_FRONTEND }}
+          IS_MONOREPO: ${{ inputs.IS_MONOREPO }}
+        run: |
+          echo "IS_FRONTEND: ${IS_FRONTEND}"
+          echo "IS_FRONTEND=${IS_FRONTEND}" >> $GITHUB_ENV
+          echo "IS_FRONTEND=${IS_FRONTEND}" >> $GITHUB_OUTPUT
+          echo "IS_MONOREPO: ${IS_MONOREPO}"
+          echo "IS_MONOREPO=${IS_MONOREPO}" >> $GITHUB_ENV
+          echo "IS_MONOREPO=${IS_MONOREPO}" >> $GITHUB_OUTPUT
+
       - name: "📜 Set Name for Preview Namespace"
         id: set-name-pr-namespace
         env:
@@ -74,6 +97,7 @@ jobs:
             PREVIEW_NAMESPACE=${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
             echo "OVERRIDE: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
           elif [ -n "${USE_REPO_NAME_PREVIEW_NAMESPACE}" ]; then
+          # elif { [ "${IS_MONOREPO}" = "true" ] && [ "${IS_FRONTEND}" = "true" ]; } || [ -n "${USE_REPO_NAME_PREVIEW_NAMESPACE}" ]; then
             PREVIEW_NAMESPACE=pr-$(basename ${{ github.repository }})-${{ github.event.number }}
             echo "REPO NAME: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
           else
@@ -110,10 +134,10 @@ jobs:
           echo "STACKHAWK_DIRECTORY=${STACKHAWK_DIRECTORY}" >> $GITHUB_OUTPUT
 
       - name: "📜 Display values: ${{ steps.set-name.outputs.NAME }} "
-        env:
-          PR_VERSION: ${{ steps.pr-version.outputs.version }}
         run: |
           echo "NAME                : ${{ steps.set-name.outputs.NAME }}"
           echo "PREVIEW_NAMESPACE   : ${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}"
           echo "IS_STACKHAWK_READY  : ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}"
           echo "STACKHAWK_DIRECTORY : ${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}"
+          echo "IS_FRONTEND         : ${{ steps.extra-vars.outputs.IS_FRONTEND }}"
+          echo "IS_MONOREPO         : ${{ steps.extra-vars.outputs.IS_MONOREPO }}"
