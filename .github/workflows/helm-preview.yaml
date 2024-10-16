@@ -424,7 +424,7 @@ jobs:
 
           echo "START: body message file"
           # START: body message file
-          echo "PR built and available in a preview environment ${{ inputs.NAME }} pr ${{ github.event.number }}:" > ${PR_BODY}
+          echo "PR built and available in a preview environment **${{ inputs.NAME }}** pr ${{ github.event.number }}:" > ${PR_BODY}
           echo "- 🌐 preview [${PREVIEW_URL}](${PREVIEW_URL})" >> ${PR_BODY}
           if [ ${#API_PATH} -gt 1 ]; then
             echo "- 💓 healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL})" >> ${PR_BODY}
