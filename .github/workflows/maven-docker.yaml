@@ -208,6 +208,11 @@ jobs:
           echo "====="
           echo "ls ~: $(ls -laR ~)"
           echo "====="
+          eval "echo \"$(cat ./settings.xml)\"" > ~/settings.xml
+          cat ~/settings.xml
+          echo "====="
+          chmod 775 ~/.m2/settings.xml
+          echo "====="
           eval "echo \"$(cat ./settings.xml)\"" > ~/.m2/settings.xml
 
       - name: "🔨 Maven set version"
