@@ -7,15 +7,22 @@ on:  # yamllint disable-line rule:truthy
         default: '.'
         required: false
         type: string
+
       PYTHON_VERSION:
         default: "3.8"
         required: false
         type: string
+
+      GH_RUNS_ON:
+        default: 'ubuntu-latest'
+        required: false
+        type: string
+
 jobs:
 
   lint-yaml:
     timeout-minutes: 10
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
 
       - name: "☁️ Checkout repository"

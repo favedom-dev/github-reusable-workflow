@@ -7,8 +7,14 @@ on:  # yamllint disable-line rule:truthy
       TAG_NAME:
         required: true
         type: string
+
       BRANCH_NAME:
         required: true
+        type: string
+
+      GH_RUNS_ON:
+        default: 'ubuntu-latest'
+        required: false
         type: string
 
     secrets:
@@ -18,7 +24,7 @@ on:  # yamllint disable-line rule:truthy
 jobs:
 
   move-tag:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.GH_RUNS_ON }}
 
     steps:
 

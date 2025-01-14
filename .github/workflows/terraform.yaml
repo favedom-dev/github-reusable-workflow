@@ -6,22 +6,27 @@ on:
       NAME:  # name of cluster
         required: true
         type: string
+
       TERRAFORM_VERSION:
         default: '1.3.5'
         required: false
         type: string
+
       DO_TERRAFORM_FORMAT:
         default: true  # true do terraform apply | false skip terraform apply
         required: false
         type: boolean
+
       DO_TERRAFORM_PLAN:
         default: true  # true do terraform apply | false skip terraform apply
         required: false
         type: boolean
+
       DO_TERRAFORM_APPLY:
         default: true  # true do terraform apply | false skip terraform apply
         required: false
         type: boolean
+
       # DISABLE_TERRAFORM_LOCK:  # see id: tflock-arg and  id: terraform-apply
       #   default: false
       #   required: false
@@ -30,30 +35,42 @@ on:
       #   default: '-lock=false'
       #   required: false
       #   type: string
+
       PROJECT_ID:
         default: 'favedom-dev'
         required: false
         type: string
+
       GH_ORG:
         default: 'favedom-dev'
         required: false
         type: string
+
       GH_USER:
         default: 'velocityz-0x-pq-github'
         required: false  # true
         type: string
+
       JOBS_TIMEOUT:
         default: 15
         required: false
         type: number
 
+      GH_RUNS_ON:
+        default: 'ubuntu-latest'
+        required: false
+        type: string
+
     secrets:
       GH_TOKEN:
         required: true
+
       WIF_PROVIDER:  # Workload Identity Federation Provider
         required: true
+
       WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
         required: true
+
       CASTAI_API_TOKEN:
         required: false
 
@@ -63,7 +80,7 @@ jobs:
     permissions:
       contents: 'read'
       id-token: 'write'
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.GH_RUNS_ON }}
     env:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

@@ -7,26 +7,36 @@ on:  # yamllint disable-line rule:truthy
       NAME:  # name of service, (ex: peeq-tracking)
         required: true
         type: string
+
       ARG_LANGUAGE:
         default: '--js'
         required: false
         type: string
+
       ARG_STANDARD:
         default: '--cpg'
         required: false
         type: string
+
       SCAN_DIR:
         default: './'
         required: false
         type: string
+
       VCS_PREFIX_CORRECTION:
         default: ''
+        required: false
+        type: string
+
+      GH_RUNS_ON:
+        default: 'ubuntu-latest'
         required: false
         type: string
 
     secrets:
       GH_TOKEN:  # GitHub token
         required: true
+
       SHIFTLEFT_ACCESS_TOKEN:
         required: true
 
@@ -37,7 +47,7 @@ jobs:
     permissions:
       contents: 'read'
       id-token: 'write'
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
 
       - name: "☁️ Checkout repository"

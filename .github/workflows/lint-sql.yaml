@@ -8,17 +8,24 @@ on:  # yamllint disable-line rule:truthy
         default: 'postgres'
         required: false
         type: string
+
       PYTHON_VERSION:
         default: "3.7"
         required: false
         type: string
+
+      GH_RUNS_ON:
+        default: 'ubuntu-latest'
+        required: false
+        type: string
+
     secrets:
       GH_TOKEN:
         required: true
 
 jobs:
   lint-sql:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
       - name: checkout
         uses: actions/checkout@v4

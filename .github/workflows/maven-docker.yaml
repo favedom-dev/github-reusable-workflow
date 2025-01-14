@@ -95,6 +95,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      GH_RUNS_ON:
+        default: 'ubuntu-latest'
+        required: false
+        type: string
+
     secrets:
       GH_TOKEN:
         required: true
@@ -121,7 +126,7 @@ jobs:
     permissions:
       contents: 'read'
       id-token: 'write'
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
 
       - name: "🔧 Setup variables"
