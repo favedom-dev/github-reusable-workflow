@@ -198,7 +198,8 @@ jobs:
 
       - name: "🔧 Maven ~/.m2/settings.xml"
         run: |
-          wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
+          # wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
+          curl -o settings.xml https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
           envsubst < ./settings.xml > ~/.m2/settings.xml
 
       - name: "🔨 Maven set version"
