@@ -16,7 +16,7 @@ jobs:
 
   debug:
     timeout-minutes: 2
-    runs-on: ${{ inputs.GH_RUNS_ON }}_RUNS_ON }}
+    runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
       - name: "GITHUB INFO"
         env:

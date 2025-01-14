@@ -199,7 +199,7 @@ jobs:
     permissions:
       contents: 'read'
       id-token: 'write'
-    runs-on: ${{ inputs.GH_RUNS_ON }}_RUNS_ON }}_RUNS_ON }}
+    runs-on: ${{ inputs.GH_RUNS_ON }}
     outputs:
       API_PATH: ${{ steps.get-api-path.outputs.API_PATH }}
       APP_HOST: ${{ steps.setup-variables.outputs.PREVIEW_URL }}
