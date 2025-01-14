@@ -224,12 +224,17 @@ jobs:
           echo "====="
 
           mv "${OUTPUT_FILE}" ~/.m2/settings.xml
+          echo "====="
+          cat ~/.m2/settings.xml
+          echo "====="
 
       - name: "🔨 Maven set version"
         working-directory: ${{ inputs.APP_WORKING_DIR }}
         env:
           VERSION: ${{ inputs.VERSION }}
         run: |
+          find / -name mvn
+          echo "====="
           mvn -B versions:set -DnewVersion=${VERSION}
 
       - name: "🔨 Build with Maven"
