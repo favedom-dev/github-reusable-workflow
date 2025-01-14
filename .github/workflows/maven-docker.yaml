@@ -211,7 +211,11 @@ jobs:
           eval "echo \"$(cat ./settings.xml)\"" > ~/settings.xml
           cat ~/settings.xml
           echo "====="
-          chmod 775 ~/.m2/settings.xml
+          echo "~/.m2/settings.xml:"
+          cat ~/.m2/settings.xml
+          echo "====="
+          # chmod 775 ~/.m2/settings.xml
+          rm ~/.m2/settings.xml
           echo "====="
           eval "echo \"$(cat ./settings.xml)\"" > ~/.m2/settings.xml
 
