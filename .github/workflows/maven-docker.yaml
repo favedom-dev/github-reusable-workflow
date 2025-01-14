@@ -208,6 +208,11 @@ jobs:
           echo "====="
           echo "ls ~: $(ls -laR ~/.m2)"
           echo "====="
+          echo "rm ~/.m2/settings.xml"
+          rm ~/.m2/settings.xml
+          echo "====="
+          echo "ls ~: $(ls -laR ~/.m2)"
+          echo "====="
           # echo "ls ~: $(ls -laR ~)"
           # echo "====="
           eval "echo \"$(cat ./dl-settings.xml)\"" > ./settings.xml
