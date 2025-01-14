@@ -202,7 +202,7 @@ jobs:
 
           # Input and output files
           INPUT_FILE="dl-settings.xml"
-          output_file="~/.m2/settings.xml"
+          OUTPUT_FILE="~/.m2/settings.xml"
           # OUTPUT_FILE="./settings.xml"
 
           curl -o ${INPUT_FILE} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
