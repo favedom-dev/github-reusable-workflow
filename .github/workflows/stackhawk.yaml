@@ -197,7 +197,8 @@ jobs:
           TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
           KEYCLOAK_AUTH: https://identity.${{ inputs.BASE_DOMAIN }}/realms/${{ inputs.KEYCLOAK_REALM }}/protocol/openid-connect/token
         run: |
-          wget -O ${SCRIPT_NAME} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/stackhawk/${SCRIPT_NAME}
+          # wget -O ${SCRIPT_NAME} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/stackhawk/${SCRIPT_NAME}
+          curl -o ${SCRIPT_NAME} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/stackhawk/${SCRIPT_NAME}
           chmod 777 ./${SCRIPT_NAME}
           ./${SCRIPT_NAME}
 

@@ -90,7 +90,8 @@ jobs:
       - name: "☁️ Get ${{ inputs.INCREMENT_SCRIPT_NAME }}"
         if: github.event_name != 'pull_request'
         run: |
-          wget ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${{ inputs.SCRIPT_GIT_BRANCH }}/scripts/${{ inputs.INCREMENT_SCRIPT_NAME }}
+          # wget ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${{ inputs.SCRIPT_GIT_BRANCH }}/scripts/${{ inputs.INCREMENT_SCRIPT_NAME }}
+          curl -o ${{ inputs.INCREMENT_SCRIPT_NAME }} ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${{ inputs.SCRIPT_GIT_BRANCH }}/scripts/${{ inputs.INCREMENT_SCRIPT_NAME }}
           chmod 777 ./${{ inputs.INCREMENT_SCRIPT_NAME }}
 
       - name: "☑ Release version"

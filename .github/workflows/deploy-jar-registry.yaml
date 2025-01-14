@@ -135,7 +135,8 @@ jobs:
 
       - name: "🔧 Maven ~/.m2/settings.xml"
         run: |
-          wget ${{ inputs.MAVEN_SETTINGS_URL }}/settings.xml
+          # wget ${{ inputs.MAVEN_SETTINGS_URL }}/settings.xml
+          curl -o settings.xml ${{ inputs.MAVEN_SETTINGS_URL }}/settings.xml
           envsubst < ./settings.xml > ~/.m2/settings.xml
 
       - name: "🔨 Maven set version"

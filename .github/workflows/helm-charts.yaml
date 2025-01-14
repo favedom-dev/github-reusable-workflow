@@ -383,7 +383,8 @@ jobs:
           BRANCH_NAME: master
         working-directory: ${{ inputs.SCRIPTS_DIR }}
         run: |
-          wget -O ./${SCRIPT_NAME} ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${BRANCH_NAME}/scripts/${SCRIPT_NAME}
+          # wget -O ./${SCRIPT_NAME} ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${BRANCH_NAME}/scripts/${SCRIPT_NAME}
+          curl -o ./${SCRIPT_NAME} ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${BRANCH_NAME}/scripts/${SCRIPT_NAME}
           chmod 777 ./${SCRIPT_NAME}
           ./${SCRIPT_NAME}
 
@@ -505,7 +506,8 @@ jobs:
           BRANCH_NAME: master
         working-directory: ${{ inputs.SCRIPTS_DIR }}
         run: |
-          wget -O ./${SCRIPT_NAME} ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${BRANCH_NAME}/scripts/${SCRIPT_NAME}
+          # wget -O ./${SCRIPT_NAME} ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${BRANCH_NAME}/scripts/${SCRIPT_NAME}
+          curl -o ./${SCRIPT_NAME} ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${BRANCH_NAME}/scripts/${SCRIPT_NAME}
           chmod 777 ./${SCRIPT_NAME}
           ./${SCRIPT_NAME}
 
