@@ -206,8 +206,10 @@ jobs:
           echo "====="
           echo "home : ${HOME}"
           echo "====="
-          echo "ls ~: $(ls -laR ~)"
+          echo "ls ~: $(ls -laR ~/.m2)"
           echo "====="
+          # echo "ls ~: $(ls -laR ~)"
+          # echo "====="
           eval "echo \"$(cat ./settings.xml)\"" > ~/settings.xml
           cat ~/settings.xml
           echo "====="
