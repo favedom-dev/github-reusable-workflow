@@ -202,8 +202,8 @@ jobs:
 
           # Input and output files
           INPUT_FILE="dl-settings.xml"
-          # output_file="~/.m2/settings.xml"
-          OUTPUT_FILE="./settings.xml"
+          output_file="~/.m2/settings.xml"
+          # OUTPUT_FILE="./settings.xml"
 
           curl -o ${INPUT_FILE} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
           # envsubst < ./settings.xml > ~/.m2/settings.xml
@@ -225,7 +225,7 @@ jobs:
         env:
           VERSION: ${{ inputs.VERSION }}
         run: |
-          mvn -s ./settings.xml -B versions:set -DnewVersion=${VERSION}
+          mvn -B versions:set -DnewVersion=${VERSION}
 
       - name: "🔨 Build with Maven"
         working-directory: ${{ inputs.APP_WORKING_DIR }}
@@ -237,7 +237,7 @@ jobs:
           echo "MVN_ENV_VARS    : ${{ inputs.MVN_ENV_VARS }}"
           echo "MVN_ARGS_EXTRA  : ${{ inputs.MVN_ARGS_EXTRA }}"
           echo "MVN_ARGS_SECRETS: ${{ secrets.MVN_ARGS_SECRETS }}"
-          mvn -s ./settings.xml -B \
+          mvn -B \
           ${{ secrets.MVN_ARGS_SECRETS }} \
           ${{ inputs.MVN_ENV_VARS }} \
           ${{ inputs.MVN_ARGS }} \
