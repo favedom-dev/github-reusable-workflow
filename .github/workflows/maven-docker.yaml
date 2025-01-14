@@ -217,23 +217,26 @@ jobs:
           echo "====="
           # echo "ls ~: $(ls -laR ~)"
           # echo "====="
+          eval "echo \"$(cat ./dl-settings.xml)\""
+          echo "2====="
           eval "echo \"$(cat ./dl-settings.xml)\"" > ./settings.xml
+          echo "====="
           cat ./settings.xml
-          echo "====="
-          echo "~/.m2/settings.xml:"
-          cat ~/.m2/settings.xml
-          echo "====="
-          # chmod 775 ~/.m2/settings.xml
-          rm ~/.m2/settings.xml
-          echo "====="
-          eval "echo \"$(cat ./settings.xml)\"" > ~/.m2/settings.xml
+          # echo "====="
+          # echo "~/.m2/settings.xml:"
+          # cat ~/.m2/settings.xml
+          # echo "====="
+          # # chmod 775 ~/.m2/settings.xml
+          # rm ~/.m2/settings.xml
+          # echo "====="
+          # eval "echo \"$(cat ./settings.xml)\"" > ~/.m2/settings.xml
 
       - name: "🔨 Maven set version"
         working-directory: ${{ inputs.APP_WORKING_DIR }}
         env:
           VERSION: ${{ inputs.VERSION }}
         run: |
-          mvn -B versions:set -DnewVersion=${VERSION}
+          mvn -s ./settings.xml -B versions:set -DnewVersion=${VERSION}
 
       - name: "🔨 Build with Maven"
         working-directory: ${{ inputs.APP_WORKING_DIR }}
@@ -245,7 +248,7 @@ jobs:
           echo "MVN_ENV_VARS    : ${{ inputs.MVN_ENV_VARS }}"
           echo "MVN_ARGS_EXTRA  : ${{ inputs.MVN_ARGS_EXTRA }}"
           echo "MVN_ARGS_SECRETS: ${{ secrets.MVN_ARGS_SECRETS }}"
-          mvn -B \
+          mvn -s ./settings.xml -B \
           ${{ secrets.MVN_ARGS_SECRETS }} \
           ${{ inputs.MVN_ENV_VARS }} \
           ${{ inputs.MVN_ARGS }} \
