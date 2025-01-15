@@ -8,9 +8,13 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+    secrets:
+      GH_TOKEN:
+        required: true
+
     outputs:
       GH_RUNS_ON:
-        value: ${{ jobs.runners.outputs.NAME }}
+        value: ${{ jobs.runners.outputs.GH_RUNS_ON }}
 
 jobs:
 
@@ -18,7 +22,8 @@ jobs:
     timeout-minutes: 1
     runs-on: ${{ inputs.GH_RUNS_ON }}
     outputs:
-      GH_RUNS_ON: ${{ steps.runners.outputs.GH_RUNS_ON }}
+      GH_RUNS_ON: ${{ steps.set-runners.outputs.GH_RUNS_ON }}
+
     steps:
       - name: Set runners
         id: set-runners
