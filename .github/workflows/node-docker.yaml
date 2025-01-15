@@ -22,7 +22,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       NODE_VERSION:
-        default: 20
+        default: "20"
         required: false
         type: string
 
