@@ -233,8 +233,6 @@ jobs:
         env:
           VERSION: ${{ inputs.VERSION }}
         run: |
-          find / -name mvn
-          echo "====="
           mvn -B versions:set -DnewVersion=${VERSION}
 
       - name: "🔨 Build with Maven"
