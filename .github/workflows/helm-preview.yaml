@@ -56,6 +56,10 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      HELM_USE_LOCAL_COMMON:
+        required: false
+        type: string
+
       GH_USER_EMAIL:
         default: 'github@powervz.com'
         required: false
@@ -365,16 +369,24 @@ jobs:
           IMAGE_VERSION: ${{ inputs.VERSION }}
           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
           HELM_EXPERIMENTAL_OCI: 1
+          HELM_USE_LOCAL_COMMON: ${{ inputs.HELM_USE_LOCAL_COMMON }}
           PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.PREVIEW_CHART_VALUES }}
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           DOCKER_REPOSITORY: ${{ steps.setup-variables.outputs.DOCKER_REPOSITORY }}
           ARG_EXTRA_VARS: ${{ steps.setup-variables.outputs.ARG_EXTRA_VARS }}
         run: |
+          if [ -n "${HELM_USE_LOCAL_COMMON}" ]; then
+            USE_LOCAL="-ul"
+          fi
+          echo "USE_LOCAL             : ${USE_LOCAL}"
           echo "HELM_DEBUG_SCRIPT_FLAG: ${HELM_DEBUG_SCRIPT_FLAG}"
-          echo "working-directory: $(pwd)"
+          echo "working-directory     : $(pwd)"
+          echo "---------------"
           env | sort
+          echo "==============="
+
           # NOTE: script uses env vars CHART_NAME, VERSION, PREVIEW_NAMESPACE, DOCKER_REPOSITORY
-          ./.github/scripts/run-helm.sh ${HELM_DEBUG_SCRIPT_FLAG} -t -p -c "${CHART_NAME}" -v "${VERSION}" -iv "${IMAGE_VERSION}" ${ARG_EXTRA_VARS}
+          ./.github/scripts/run-helm.sh ${HELM_DEBUG_SCRIPT_FLAG} ${USE_LOCAL} -t -p -c "${CHART_NAME}" -v "${VERSION}" -iv "${IMAGE_VERSION}" ${ARG_EXTRA_VARS}
           echo ""
           echo "./charts/${PREVIEW_CHART_VALUES}:"
           cat "./charts/${PREVIEW_CHART_VALUES}" | yq
