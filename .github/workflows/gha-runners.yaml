@@ -1,0 +1,39 @@
+name: GitHub Runners
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      GH_RUNS_ON:
+        default: 'ubuntu-latest'
+        required: false
+        type: string
+
+    outputs:
+      GH_RUNS_ON:
+        value: ${{ jobs.runners.outputs.NAME }}
+
+jobs:
+
+  runners:
+    timeout-minutes: 1
+    runs-on: ${{ inputs.GH_RUNS_ON }}
+    outputs:
+      GH_RUNS_ON: ${{ steps.runners.outputs.GH_RUNS_ON }}
+    steps:
+      - name: Set runners
+        id: set-runners
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          runners=$(gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /orgs/${{ github.repository_owner }}/actions/runners)
+          echo "runners : $( echo ${runners} | jq)"
+          available=$(echo "$runners" | jq '.runners[] | select(.status == "online" and .busy == false)')
+          if [ -n "$available" ]; then
+            echo "self-hosted runner"
+            GH_RUNS_ON="core"
+          else
+            echo "GitHub runner"
+            GH_RUNS_ON="ubuntu-latest"
+          fi
+          echo "GH_RUNS_ON : ${GH_RUNS_ON}"
+          echo "GH_RUNS_ON=${GH_RUNS_ON}" >> $GITHUB_OUTPUT
