@@ -416,7 +416,7 @@ jobs:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
         working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
         run: |
-          kubectl apply -f .preview.yaml -ns ${PREVIEW_NAMESPACE}
+          kubectl apply -f .preview.yaml -n ${PREVIEW_NAMESPACE}
 
       # - name: "☸ PREVIEW: Helm upgrade/install"
       #   env:
