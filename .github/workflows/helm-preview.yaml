@@ -411,7 +411,7 @@ jobs:
         run: |
           ../.github/scripts/preview_copy_secrets.sh -c "${CHART_NAME}" -p "${PREVIEW_NAMESPACE}" -n "${FROM_NAMESPACE}"
 
-      - name: "☸ PREVIEW: Helm upgrade/install"
+      - name: "☸ PREVIEW: kubectl apply yaml output from helm"
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
         working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
