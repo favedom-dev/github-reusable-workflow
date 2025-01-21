@@ -105,6 +105,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: boolean
 
+      KUBECTL_APPLY:
+        default: false
+        required: false
+        type: boolean
+
       DOCKER_REGISTRY:
         default: 'us-central1-docker.pkg.dev'  # GAR (oci://)
         required: false
@@ -411,43 +416,46 @@ jobs:
         run: |
           ../.github/scripts/preview_copy_secrets.sh -c "${CHART_NAME}" -p "${PREVIEW_NAMESPACE}" -n "${FROM_NAMESPACE}"
 
-      - name: "☸ PREVIEW: kubectl apply yaml output from helm"
+      # Use for non front ends due to secret issue
+      - name: "☸ PREVIEW: kubectl apply preview yaml from helm output"
+        if: inputs.KUBECTL_APPLY == true
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
         working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
         run: |
           kubectl apply -f .preview.yaml -n ${PREVIEW_NAMESPACE}
 
-      # - name: "☸ PREVIEW: Helm upgrade/install"
-      #   env:
-      #     CHART_NAME: ${{ steps.setup-variables.outputs.CHART_NAME }}
-      #     VALUES_GLOBALS_YAML: ${{ inputs.VALUES_GLOBALS_YAML }}
-      #     HELM_PREVIEW_ARGS: ${{ inputs.HELM_PREVIEW_ARGS }}
-      #     HELM_EXPERIMENTAL_OCI: 1
-      #     ARG_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_CHART_VALUES }}
-      #     ARG_COMMON_VALUES: ${{ steps.setup-variables.outputs.ARG_COMMON_VALUES }}
-      #     ARG_PREVIEW_GLOBALS_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_GLOBALS_VALUES }}
-      #     ARG_PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_CHART_VALUES }}
-      #     HELM_VALUES_ISTIO_HOST: ${{ steps.setup-variables.outputs.HELM_VALUES_ISTIO_HOST }}
-      #   working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
-      #   run: |
-      #     echo "CHART_NAME             : ${CHART_NAME}"
-      #     echo "HELM_DEBUG_FLAG        : ${HELM_DEBUG_FLAG}"
-      #     _cmd=(helm upgrade \
-      #     "${DRY_RUN}" \
-      #     --install "${CHART_NAME}" \
-      #     --set global.preview=true \
-      #     "${ARG_CHART_VALUES}" \
-      #     "${ARG_COMMON_VALUES}" \
-      #     "${ARG_PREVIEW_GLOBALS_VALUES}" \
-      #     "${ARG_PREVIEW_CHART_VALUES}" \
-      #     "${HELM_VALUES_ISTIO_HOST}" \
-      #     "${HELM_PREVIEW_ARGS}" \
-      #     "./${CHART_NAME}" \
-      #     "${HELM_DEBUG_FLAG}")
+      - name: "☸ PREVIEW: Helm upgrade --install"
+        if: inputs.KUBECTL_APPLY == false
+        env:
+          CHART_NAME: ${{ steps.setup-variables.outputs.CHART_NAME }}
+          VALUES_GLOBALS_YAML: ${{ inputs.VALUES_GLOBALS_YAML }}
+          HELM_PREVIEW_ARGS: ${{ inputs.HELM_PREVIEW_ARGS }}
+          HELM_EXPERIMENTAL_OCI: 1
+          ARG_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_CHART_VALUES }}
+          ARG_COMMON_VALUES: ${{ steps.setup-variables.outputs.ARG_COMMON_VALUES }}
+          ARG_PREVIEW_GLOBALS_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_GLOBALS_VALUES }}
+          ARG_PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_CHART_VALUES }}
+          HELM_VALUES_ISTIO_HOST: ${{ steps.setup-variables.outputs.HELM_VALUES_ISTIO_HOST }}
+        working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
+        run: |
+          echo "CHART_NAME             : ${CHART_NAME}"
+          echo "HELM_DEBUG_FLAG        : ${HELM_DEBUG_FLAG}"
+          _cmd=(helm upgrade \
+          "${DRY_RUN}" \
+          --install "${CHART_NAME}" \
+          --set global.preview=true \
+          "${ARG_CHART_VALUES}" \
+          "${ARG_COMMON_VALUES}" \
+          "${ARG_PREVIEW_GLOBALS_VALUES}" \
+          "${ARG_PREVIEW_CHART_VALUES}" \
+          "${HELM_VALUES_ISTIO_HOST}" \
+          "${HELM_PREVIEW_ARGS}" \
+          "./${CHART_NAME}" \
+          "${HELM_DEBUG_FLAG}")
 
-      #     echo "${_cmd[*]}"
-      #     eval "${_cmd[@]}"
+          echo "${_cmd[*]}"
+          eval "${_cmd[@]}"
 
       - name: "📜 Get API path"
         id: get-api-path
