@@ -27,6 +27,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      MVN_VERSION:
+        default: "3.9.9"
+        required: false
+        type: string
+
       MVN_ENV_VARS:  # -DmyVariable=someValue
         required: false
         type: string
@@ -187,6 +192,12 @@ jobs:
         with:
           java-version: '${{ inputs.JDK_VERSION }}'
           distribution: '${{ inputs.JDK_DISTRIBUTION }}'
+
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v5
+        if: ${{ !startsWith(github.event.inputs.GH_RUNS_ON, 'ubuntu') }}
+        with:
+          maven-version: '${{ inputs.MVN_VERSION }}'
 
       - name: Cache local Maven repository
         uses: actions/cache@v4
