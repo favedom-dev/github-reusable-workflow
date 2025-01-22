@@ -3,7 +3,8 @@ name: Maven and Docker
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      NAME:  # name of service,
+      NAME:
+        description: "Name of service"
         required: true
         type: string
 
@@ -28,11 +29,13 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       MVN_VERSION:
+        description: "See https://maven.apache.org/docs/history.html"
         default: "3.9.9"
         required: false
         type: string
 
-      MVN_ENV_VARS:  # -DmyVariable=someValue
+      MVN_ENV_VARS:
+        description: "-DmyVariable=someValue"
         required: false
         type: string
 
