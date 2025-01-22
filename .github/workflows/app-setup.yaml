@@ -50,6 +50,7 @@ on:  # yamllint disable-line rule:truthy
     outputs:
       NAME:
         value: ${{ jobs.app-setup.outputs.NAME }}
+        description: "App/Service name"
 
       PREVIEW_NAMESPACE:
         value: ${{ jobs.app-setup.outputs.PREVIEW_NAMESPACE }}
