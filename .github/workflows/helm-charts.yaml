@@ -3,7 +3,8 @@ name: Helm Charts
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      NAME:  # name of service, (ex: peeq-tracking)
+      NAME:
+        description: "Name of service"
         required: true
         type: string
 
@@ -63,7 +64,8 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       DOCKER_REGISTRY:
-        default: 'us-central1-docker.pkg.dev'  # GAR
+        description: "Use GAR"
+        default: 'us-central1-docker.pkg.dev'
         required: false
         type: string
 
@@ -83,7 +85,8 @@ on:  # yamllint disable-line rule:truthy
         type: boolean
 
       HELM_DOCKER_REGISTRY:
-        default: 'us-central1-docker.pkg.dev'  # GAR (oci://)
+        description: "Use GAR oci://"
+        default: 'us-central1-docker.pkg.dev'
         required: false
         type: string
 
@@ -113,7 +116,8 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       API_PATH:
-        default: ''  # /api/++SERVICE++/
+        description: "For Java /api/++SERVICE++/ "
+        default: ''
         required: false
         type: string
 
@@ -143,13 +147,16 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
     secrets:
-      GH_TOKEN:  # GitHub token
+      GH_TOKEN:
+        description: "GitHub token"
         required: true
 
-      WIF_PROVIDER:  # Workload Identity Federation Provider
+      WIF_PROVIDER:
+        description: "Workload Identity Federation Provider"
         required: true
 
-      WIF_SERVICE_ACCOUNT:  # Workload Identity Federation Service Account
+      WIF_SERVICE_ACCOUNT:
+        description: "Workload Identity Federation Service Account"
         required: true
 
 jobs:

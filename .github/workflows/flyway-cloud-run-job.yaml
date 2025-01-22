@@ -3,7 +3,8 @@ name: Flyway Cloud Run Job
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      NAME:  # name of service, (ex: peeq-tracking-db)
+      NAME:
+        description: "Name of service"
         required: true
         type: string
 
@@ -87,9 +88,11 @@ on:  # yamllint disable-line rule:truthy
 
     secrets:
       WIF_PROVIDER:
+        description: "Workload Identity Federation Provider"
         required: true
 
       WIF_SERVICE_ACCOUNT:
+        description: "Workload Identity Federation Service Account"
         required: true
 
 jobs:

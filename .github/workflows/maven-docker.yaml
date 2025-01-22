@@ -110,21 +110,26 @@ on:  # yamllint disable-line rule:truthy
 
     secrets:
       GH_TOKEN:
+        description: "GitHub token"
         required: true
 
       WIF_PROVIDER:
+        description: "Workload Identity Federation Provider"
         required: true
 
       WIF_SERVICE_ACCOUNT:
+        description: "Workload Identity Federation Service Account"
         required: true
 
       MVN_ARGS_SECRETS:
+        description: "Maven args that contain secrets"
         required: false
 
       GCP_JSON_KEY:
         required: false
 
       SHIFTLEFT_ACCESS_TOKEN:
+        description: "Shiftleft/Qwiet token"
         required: false
 
 jobs:

@@ -3,7 +3,8 @@ name: Deploy jar registry
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      NAME:  # name of service, (ex: peeq-tracking)
+      NAME:
+        description: "Name of service"
         required: true
         type: string
 
@@ -79,12 +80,19 @@ on:  # yamllint disable-line rule:truthy
 
     secrets:
       GH_TOKEN:
+        description: "GitHub token"
         required: true
+
       WIF_PROVIDER:
+        description: "Workload Identity Federation Provider"
         required: true
+
       WIF_SERVICE_ACCOUNT:
+        description: "Workload Identity Federation Service Account"
         required: true
+
       SHIFTLEFT_ACCESS_TOKEN:
+        description: "Shiftleft/Qwiet token"
         required: false
 
 jobs:
