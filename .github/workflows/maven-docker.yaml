@@ -193,7 +193,7 @@ jobs:
           java-version: '${{ inputs.JDK_VERSION }}'
           distribution: '${{ inputs.JDK_DISTRIBUTION }}'
 
-      - name: Set up Maven
+      - name: "🔧 Set up Maven ${{ inputs.MVN_VERSION }}"
         uses: stCarolas/setup-maven@v5
         if: ${{ !startsWith(github.event.inputs.GH_RUNS_ON, 'ubuntu') }}
         with:
