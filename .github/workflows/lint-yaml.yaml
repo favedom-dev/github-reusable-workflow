@@ -41,6 +41,8 @@ jobs:
       #   run: |
       #     wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.yamllint
       #     chmod 777 .yamllint
+      #     echo "==="
+      #     cat .yamllint
 
       # - name: "👁️ yamllint version"
       #   run: |
