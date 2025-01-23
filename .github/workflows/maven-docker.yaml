@@ -142,7 +142,7 @@ jobs:
     runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
 
-      - name: "🔧 Setup variables"
+      - name: "🏷️ Set up variables"
         id: setup-variables
         run: |
           DOCKER_LOCATION=${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}
@@ -154,10 +154,10 @@ jobs:
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_ENV
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_OUTPUT
 
-      - name: Set up QEMU
+      - name: "🧰 Set up QEMU"
         uses: docker/setup-qemu-action@v3
 
-      - name: Set up Docker Buildx
+      - name: "🧰 Set up Docker Buildx"
         uses: docker/setup-buildx-action@v3
         with:
           platforms: ${{ inputs.PLATFORMS }}
@@ -165,7 +165,7 @@ jobs:
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
 
-      - name: "🔧 Google Auth Token"
+      - name: "🔑 Google Auth Token"
         id: auth-gcp-token
         uses: 'google-github-actions/auth@v2'
         with:
@@ -175,7 +175,7 @@ jobs:
           create_credentials_file: ${{ inputs.CREATE_CREDENTIALS_FILE }}
           export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
 
-      - name: "🔧 Google Auth JSON Key"
+      - name: "🗝️ Google Auth JSON Key"
         id: auth-gcp-key
         if: inputs.RUN_GCP_JSON_KEY
         uses: 'google-github-actions/auth@v2'
@@ -183,10 +183,10 @@ jobs:
           credentials_json: '${{ secrets.GCP_JSON_KEY }}'
 
       # https://github.com/google-github-actions/setup-gcloud
-      # - name: 'Set up Cloud SDK'
+      # - name: "🧰 Set up Cloud SDK"
       #   uses: 'google-github-actions/setup-gcloud@v0'
 
-      - name: "🔧 Docker Auth: GAR"
+      - name: "🔑 Docker Auth: GAR"
         if: ${{ !env.ACT }}
         id: auth-docker
         uses: 'docker/login-action@v3'
@@ -195,19 +195,19 @@ jobs:
           password: '${{ steps.auth-gcp-token.outputs.access_token }}'
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
-      - name: "🔧 Set up JDK ${{ inputs.JDK_VERSION }} ${{ inputs.JDK_DISTRIBUTION }}"
+      - name: "⚙️ Set up JDK ${{ inputs.JDK_VERSION }} ${{ inputs.JDK_DISTRIBUTION }}"
         uses: actions/setup-java@v4
         with:
           java-version: '${{ inputs.JDK_VERSION }}'
           distribution: '${{ inputs.JDK_DISTRIBUTION }}'
 
-      - name: "🔧 Set up Maven ${{ inputs.MVN_VERSION }}"
+      - name: "⚙️ Set up Maven ${{ inputs.MVN_VERSION }}"
         uses: stCarolas/setup-maven@v5
         if: ${{ !startsWith(github.event.inputs.GH_RUNS_ON, 'ubuntu') }}
         with:
           maven-version: '${{ inputs.MVN_VERSION }}'
 
-      - name: Cache local Maven repository
+      - name: "📦 Cache local Maven repository"
         uses: actions/cache@v4
         with:
           path: ~/.m2/repository
@@ -215,7 +215,7 @@ jobs:
           restore-keys: |
             ${{ inputs.NAME }}-${{ runner.os }}-maven-
 
-      - name: "🔧 Maven ~/.m2/settings.xml"
+      - name: "🧰 Maven ~/.m2/settings.xml"
         run: |
           # wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
 
@@ -247,14 +247,14 @@ jobs:
           cat ~/.m2/settings.xml
           echo "====="
 
-      - name: "🔨 Maven set version"
+      - name: "⚙️ Maven set version"
         working-directory: ${{ inputs.APP_WORKING_DIR }}
         env:
           VERSION: ${{ inputs.VERSION }}
         run: |
           mvn -B versions:set -DnewVersion=${VERSION}
 
-      - name: "🔨 Build with Maven"
+      - name: "🛠️ Build with Maven"
         working-directory: ${{ inputs.APP_WORKING_DIR }}
         env:
           GCP_ACCESS_TOKEN: '${{ steps.auth-gcp-token.outputs.access_token }}'
@@ -270,7 +270,7 @@ jobs:
           ${{ inputs.MVN_ARGS }} \
           ${{ inputs.MVN_ARGS_EXTRA }}
 
-      - name: Download Qwiet CLI
+      - name: "⬇️ Download Qwiet CLI"
         if: ${{ env.SHIFTLEFT_ACCESS_TOKEN != '' }}
         env:
           SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
@@ -278,7 +278,7 @@ jobs:
           curl https://cdn.shiftleft.io/download/sl > $HOME/sl && chmod a+rx $HOME/sl
 
       # https://docs.shiftleft.io/cli/reference/analyze
-      - name: Qwiet Analyze with NextGen Static Analysis
+      - name: "🔍 Qwiet Analyze with NextGen Static Analysis"
         if: ${{ env.SHIFTLEFT_ACCESS_TOKEN != '' }}
         env:
           SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
@@ -290,7 +290,7 @@ jobs:
           --cpg \
           ${{ inputs.SCAN_JAR }}
 
-      - name: "🔧 Setup Docker tags"
+      - name: "# Set up Docker tags"
         id: docker-tags
         working-directory: ${{ inputs.APP_WORKING_DIR }}
         env:
@@ -313,7 +313,7 @@ jobs:
           push: true
           tags: ${{ steps.docker-tags.outputs.tags }}
 
-      - name: "🌐 Link to Container"
+      - name: "🔗 Link to Container"
         if: ${{ !env.ACT }}
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}

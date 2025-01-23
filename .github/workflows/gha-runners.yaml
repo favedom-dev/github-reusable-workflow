@@ -25,7 +25,7 @@ jobs:
       GH_RUNS_ON: ${{ steps.set-runners.outputs.GH_RUNS_ON }}
 
     steps:
-      - name: Set runners
+      - name: "✓ Set runners"
         id: set-runners
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}

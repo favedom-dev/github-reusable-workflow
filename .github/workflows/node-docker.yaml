@@ -148,7 +148,7 @@ jobs:
     runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
 
-      - name: "🔧 Setup variables"
+      - name: "🏷️ Set up variables"
         id: setup-variables
         env:
           DOCKER_NAME: ${{ inputs.DOCKER_NAME }}
@@ -168,10 +168,10 @@ jobs:
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_ENV
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_OUTPUT
 
-      - name: Set up QEMU
+      - name: "🧰 Set up QEMU"
         uses: docker/setup-qemu-action@v3
 
-      - name: Set up Docker Buildx
+      - name: "🧰 Set up Docker Buildx"
         uses: docker/setup-buildx-action@v3
         with:
           platforms: ${{ inputs.PLATFORMS }}
@@ -179,7 +179,7 @@ jobs:
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
 
-      - name: "🔧 Google Auth Token"
+      - name: "🔑 Google Auth Token"
         if: ${{ !env.ACT }}
         id: auth-gcp-token
         uses: 'google-github-actions/auth@v2'
@@ -188,7 +188,7 @@ jobs:
           workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
           service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
-      - name: "🔧 Docker Auth"
+      - name: "🔑 Docker Auth"
         if: ${{ !env.ACT }}
         id: auth-docker
         uses: 'docker/login-action@v3'
@@ -197,7 +197,7 @@ jobs:
           password: '${{ steps.auth-gcp-token.outputs.access_token }}'
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
-      - name: "🔧 Setup node.js version: ${{ inputs.NODE_VERSION }}"
+      - name: "🔧 Set up node.js version: ${{ inputs.NODE_VERSION }}"
         # https://github.com/actions/setup-node
         uses: actions/setup-node@v4
         with:
@@ -220,7 +220,7 @@ jobs:
         continue-on-error: true
         run: npm list
 
-      - name: "🔧 Setup DEPLOY_URL"
+      - name: "🔧 Set up DEPLOY_URL"
         id: set-deploy-url
         if: inputs.UPLOAD_GS == true
         run: |
@@ -235,7 +235,7 @@ jobs:
           echo ${DEPLOY_URL} > DEPLOY_URL
           echo "deploy-url=${DEPLOY_URL}" >> $GITHUB_OUTPUT
 
-      - name: "🔧 Update base Url"
+      - name: "🔄 Update base Url"
         if: inputs.UPLOAD_GS == true
         run: sed -i "s/++DEPLOY_URL++/$(sed -e 's/\//\\\//g' DEPLOY_URL)/g" ./docker/environment.tpl.json
 
@@ -243,13 +243,13 @@ jobs:
       #   run: |
       #     helm init --client-only --stable-repo-url ${{ inputs.HELM_REPO }}
 
-      - name: "🔧 Setup .npmrc"
+      - name: "⚙️ Set up .npmrc"
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
 
-      - name: "🔨 ${{ inputs.INSTALL_NAME }}"
+      - name: "🪛 ${{ inputs.INSTALL_NAME }}"
         if: inputs.INSTALL == true
         run: ${{ inputs.INSTALL_CMD }}
 
@@ -257,7 +257,7 @@ jobs:
         if: inputs.TEST == true
         run: ${{ inputs.TEST_CMD }}
 
-      - name: "🔨 ${{ inputs.BUILD_NAME }}"
+      - name: "🛠️ ${{ inputs.BUILD_NAME }}"
         if: inputs.BUILD == true
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
@@ -273,7 +273,7 @@ jobs:
           destination: '${{ inputs.GS_BUCKET }}/${{ inputs.NAME }}/${{ inputs.VERSION }}'
           parent: false
 
-      - name: "🔧 Setup Docker tags"
+      - name: "# Set up Docker tags"
         id: docker-tags
         env:
           # DOCKER_LOCATION: ${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}
@@ -298,7 +298,7 @@ jobs:
           push: true
           tags: ${{ steps.docker-tags.outputs.tags }}
 
-      - name: "🌐 Link to Container"
+      - name: "🔗 Link to Container"
         if: ${{ !env.ACT }}
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}

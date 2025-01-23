@@ -59,7 +59,7 @@ jobs:
     steps:
 
       # https://docs.github.com/en/actions/learn-github-actions/environment-variables
-      # - name: "GITHUB INFO"
+      # - name: ":octocat: GITHUB INFO"
       #   env:
       #     GITHUB_CONTEXT: ${{ toJSON(github) }}
       #   run: |-
@@ -71,7 +71,7 @@ jobs:
       #     echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
 
       # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run
-      - name: Set PR Version
+      - name: "📝 Set PR Version"
         id: pr-version
         if: github.event_name == 'pull_request'
         run: |
@@ -109,7 +109,7 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
-      - name: "📜 Set version"
+      - name: "📝 Set version"
         id: set-version
         env:
           PR_VERSION: ${{ steps.pr-version.outputs.version }}
@@ -131,7 +131,7 @@ jobs:
           fi
           # echo "${{ steps.version.outputs.version }}"
 
-      - name: "📜 Display version: ${{ steps.set-version.outputs.version }}"
+      - name: "👀 Display version: ${{ steps.set-version.outputs.version }}"
         env:
           PR_VERSION: ${{ steps.pr-version.outputs.version }}
         run: |

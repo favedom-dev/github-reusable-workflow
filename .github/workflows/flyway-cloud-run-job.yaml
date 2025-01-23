@@ -105,7 +105,7 @@ jobs:
     runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
 
-      - name: "🔧 Google Auth Token"
+      - name: "🔑 Google Auth Token"
         id: auth-gcp-token
         uses: 'google-github-actions/auth@v2'
         with:
@@ -129,7 +129,7 @@ jobs:
           gcloud beta run jobs list --filter=${{ inputs.JOB_NAME }} | cut -f 3 -d ' ' | grep ^${{ inputs.JOB_NAME }}$
           echo "JOB_EXISTS=$?" >> $GITHUB_ENV
 
-      - name: "📦 Create Cloud Run Job"
+      - name: "🏗️ Create Cloud Run Job"
         if: steps.job-exist.outcome == 'failure'
         run: |-
           gcloud beta run jobs create ${{ inputs.JOB_NAME }} \
@@ -150,7 +150,7 @@ jobs:
           --region ${{ inputs.REGION }} \
           --quiet
 
-      - name: "📦 Update Cloud Run Job"
+      - name: "🔄 Update Cloud Run Job"
         if: steps.job-exist.outcome == 'success'
         run: |-
           gcloud beta run jobs update ${{ inputs.JOB_NAME }} \
@@ -158,7 +158,7 @@ jobs:
           --region ${{ inputs.REGION }}
 
       # https://console.cloud.google.com/run/jobs/details/europe-west9/staging-peeq-tracking-db/executions?project=favedom-dev
-      - name: "🌐 Link to Cloud Run Job"
+      - name: "🔗 Link to Cloud Run Job"
         run: |-
           echo "https://console.cloud.google.com/run/jobs/details/${{ inputs.REGION }}/${{ inputs.JOB_NAME }}/executions?project=${{ inputs.PROJECT_ID }}"
 

@@ -18,7 +18,14 @@ on:  # yamllint disable-line rule:truthy
         type: number
 
       JDK_DISTRIBUTION:
-        default: 'temurin'
+        # default: 'temurin'
+        default: 'corretto'
+        required: false
+        type: string
+
+      MVN_VERSION:
+        description: "See https://maven.apache.org/docs/history.html"
+        default: "3.9.9"
         required: false
         type: string
 
@@ -36,6 +43,11 @@ on:  # yamllint disable-line rule:truthy
         default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2'
         required: false
         type: string
+
+      PLATFORMS:
+        required: false
+        type: string
+        default: linux/amd64,linux/arm64
 
       PROJECT_ID:
         default: 'favedom-dev'
@@ -105,7 +117,7 @@ jobs:
     runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
 
-      - name: "🔧 Setup variables"
+      - name: "🏷️ Set up variables"
         id: setup-variables
         run: |
           GAR_URL="${{ inputs.GAR_MAVEN_URL }}${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.MAVEN_REGISTRY }}/${{ inputs.JAR_PATH }}:${{ inputs.NAME }}/${{ inputs.VERSION }}?project=${{ inputs.PROJECT_ID }}"
@@ -123,10 +135,18 @@ jobs:
           echo "MVN_ARG_ARTIFACT_REGISTRY=${MVN_ARG_ARTIFACT_REGISTRY}" >> $GITHUB_ENV
           echo "MVN_ARG_ARTIFACT_REGISTRY=${MVN_ARG_ARTIFACT_REGISTRY}" >> $GITHUB_OUTPUT
 
+      - name: "🧰 Set up QEMU"
+        uses: docker/setup-qemu-action@v3
+
+      - name: "🧰 Set up Docker Buildx"
+        uses: docker/setup-buildx-action@v3
+        with:
+          platforms: ${{ inputs.PLATFORMS }}
+
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
 
-      - name: "🔧 Google Auth Token"
+      - name: "🔑 Google Auth Token"
         if: ${{ !env.ACT }}
         id: auth-gcp-token
         uses: 'google-github-actions/auth@v2'
@@ -135,31 +155,63 @@ jobs:
           workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
           service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
-      - name: "🔧 Set up JDK ${{ inputs.JDK_VERSION }} ${{ inputs.JDK_DISTRIBUTION }}"
+      - name: "⚙️ Set up JDK ${{ inputs.JDK_VERSION }} ${{ inputs.JDK_DISTRIBUTION }}"
         uses: actions/setup-java@v4
         with:
           java-version: '${{ inputs.JDK_VERSION }}'
           distribution: '${{ inputs.JDK_DISTRIBUTION }}'
 
-      - name: "🔧 Maven ~/.m2/settings.xml"
-        run: |
-          # wget ${{ inputs.MAVEN_SETTINGS_URL }}/settings.xml
-          curl -o settings.xml ${{ inputs.MAVEN_SETTINGS_URL }}/settings.xml
-          envsubst < ./settings.xml > ~/.m2/settings.xml
+      - name: "⚙️ Set up Maven ${{ inputs.MVN_VERSION }}"
+        uses: stCarolas/setup-maven@v5
+        if: ${{ !startsWith(github.event.inputs.GH_RUNS_ON, 'ubuntu') }}
+        with:
+          maven-version: '${{ inputs.MVN_VERSION }}'
 
-      - name: "🔨 Maven set version"
+      - name: "🧰 Maven ~/.m2/settings.xml"
+        run: |
+          # wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
+
+          # Input and output files
+          INPUT_FILE="dl-settings.xml"
+          # OUTPUT_FILE="~/.m2/settings.xml"
+          OUTPUT_FILE="./settings.xml"
+
+          curl -o ${INPUT_FILE} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
+          # envsubst < ./settings.xml > ~/.m2/settings.xml
+
+          mkdir -p ~/.m2
+
+          # Read the entire content of the file into a variable
+          file_content=$(< "${INPUT_FILE}")
+
+          # Replace variables dynamically in the file content
+          # Escape quotes and use eval for variable expansion
+          eval "echo \"$(echo "$file_content" | sed 's/"/\\"/g')\"" > "${OUTPUT_FILE}"
+
+          echo "Variables replaced and saved to ${OUTPUT_FILE}"
+
+          echo "====="
+          cat ${OUTPUT_FILE}
+          echo "====="
+
+          mv "${OUTPUT_FILE}" ~/.m2/settings.xml
+          echo "====="
+          cat ~/.m2/settings.xml
+          echo "====="
+
+      - name: "⚙️ Maven set app version ${{ inputs.VERSION }}"
         working-directory: ${{ inputs.MAVEN_WORKING_DIR }}
         run: |
           mvn -B versions:set -DnewVersion=${{ inputs.VERSION }}
 
-      - name: "🔨 Build with Maven"
+      - name: "🛠️ Build with Maven"
         working-directory: ${{ inputs.MAVEN_WORKING_DIR }}
         env:
           MVN_ARG_ARTIFACT_REGISTRY: ${{ steps.setup-variables.outputs.MVN_ARG_ARTIFACT_REGISTRY }}
         run: |
           mvn -B ${{ inputs.MVN_ARGS }} ${MVN_ARG_ARTIFACT_REGISTRY}
 
-      - name: "🌐 Link to Lib"
+      - name: "🔗 Link to Lib"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           GAR_URL: ${{ steps.setup-variables.outputs.GAR_URL }}
@@ -170,7 +222,7 @@ jobs:
             --body "📦 JAR Lib: [${{ inputs.NAME }} ${{ inputs.VERSION }}](${GAR_URL})"
           fi
 
-      - name: Download Qwiet CLI
+      - name: "⬇️ Download Qwiet CLI"
         if: ${{ env.SHIFTLEFT_ACCESS_TOKEN != '' }}
         env:
           SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
@@ -178,7 +230,7 @@ jobs:
           curl https://cdn.shiftleft.io/download/sl > $HOME/sl && chmod a+rx $HOME/sl
 
       # https://docs.shiftleft.io/cli/reference/analyze
-      - name: Qwiet Analyze with NextGen Static Analysis
+      - name: "🔍 Qwiet Analyze with NextGen Static Analysis"
         if: ${{ env.SHIFTLEFT_ACCESS_TOKEN != '' }}
         env:
           SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}

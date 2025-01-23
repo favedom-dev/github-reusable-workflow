@@ -156,22 +156,22 @@ jobs:
     runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
 
-#       - name: "SKIPPING Stackhawk"
+#       - name: "⏩ SKIPPING Stackhawk"
 #         run: |
 #           echo "TODO: re-enable"
 
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
 
-      - name: "🔧 Set up JDK ${{ inputs.JDK_VERSION }} ${{ inputs.JDK_DISTRIBUTION }}"
+      - name: "⚙️ Set up JDK ${{ inputs.JDK_VERSION }} ${{ inputs.JDK_DISTRIBUTION }}"
         uses: actions/setup-java@v4
         with:
           java-version: '${{ inputs.JDK_VERSION }}'
           distribution: '${{ inputs.JDK_DISTRIBUTION }}'
 
 
-      - name: "📜 Set Values"
-        id: set-values
+      - name: "🏷️ Set up variables"
+        id: setup-variables
         env:
           INPUT_APP_HOST: ${{ inputs.APP_HOST }}
           DEFAULT_APP_HOST: https://${{ inputs.NAMESPACE }}.${{ inputs.BASE_DOMAIN }}
@@ -184,12 +184,12 @@ jobs:
           echo "APP_HOST: ${APP_HOST}"
           echo "APP_HOST=${APP_HOST}" >> $GITHUB_OUTPUT
 
-      - name: "🔧 Setup stackhawk"
+      - name: "🔧 Set up stackhawk"
         working-directory: ${{ inputs.STACKHAWK_DIRECTORY }}
         env:
           SCRIPT_NAME: ${{ inputs.STACKHAWK_SETUP_SCRIPT_NAME }}
           APP_NAME: ${{ inputs.NAME }}
-          APP_HOST: ${{ steps.set-values.outputs.APP_HOST }}
+          APP_HOST: ${{ steps.setup-variables.outputs.APP_HOST }}
           APP_ID: ${{ inputs.APP_ID }}
           NAMESPACE: ${{ inputs.NAMESPACE }}
           API_PATH: ${{ inputs.API_PATH }}
@@ -202,12 +202,12 @@ jobs:
           chmod 777 ./${SCRIPT_NAME}
           ./${SCRIPT_NAME}
 
-      - name: "DEBUG: setup stackhawk"
+      - name: "🕸️ DEBUG: setup stackhawk"
         working-directory: ${{ inputs.STACKHAWK_DIRECTORY }}
         run: |
           cat ./stackhawk.yml
 
-      - name: "Set Stackhawk sleep"
+      - name: "😴 Set Stackhawk sleep"
         id: 'set-stackhawk-sleep'
         working-directory: ${{ inputs.STACKHAWK_DIRECTORY }}
         env:
@@ -230,7 +230,7 @@ jobs:
 
       - name: "💓 Check that service is alive"
         env:
-          APP_HOST: ${{ steps.set-values.outputs.APP_HOST }}
+          APP_HOST: ${{ steps.setup-variables.outputs.APP_HOST }}
           API_PATH: ${{ inputs.API_PATH }}
           HEALTH_PATH: ${{ inputs.HEALTH_PATH }}
           HEALTH_RETRIES: ${{ inputs.HEALTH_RETRIES }}
@@ -243,7 +243,7 @@ jobs:
 
       - name: "🦅 Run Stackhawk (timeout ${{ inputs.JOBS_TIMEOUT }} minutes)"
         env:
-          APP_HOST: ${{ steps.set-values.outputs.APP_HOST }}
+          APP_HOST: ${{ steps.setup-variables.outputs.APP_HOST }}
           # APP_ID: ${{ inputs.STACKHAWK_APP_ID }}
           APP_ENV: ${{ inputs.STACKHAWK_APP_ENV }}
         # uses: stackhawk/hawkscan-action@v2.0.0

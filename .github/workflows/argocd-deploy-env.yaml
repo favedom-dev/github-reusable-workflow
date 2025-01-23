@@ -132,7 +132,7 @@ jobs:
     runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
 
-      - name: "DEBUG: inputs"
+      - name: "🕸️ DEBUG: inputs"
         run: |
           echo "NAME                    : ${{ inputs.NAME }}"
           echo "VERSION                 : ${{ inputs.VERSION }}"
@@ -155,7 +155,7 @@ jobs:
           # echo "SUB_ELEMENT             : ${{ inputs.SUB_ELEMENT }}"
           # echo "BASE_ELEMENT            : ${{ inputs.BASE_ELEMENT }}"
 
-      - name: "🔧 Git config"
+      - name: "⚙️ Git config"
         if: github.ref == 'refs/heads/master'
         run: |
           git config --global user.email ""
@@ -170,7 +170,7 @@ jobs:
           ref: master
           path: ${{ inputs.ENV_REPO_PATH }}
 
-      - name: "📜 Set ENV_REPO_SUBDIR"
+      - name: "📝 Set ENV_REPO_SUBDIR"
         id: set-env-repo-subdir
         env:
           OVERRIDE_SUBDIR_NAME: ${{ inputs.OVERRIDE_SUBDIR_NAME }}
@@ -191,14 +191,14 @@ jobs:
           echo "ENV_REPO_SUBDIR: ${ENV_REPO_SUBDIR}"
           echo "ENV_REPO_SUBDIR=${ENV_REPO_SUBDIR}" >> $GITHUB_OUTPUT
 
-      - name: "PRE-update: ./${{ inputs.YAML_FILE }}"
+      - name: "👁️‍🗨️ PRE-update: ./${{ inputs.YAML_FILE }}"
         if: github.ref == 'refs/heads/master'
         working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }}
         run: |
           pwd
           cat ./${{ inputs.YAML_FILE }}
 
-      - name: "Update ${{ inputs.NAME }} version ${{ inputs.VERSION }} in environment repo: ${{ inputs.YAML_FILE }}"
+      - name: "🔄 Update ${{ inputs.NAME }} version ${{ inputs.VERSION }} in environment repo: ${{ inputs.YAML_FILE }}"
         if: github.ref == 'refs/heads/master'
         working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }}
         env:
@@ -223,14 +223,14 @@ jobs:
           echo ""
           echo "NOTE: MAY NEED TO EXPAND THIS!!!"
 
-      - name: "Updated: ./${{ inputs.YAML_FILE }}"
+      - name: "👁️ Updated: ./${{ inputs.YAML_FILE }}"
         if: github.ref == 'refs/heads/master'
         working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }}
         run: |
           pwd
           cat ./${{ inputs.YAML_FILE }}
 
-      - name: "🌐 Create environment PR in repo: ${{ inputs.ENV_REPO_NAME }}"
+      - name: "🡢 Create environment PR in repo: ${{ inputs.ENV_REPO_NAME }}"
         if: github.ref == 'refs/heads/master'
         working-directory: ${{ inputs.ENV_REPO_PATH }}
         env:

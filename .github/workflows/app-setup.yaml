@@ -77,7 +77,7 @@ jobs:
       IS_MONOREPO: ${{ steps.extra-vars.outputs.IS_MONOREPO }}
     steps:
 
-      - name: "📜 Set Name"
+      - name: "📝 Set Name"
         id: set-name
         env:
           OVERRIDE_NAME: ${{ inputs.OVERRIDE_NAME }}
@@ -90,7 +90,7 @@ jobs:
           echo "NAME: ${NAME}"
           echo "NAME=${NAME}" >> $GITHUB_OUTPUT
 
-      - name: "📜 Extra Vars"
+      - name: "📝 Set Extra Vars"
         id: extra-vars
         env:
           IS_FRONTEND: ${{ inputs.IS_FRONTEND }}
@@ -103,7 +103,7 @@ jobs:
           echo "IS_MONOREPO=${IS_MONOREPO}" >> $GITHUB_ENV
           echo "IS_MONOREPO=${IS_MONOREPO}" >> $GITHUB_OUTPUT
 
-      - name: "📜 Set Name for Preview Namespace"
+      - name: "📝 Set Preview Namespace name"
         id: set-name-pr-namespace
         env:
           OVERRIDE_PREVIEW_NAMESPACE: ${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
@@ -152,7 +152,7 @@ jobs:
           echo "IS_STACKHAWK_READY=${IS_STACKHAWK_READY}" >> $GITHUB_OUTPUT
           echo "STACKHAWK_DIRECTORY=${STACKHAWK_DIRECTORY}" >> $GITHUB_OUTPUT
 
-      - name: "📜 Display values: ${{ steps.set-name.outputs.NAME }} "
+      - name: "👀 Display values: ${{ steps.set-name.outputs.NAME }} "
         run: |
           echo "NAME                : ${{ steps.set-name.outputs.NAME }}"
           echo "PREVIEW_NAMESPACE   : ${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}"

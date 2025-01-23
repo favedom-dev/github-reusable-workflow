@@ -17,6 +17,16 @@ on:
         type: string
         default: linux/amd64,linux/arm64
 
+      PNPM_VERSION:
+        default: 8
+        required: false
+        type: number
+
+      NODE_VERSION:
+        default: 18
+        required: false
+        type: number
+
       TAG2:
         default: 'latest'
         required: false
@@ -70,7 +80,7 @@ jobs:
     runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
 
-      - name: "🔧 Setup variables"
+      - name: "🏷️ Set up variables"
         id: setup-variables
         run: |
           DOCKER_LOCATION=${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}
@@ -83,32 +93,32 @@ jobs:
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_OUTPUT
 
 
-      - name: Set up QEMU
+      - name: "🧰 Set up QEMU"
         uses: docker/setup-qemu-action@v3
 
-      - name: Set up Docker Buildx
+      - name: "🧰 Set up Docker Buildx"
         uses: docker/setup-buildx-action@v3
         with:
           platforms: ${{ inputs.PLATFORMS }}
 
-      - name: checkout repo
+      - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
 
-      - name: setup pnpm
+      - name: "⚙️ Set up pnpm ${{ inputs.PNPM_VERSION }}"
         uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: ${{ inputs.PNPM_VERSION }}
 
-      - name: setup node.js
+      - name: "⚙️ Set up node.js ${{ inputs.NODE_VERSION }}"
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: ${{ inputs.NODE_VERSION }}
           cache: pnpm
 
-      - name: install dependencies
+      - name: "🛠️ Install dependencies"
         run: pnpm install
 
-      - name: "🔧 Google Auth"
+      - name: "🔑 Google Auth"
         if: ${{ !env.ACT }}
         id: auth
         uses: 'google-github-actions/auth@v2'
@@ -117,7 +127,7 @@ jobs:
           workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
           service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
-      - name: "🔧 Docker Auth"
+      - name: "🔑 Docker Auth"
         if: ${{ !env.ACT }}
         id: docker-auth
         uses: 'docker/login-action@v3'
@@ -126,7 +136,7 @@ jobs:
           password: '${{ steps.auth.outputs.access_token }}'
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev' # Google Artifact Registry
 
-      - name: "Setup Docker tags"
+      - name: "# Set up Docker tags"
         id: docker-tags
         env:
           DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
@@ -148,7 +158,7 @@ jobs:
           push: true
           tags: ${{ steps.docker-tags.outputs.tags }}
 
-      - name: "🌐 Link to Container"
+      - name: "🔗 Link to Container"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}

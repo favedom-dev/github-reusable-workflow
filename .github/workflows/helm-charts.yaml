@@ -171,7 +171,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
 
-      - name: "🔧 Git config"
+      - name: ":octocat: Git config"
         run: |
           git config --global user.email ""
           git config --global user.name "velocityz-0x-pq-github"
@@ -181,7 +181,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: "🔧 Setup variables"
+      - name: "🏷️ Set up variables"
         id: setup-variables
         env:
           GH_REF: ${{ github.ref }}
@@ -229,7 +229,7 @@ jobs:
         run: |
           echo "HELM_DEBUG_FLAG=--debug" >> $GITHUB_ENV
 
-      - name: "🔧 Set chart app name"
+      - name: "🏷️ Set up chart app name"
         id: set-chart-app-name
         env:
           CHART_APP_NAME: ${{ inputs.NAME }}
@@ -243,7 +243,7 @@ jobs:
           echo "CHART_APP_NAME=${CHART_APP_NAME}" >> $GITHUB_ENV
           echo "CHART_APP_NAME=${CHART_APP_NAME}" >> $GITHUB_OUTPUT
 
-      - name: "🔧 Set charts dir"
+      - name: "🏷️ Set up charts dir"
         id: set-charts-dir
         env:
           BASE_CHARTS_DIR: ${{ inputs.BASE_CHARTS_DIR }}
@@ -279,14 +279,14 @@ jobs:
           echo "CHARTS_DIR=${CHARTS_DIR}" >> $GITHUB_ENV
           echo "CHARTS_DIR=${CHARTS_DIR}" >> $GITHUB_OUTPUT
 
-      - name: "🔧 Setup helm version: ${{ inputs.HELM_VERSION }}"
+      - name: "⚙️ Set up helm version: ${{ inputs.HELM_VERSION }}"
         # https://github.com/Azure/setup-helm
         uses: azure/setup-helm@v4
         with:
           version: ${{ inputs.HELM_VERSION }}
         id: install
 
-      - name: "🔧 Google Auth Token"
+      - name: "🔑 Google Auth Token"
         if: ${{ !env.ACT }}
         id: auth-gcp-token
         uses: 'google-github-actions/auth@v2'
@@ -295,7 +295,7 @@ jobs:
           workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
           service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
-      - name: "🔧 GKE credentials cluster: ${{ inputs.CLUSTER_NAME }}"
+      - name: "🔓 Get GKE Credentials cluster: ${{ inputs.CLUSTER_NAME }}"
         if: ${{ !env.ACT }}
         id: 'get-credentials'
         uses: 'google-github-actions/get-gke-credentials@v2'
@@ -304,7 +304,7 @@ jobs:
           location: ${{ inputs.LOCATION }}
           project_id: ${{ inputs.CLUSTER_PROJECT_ID }}
 
-      - name: "🔧 Update helm charts"
+      - name: "🔄 Update helm charts"
         working-directory: ${{ steps.set-charts-dir.outputs.CHARTS_DIR }}
         env:
           CHART_APP_NAME: ${{ steps.set-chart-app-name.outputs.CHART_APP_NAME }}
@@ -361,7 +361,7 @@ jobs:
 
 # yamllint enable rule:line-length
 
-      # - name: "DEBUG: helm charts Before"
+      # - name: "🕸️ DEBUG: helm charts Before"
       #   if: inputs.ENABLE_HELM_DEBUG == true
       #   env:
       #     GH_REF: ${{ github.ref }}
@@ -432,7 +432,7 @@ jobs:
           echo "RUN: helm package . --version ${VERSION} ${HELM_DEBUG_FLAG}"
           helm package . --version ${VERSION} ${HELM_DEBUG_FLAG}
 
-      # - name: "DEBUG: charts After"
+      # - name: "🕸️ DEBUG: charts After"
       #   if: inputs.ENABLE_HELM_DEBUG == true
       #   env:
       #     GH_REF: ${{ github.ref }}
@@ -454,7 +454,7 @@ jobs:
       #       cat requirements.yaml
       #     fi
 
-      - name: "☸ RELEASE [GAR]: Upload helm chart - ${{ inputs.HELM_REGISTRY_NAME }}"
+      - name: "⬆️ RELEASE [GAR]: Upload helm chart - ${{ inputs.HELM_REGISTRY_NAME }}"
         # if: github.ref == 'refs/heads/master'
         if: |
           github.ref == 'refs/heads/master' ||
@@ -475,7 +475,7 @@ jobs:
           ${HELM_DEBUG_FLAG}
 # yamllint enable rule:line-length
 
-      - name: "🌐 Link to Helm"
+      - name: "🔗 Link to Helm"
         if: |
           github.ref == 'refs/heads/master' ||
           steps.setup-variables.outputs.DO_RELEASE_BUILD == 'true'
@@ -532,7 +532,7 @@ jobs:
           echo "HELM_DEBUG_FLAG        : ${HELM_DEBUG_FLAG}"
           helm upgrade --install ${NAME} -f ./values.yaml . ${HELM_PREVIEW_ARGS} ${HELM_DEBUG_FLAG}
 
-      - name: "🌐 PREVIEW: Link to Preview"
+      - name: "🔗 PREVIEW: Link to Preview"
         if: |
           github.ref != 'refs/heads/master' &&
           steps.setup-variables.outputs.DO_PREVIEW_ENVIRONMENT == 'true'
@@ -548,7 +548,7 @@ jobs:
           echo "${PREVIEW_URL}"
           # START: body message file
           echo "PR built and available in a preview environment ${{ inputs.NAME }} pr ${{ github.event.number }}:" > ${PR_BODY}
-          echo "- 🌐 preview [link](${PREVIEW_URL})" >> ${PR_BODY}
+          echo "- 🔗 preview [link](${PREVIEW_URL})" >> ${PR_BODY}
           if [ ${#API_PATH}  -gt 0 ]; then
             echo "- 💓 healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_URL}${PREVIEW_API_HEALTHCHECK})" >> ${PR_BODY}
           fi
