@@ -238,7 +238,7 @@ jobs:
         with:
           version: '${{ inputs.JQ_VERSION }}'
 
-      - name: "🔧 Git config"
+      - name: "🔩 Git config"
         run: |
           git config --global user.email ""
           git config --global user.name "${{ inputs.GH_USER_NAME }}"

@@ -142,7 +142,7 @@ jobs:
     runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
 
-      - name: ":octocat: GITHUB INFO"
+      - name: "📄 GITHUB INFO"
         env:
           GITHUB_CONTEXT: ${{ toJSON(github) }}
         run: |-
@@ -174,7 +174,7 @@ jobs:
       - name: "🧰 Set up QEMU"
         uses: docker/setup-qemu-action@v3
 
-      - name: "🧰 Set up Docker Buildx"
+      - name: "🧰 Set up Docker Buildx ${{ inputs.PLATFORMS }}"
         uses: docker/setup-buildx-action@v3
         with:
           platforms: ${{ inputs.PLATFORMS }}

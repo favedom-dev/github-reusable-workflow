@@ -9,6 +9,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      SQL_DIR:
+        default: "."
+        required: false
+        type: string
+
       PYTHON_VERSION:
         default: "3.7"
         required: false
@@ -30,7 +35,7 @@ jobs:
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
 
-      - name: "🧰 Set up Python"
+      - name: "⚙️ Set up Python ${{ inputs.PYTHON_VERSION }}"
         uses: "actions/setup-python@v2"
         with:
           python-version: "${{ inputs.PYTHON_VERSION }}"
@@ -68,7 +73,13 @@ jobs:
         id: sqlfluff_json
         if: steps.get_files_to_lint.outputs.lintees != ''
         shell: bash -l {0}
-        run: sqlfluff lint --dialect ${{ inputs.DIALECTS }} --format github-annotation --annotation-level failure --nofail ${{ steps.get_files_to_lint.outputs.lintees }} > annotations.json
+        run: |
+          sqlfluff lint \
+          --dialect ${{ inputs.DIALECTS }} \
+          --format github-annotation \
+          --annotation-level failure \
+          --nofail ${{ steps.get_files_to_lint.outputs.lintees }} \
+          > annotations.json
 
       - name: "✍ Annotate"
         uses: yuzutech/annotations-action@v0.3.0

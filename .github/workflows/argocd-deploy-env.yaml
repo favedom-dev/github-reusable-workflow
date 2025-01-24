@@ -69,43 +69,6 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
-      # YAML_ELEMENT:
-      #   default: 'dependencies'
-      #   required: false
-      #   type: string
-      #   description: "When VERSION_SCRIPT_NAME is null"
-      # YAML_UPDATE_ELEMENT:
-      #   default: 'version'
-      #   required: false
-      #   type: string
-      #   description: "When VERSION_SCRIPT_NAME is null"
-      # REGISTRY_PROTOCOL:
-      #   default: 'oci'
-      #   required: false
-      #   type: string
-      # REGISTRY:
-      #   default: 'us-central1-docker.pkg.dev'
-      #   required: false
-      #   type: string
-      #   description: "Override REGISTRY in VERSION_SCRIPT_NAME=[update_tag.sh || update_image.sh]"
-      # REPOSITORY:
-      #   default: 'favedom-dev/docker'
-      #   required: false
-      #   type: string
-      #   description: "Override REPOSITORY in VERSION_SCRIPT_NAME=[update_tag.sh || update_image.sh]"
-      # ROOT_ELEMENT:
-      #   required: false
-      #   type: string
-      #   description: "Override ROOT_ELEMENT in VERSION_SCRIPT_NAME=[update_tag.sh || update_image.sh]"
-      # SUB_ELEMENT:
-      #   required: false
-      #   type: string
-      #   description: "Override SUB_ELEMENT in VERSION_SCRIPT_NAME=update_tag.sh"
-      # BASE_ELEMENT:
-      #   required: false
-      #   type: string
-      #   description: "Override BASE_ELEMENT in VERSION_SCRIPT_NAME=update_tag.sh"
-
       GH_USER_EMAIL:
         default: 'github@powervz.com'
         required: false
@@ -147,15 +110,8 @@ jobs:
           echo "VERSION_SCRIPT_DIR      : ${{ inputs.VERSION_SCRIPT_DIR }}"
           echo "VERSION_SCRIPT_NAME     : ${{ inputs.VERSION_SCRIPT_NAME }}"
           echo "YAML_FILE               : ${{ inputs.YAML_FILE }}"
-          # echo "YAML_ELEMENT            : ${{ inputs.YAML_ELEMENT }}"
-          # echo "YAML_UPDATE_ELEMENT     : ${{ inputs.YAML_UPDATE_ELEMENT }}"
-          # echo "REGISTRY                : ${{ inputs.REGISTRY }}"
-          # echo "REPOSITORY              : ${{ inputs.REPOSITORY }}"
-          # echo "ROOT_ELEMENT            : ${{ inputs.ROOT_ELEMENT }}"
-          # echo "SUB_ELEMENT             : ${{ inputs.SUB_ELEMENT }}"
-          # echo "BASE_ELEMENT            : ${{ inputs.BASE_ELEMENT }}"
 
-      - name: "⚙️ Git config"
+      - name: "🔩 Git config"
         if: github.ref == 'refs/heads/master'
         run: |
           git config --global user.email ""

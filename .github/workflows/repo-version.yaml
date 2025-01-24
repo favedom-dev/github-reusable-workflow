@@ -59,7 +59,7 @@ jobs:
     steps:
 
       # https://docs.github.com/en/actions/learn-github-actions/environment-variables
-      # - name: ":octocat: GITHUB INFO"
+      # - name: "📄 GITHUB INFO"
       #   env:
       #     GITHUB_CONTEXT: ${{ toJSON(github) }}
       #   run: |-

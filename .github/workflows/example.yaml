@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 2
     runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
-      - name: ":octocat: GITHUB INFO"
+      - name: "📄 GITHUB INFO"
         env:
           GITHUB_CONTEXT: ${{ toJSON(github) }}
         run: |-
