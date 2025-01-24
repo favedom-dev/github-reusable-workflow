@@ -222,6 +222,10 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
 
+      - name: "🧰 Set up gh cli"
+        uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
+        if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
+
       - name: "🔧 Git config"
         run: |
           git config --global user.email ""

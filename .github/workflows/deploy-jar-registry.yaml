@@ -89,7 +89,6 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
-
     secrets:
       GH_TOKEN:
         description: "GitHub token"
@@ -134,6 +133,10 @@ jobs:
           echo "MVN_ARG_ARTIFACT_REGISTRY : ${MVN_ARG_ARTIFACT_REGISTRY}"
           echo "MVN_ARG_ARTIFACT_REGISTRY=${MVN_ARG_ARTIFACT_REGISTRY}" >> $GITHUB_ENV
           echo "MVN_ARG_ARTIFACT_REGISTRY=${MVN_ARG_ARTIFACT_REGISTRY}" >> $GITHUB_OUTPUT
+
+      - name: "🧰 Set up gh cli"
+        uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
+        if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
 
       - name: "🧰 Set up QEMU"
         uses: docker/setup-qemu-action@v3
