@@ -8,6 +8,15 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      OVERRIDE_RUNNER_NAME:
+        required: false
+        type: string
+
+      SELF_HOSTED_RUNNER:
+        default: "core"
+        required: false
+        type: string
+
     secrets:
       GH_TOKEN:
         required: true
@@ -25,20 +34,40 @@ jobs:
       GH_RUNS_ON: ${{ steps.set-runners.outputs.GH_RUNS_ON }}
 
     steps:
-      - name: "✓ Set runners"
-        id: set-runners
+      - name: "📝 Set Runner Name"
+        id: set-runner-name
+        env:
+          OVERRIDE_RUNNER_NAME: ${{ inputs.OVERRIDE_RUNNER_NAME }}
+        run: |
+          RUNNER_NAME=${{ inputs.SELF_HOSTED_RUNNER }}
+          echo "OVERRIDE_RUNNER_NAME: ${OVERRIDE_RUNNER_NAME}"
+          if [ -n "${OVERRIDE_RUNNER_NAME}" ]; then
+            RUNNER_NAME=${{ inputs.OVERRIDE_RUNNER_NAME }}
+          fi
+          echo "RUNNER_NAME: ${RUNNER_NAME}"
+          echo "RUNNER_NAME=${RUNNER_NAME}" >> $GITHUB_OUTPUT
+
+      - name: "✓ Set Runner"
+        id: set-runner
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           runners=$(gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /orgs/${{ github.repository_owner }}/actions/runners)
           echo "runners : $( echo ${runners} | jq)"
-          available=$(echo "$runners" | jq '.runners[] | select(.status == "online" and .busy == false)')
+          available=$(echo "${runners}" | jq '.runners[] | select(.status == "online" and .busy == false)')
+
+          GH_RUNS_ON="ubuntu-latest"
+          echo "GitHub runner default to: ${GH_RUNS_ON}"
           if [ -n "$available" ]; then
-            echo "self-hosted runner"
-            GH_RUNS_ON="core"
-          else
-            echo "GitHub runner"
-            GH_RUNS_ON="ubuntu-latest"
+            # Iterate over the runners array and check the 'name' key
+            echo "${runners}" | jq -r '.runners[] | .name' | while read -r runner_name; do
+              echo "Runner Name: $runner_name"
+              # Perform additional checks or actions on $runner_name if needed
+              # GH_RUNS_ON="core"
+              GH_RUNS_ON="${{ steps.set-runner-name.outputs.RUNNER_NAME }}"
+              echo "GitHub runner self-hosted: ${GH_RUNS_ON}"
+            done
           fi
+
           echo "GH_RUNS_ON : ${GH_RUNS_ON}"
           echo "GH_RUNS_ON=${GH_RUNS_ON}" >> $GITHUB_OUTPUT
