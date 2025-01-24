@@ -60,17 +60,17 @@ jobs:
           echo "GitHub runner default to: ${GH_RUNS_ON}"
           if [ -n "$available" ]; then
             # Iterate over the runners array and check the 'name' key
-            echo "${runners}" | jq -r '.runners[] | .name' | while read -r runner_name; do
+            while IFS= read -r runner_name; do
               echo "Runner Name: ${runner_name}"
               # Perform additional checks or actions on $runner_name if needed
-              if [[ $runner_name == ${{ steps.set-runner-name.outputs.RUNNER_NAME }}* ]]; then
-                # GH_RUNS_ON="core"
+              if [[ ${runner_name} == "${{ steps.set-runner-name.outputs.RUNNER_NAME }}"* ]]; then
                 GH_RUNS_ON="${{ steps.set-runner-name.outputs.RUNNER_NAME }}"
                 echo "GitHub runner self-hosted: ${GH_RUNS_ON}"
                 break
               fi
               echo "DEBUG -while- GH_RUNS_ON : ${GH_RUNS_ON}"
-            done
+            done < <(echo "${runners}" | jq -r '.runners[] | .name')
+
             echo "DEBUG -if- GH_RUNS_ON : ${GH_RUNS_ON}"
           fi
 
