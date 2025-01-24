@@ -231,7 +231,7 @@ jobs:
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
         if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
 
-      - name: "🧰 Set up yq ${{ inputs.YQ_VERSION }}'"
+      - name: "🧰 Set up yq ${{ inputs.YQ_VERSION }}"
         uses: dcarbone/install-yq-action@v1
         if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
         with:
