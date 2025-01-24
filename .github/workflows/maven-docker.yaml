@@ -264,7 +264,7 @@ jobs:
           cat ~/.m2/settings.xml
           echo "====="
 
-      - name: "⚙️ Maven set version"
+      - name: "⚙️ Maven set app version ${{ inputs.VERSION }}"
         working-directory: ${{ inputs.APP_WORKING_DIR }}
         env:
           VERSION: ${{ inputs.VERSION }}
