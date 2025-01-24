@@ -68,10 +68,7 @@ jobs:
                 echo "GitHub runner self-hosted: ${GH_RUNS_ON}"
                 break
               fi
-              echo "DEBUG -while- GH_RUNS_ON : ${GH_RUNS_ON}"
             done < <(echo "${runners}" | jq -r '.runners[] | .name')
-
-            echo "DEBUG -if- GH_RUNS_ON : ${GH_RUNS_ON}"
           fi
 
           echo "GH_RUNS_ON : ${GH_RUNS_ON}"
