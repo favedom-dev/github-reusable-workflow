@@ -29,11 +29,10 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
-      JQ_VERSION:
-        default: "1.7"
+      YQ_VERSION:
         required: false
         type: string
-        description: "Version of jq to install"
+        description: "Version of yq to install"
 
       PREVIEW_NAMESPACE:
         required: true
@@ -232,11 +231,11 @@ jobs:
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
         if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
 
-      - name: "🧰 Set up jq ${{ inputs.JQ_VERSION }}'"
-        uses: dcarbone/install-jq-action@v3
+      - name: "🧰 Set up yq ${{ inputs.YQ_VERSION }}'"
+        uses: dcarbone/install-yq-action@v1
         if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
         with:
-          version: '${{ inputs.JQ_VERSION }}'
+          version: '${{ inputs.YQ_VERSION }}'
 
       - name: "🔩 Git config"
         run: |
