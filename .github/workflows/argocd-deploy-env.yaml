@@ -21,6 +21,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      ENV_REPO_BRANCH:
+        default: 'master'
+        required: false
+        type: string
+
       ENV_REPO_PATH:
         default: 'env-repo'
         required: false
@@ -101,6 +106,7 @@ jobs:
           echo "VERSION                 : ${{ inputs.VERSION }}"
           echo "MONOREPO_APP            : ${{ inputs.MONOREPO_APP }}"
           echo "ENV_REPO_NAME           : ${{ inputs.ENV_REPO_NAME }}"
+          echo "ENV_REPO_BRANCH         : ${{ inputs.ENV_REPO_BRANCH }}"
           echo "ENV_REPO_PATH           : ${{ inputs.ENV_REPO_PATH }}"
           echo "ENV_REPO_SUBDIR_BASE    : ${{ inputs.ENV_REPO_SUBDIR_BASE }}"
           echo "ENV_REPO_SUBDIR         : ${{ inputs.ENV_REPO_SUBDIR }}"
@@ -117,13 +123,13 @@ jobs:
           git config --global user.email ""
           git config --global user.name "${{ inputs.GH_USER_NAME }}"
 
-      - name: "☁️ Checkout environment repository: ${{ inputs.ENV_REPO_NAME }}"
+      - name: "☁️ Checkout environment repository: ${{ inputs.ENV_REPO_NAME }} branch: ${{ inputs.ENV_REPO_BRANCH }}"
         if: github.ref == 'refs/heads/master'
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.ENV_REPO_NAME }}
           token: ${{ secrets.GH_TOKEN }}
-          ref: master
+          ref: ${{ inputs.ENV_REPO_BRANCH }}
           path: ${{ inputs.ENV_REPO_PATH }}
 
       - name: "📝 Set ENV_REPO_SUBDIR"

@@ -243,7 +243,7 @@ jobs:
           git config --global user.email ""
           git config --global user.name "${{ inputs.GH_USER_NAME }}"
 
-      - name: "☁️ Checkout helm repository: ${{ inputs.HELM_CHARTS_GIT_REPO }}"
+      - name: "☁️ Checkout helm repository: ${{ inputs.HELM_CHARTS_GIT_REPO }} branch: ${{ inputs.HELM_CHARTS_GIT_BRANCH }}"
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.HELM_CHARTS_GIT_ORG }}/${{ inputs.HELM_CHARTS_GIT_REPO }}
