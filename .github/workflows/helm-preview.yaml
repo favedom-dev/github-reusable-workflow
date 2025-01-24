@@ -29,6 +29,12 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      JQ_VERSION:
+        default: "1.7"
+        required: false
+        type: string
+        description: "Version of jq to install"
+
       PREVIEW_NAMESPACE:
         required: true
         type: string
@@ -225,6 +231,12 @@ jobs:
       - name: "🧰 Set up gh cli"
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
         if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
+
+      - name: "🧰 Set up jq ${{ inputs.JQ_VERSION }}'"
+        uses: dcarbone/install-jq-action@v3
+        if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
+        with:
+          version: '${{ inputs.JQ_VERSION }}'
 
       - name: "🔧 Git config"
         run: |
