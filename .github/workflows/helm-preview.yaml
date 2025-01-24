@@ -353,7 +353,7 @@ jobs:
           echo "HELM_DEBUG_FLAG=--debug" >> $GITHUB_ENV
           echo "HELM_DEBUG_SCRIPT_FLAG=-d" >> $GITHUB_ENV
 
-      - name: "🔧 Set up helm version: ${{ inputs.HELM_VERSION }}"
+      - name: "⚙️ Set up helm version: ${{ inputs.HELM_VERSION }}"
         # https://github.com/Azure/setup-helm
         uses: azure/setup-helm@v4
         with:
