@@ -168,7 +168,7 @@ jobs:
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_OUTPUT
 
       - name: "🧰 Set up gh cli"
-        uses: actions4gh/setup-gh@v1
+        uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
         if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
 
       - name: "🧰 Set up QEMU"
