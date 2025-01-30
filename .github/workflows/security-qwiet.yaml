@@ -50,10 +50,6 @@ jobs:
     runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
 
-      - name: "⚠️ Deprecation Warning"
-        run: |
-          echo "::warning title=Deprecation Notice::This workflow is deprecated. Please use the new workflow instead: security-qwiet.yaml"
-
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
 
