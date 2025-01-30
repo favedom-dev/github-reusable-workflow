@@ -177,8 +177,8 @@ jobs:
           # BASE_ELEMENT: ${{ inputs.BASE_ELEMENT }}
         run: |
           echo "Update values.yaml ${NAME}.image.tag"
-          # wget -O ./${VERSION_SCRIPT_NAME} ${VERSION_SCRIPT_DIR_URL}/${VERSION_SCRIPT_NAME}
-          curl -o ./${VERSION_SCRIPT_NAME} ${VERSION_SCRIPT_DIR_URL}/${VERSION_SCRIPT_NAME}
+          wget -O ./${VERSION_SCRIPT_NAME} ${VERSION_SCRIPT_DIR_URL}/${VERSION_SCRIPT_NAME}
+          # curl -o ./${VERSION_SCRIPT_NAME} ${VERSION_SCRIPT_DIR_URL}/${VERSION_SCRIPT_NAME}
           chmod 777 ./${VERSION_SCRIPT_NAME}
           ./${VERSION_SCRIPT_NAME} . "${NAME}" "${VERSION}"
           rm ./${VERSION_SCRIPT_NAME}
