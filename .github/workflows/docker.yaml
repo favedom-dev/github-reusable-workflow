@@ -134,6 +134,9 @@ jobs:
           push: true
 # yamllint disable-line
           tags: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}:${{ inputs.VERSION }},${{ steps.setup-variables.outputs.DOCKER_LOCATION }}:latest
+        env:
+          # Pass GitHub token as an environment variable for secure authentication
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "🔗 Link to Container"
         if: ${{ !env.ACT }}
