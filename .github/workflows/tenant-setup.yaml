@@ -22,12 +22,12 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       DEFAULT_APP_NAME:
-        default: 'mono-web'
+        # default: 'mono-web'
         required: false
         type: string
 
       ARGOCD_APP_NAME:
-        default: 'mono-web'
+        # default: 'mono-web'
         required: false
         type: string
 
@@ -48,10 +48,10 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       RELEASE_BUILD:
-        default: true
-        description: "TRUE to force a release build"
+        # default: "true"
+        description: "TRUE to force a Release build || False to do a Preview build"
         required: false
-        type: boolean
+        type: string
 
       PR_NUMBER:
         description: "Enter the PR number to build"
@@ -75,23 +75,23 @@ on:  # yamllint disable-line rule:truthy
 
       DO_RELEASE_BUILD:
         value: ${{ jobs.tenant.outputs.DO_RELEASE_BUILD }}
-        description: ""
+        description: "Build as a Release not a PR"
 
       OVERRIDE_NAME:
         value: ${{ jobs.tenant.outputs.OVERRIDE_NAME }}
-        description: ""
+        description: "App name to use"
 
       OVERRIDE_PREVIEW_NAMESPACE:
         value: ${{ jobs.tenant.outputs.OVERRIDE_PREVIEW_NAMESPACE }}
-        description: ""
+        description: "Preview Namespace to use"
 
       OVERRIDE_CHART_APP_NAME:
         value: ${{ jobs.tenant.outputs.OVERRIDE_CHART_APP_NAME }}
-        description: ""
+        description: "Chart app name to use"
 
       ARGOCD_APP_NAME:
         value: ${{ jobs.tenant.outputs.ARGOCD_APP_NAME }}
-        description: ""
+        description: "ArgoCD app name (dir name)"
 
 jobs:
 
@@ -120,13 +120,30 @@ jobs:
           GITHUB_CONTEXT: ${{ toJSON(github) }}
         run: |
           DEFAULT_TENANT=${{ inputs.DEFAULT_TENANT }}
-          DEFAULT_APP_NAME=${{ inputs.DEFAULT_APP_NAME }}
-          ARGOCD_APP_NAME=${{ inputs.ARGOCD_APP_NAME }}
-          OVERRIDE_NAME_PREFIX=${DEFAULT_APP_NAME}
-          OVERRIDE_CHART_APP_NAME_PREFIX=${DEFAULT_APP_NAME}
-          # TODO
-          # OVERRIDE_NAME_PREFIX=${DEFAULT_APP_NAME: ${{ inputs.OVERRIDE_NAME_PREFIX }}}
-          # OVERRIDE_CHART_APP_NAME_PREFIX=${DEFAULT_APP_NAME: ${{ inputs.OVERRIDE_CHART_APP_NAME_PREFIX }}}
+          if [ -n "${{ inputs.DEFAULT_APP_NAME }}" ]; then
+            DEFAULT_APP_NAME=${{ inputs.DEFAULT_APP_NAME }}
+          else
+            DEFAULT_APP_NAME=${{ github.event.repository.name }}
+          fi
+
+          if [ -n "${{ inputs.ARGOCD_APP_NAME }}" ]; then
+            ARGOCD_APP_NAME=${{ inputs.ARGOCD_APP_NAME }}
+          else
+            ARGOCD_APP_NAME=${{ inputs.DEFAULT_APP_NAME }}
+          fi
+
+          if [ -n "${{ inputs.OVERRIDE_NAME_PREFIX }}" ]; then
+            OVERRIDE_NAME_PREFIX=${{ inputs.OVERRIDE_NAME_PREFIX }}
+          else
+            OVERRIDE_NAME_PREFIX=${{ inputs.DEFAULT_APP_NAME }}
+          fi
+
+          if [ -n "${{ inputs.OVERRIDE_CHART_APP_NAME_PREFIX }}" ]; then
+            OVERRIDE_CHART_APP_NAME_PREFIX=${{ inputs.OVERRIDE_CHART_APP_NAME_PREFIX }}
+          else
+            OVERRIDE_CHART_APP_NAME_PREFIX=${{ inputs.DEFAULT_APP_NAME }}
+          fi
+
           INPUT_TENANT=${{ inputs.TENANT }}
 
           if [ -n "${INPUT_TENANT}" ]; then
@@ -146,6 +163,7 @@ jobs:
 
           OVERRIDE_NAME=${OVERRIDE_NAME_PREFIX}-${TENANT}
           OVERRIDE_CHART_APP_NAME=${OVERRIDE_CHART_APP_NAME_PREFIX}-${TENANT}
+
           INPUT_DO_RELEASE_BUILD=${{ inputs.RELEASE_BUILD }}
           if [ "${INPUT_DO_RELEASE_BUILD}" = "true" ]; then
             DO_RELEASE_BUILD="true"
