@@ -203,22 +203,37 @@ jobs:
           MONOREPO_APP: ${{ inputs.MONOREPO_APP }}
           DO_PR_MERGE: ${{ inputs.DO_PR_MERGE }}
         run: |
+          echo "git checkout -b ${BRANCH_NAME}"
           git checkout -b ${BRANCH_NAME}
+
+          echo "git status"
           git status
+
+          echo "git commit -a -m \"${NAME} ${VERSION}\""
           git commit -a -m "${NAME} ${VERSION}"
+
+          echo "git push -u origin ${BRANCH_NAME}"
           git push -u origin ${BRANCH_NAME}
+
           FULL_VERSION=v${VERSION}
           if [ ${#MONOREPO_APP} -gt 0 ]; then
             FULL_VERSION=${MONOREPO_APP}/${FULL_VERSION}
           fi
+          # echo "FULL_VERSION : ${FULL_VERSION}"
+
           gh release view ${FULL_VERSION} -R ${{ github.repository }} --json author,tagName,url,body --template \
           'Version: [{{.tagName}}]({{.url}})
 
           {{.body}}
           ' >> ./GH_RELEASE_NOTES.txt
+
           GH_BODY=$(cat ./GH_RELEASE_NOTES.txt)
+          # echo "GH_BODY : ${GH_BODY}"
+
+          echo "gh pr create --label \"approved\" --title \"chore: bump image.tag ${NAME} to ${VERSION}\" --body \"${GH_BODY}\""
           gh pr create --label "approved" --title "chore: bump image.tag ${NAME} to ${VERSION}" --body "${GH_BODY}"
+
           if [ "${DO_PR_MERGE}" = "true" ]; then
-            echo "Auto Squash & Merge"
+            echo "Auto Squash & Merge: gh pr merge ${BRANCH_NAME} --auto --squash"
             gh pr merge ${BRANCH_NAME} --auto --squash
           fi
