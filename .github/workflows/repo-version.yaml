@@ -30,7 +30,7 @@ on:  # yamllint disable-line rule:truthy
 
     secrets:
       GH_TOKEN:
-        required: true
+        required: false # true
 
     outputs:
       version:
