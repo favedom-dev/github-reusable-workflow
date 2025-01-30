@@ -118,34 +118,39 @@ jobs:
         env:
           GH_REF: ${{ github.ref }}
           GITHUB_CONTEXT: ${{ toJSON(github) }}
+          DEFAULT_TENANT: ${{ inputs.DEFAULT_TENANT }}
+          DEFAULT_APP_NAME: ${{ inputs.DEFAULT_APP_NAME }}
+          ARGOCD_APP_NAME: ${{ inputs.ARGOCD_APP_NAME }}
+          OVERRIDE_NAME_PREFIX: ${{ inputs.OVERRIDE_NAME_PREFIX }}
+          OVERRIDE_CHART_APP_NAME_PREFIX: ${{ inputs.OVERRIDE_CHART_APP_NAME_PREFIX }}
+          INPUT_TENANT: ${{ inputs.TENANT }}
+          INPUT_DO_RELEASE_BUILD: ${{ inputs.RELEASE_BUILD }}
         run: |
-          DEFAULT_TENANT=${{ inputs.DEFAULT_TENANT }}
-          if [ -n "${{ inputs.DEFAULT_APP_NAME }}" ]; then
-            DEFAULT_APP_NAME=${{ inputs.DEFAULT_APP_NAME }}
+          if [ -n "${DEFAULT_APP_NAME}" ]; then
+            echo "Using DEFAULT_APP_NAME : ${DEFAULT_APP_NAME}"
           else
             DEFAULT_APP_NAME=${{ github.event.repository.name }}
           fi
 
-          if [ -n "${{ inputs.ARGOCD_APP_NAME }}" ]; then
-            ARGOCD_APP_NAME=${{ inputs.ARGOCD_APP_NAME }}
+          if [ -n "${ARGOCD_APP_NAME}" ]; then
+            echo "Using ARGOCD_APP_NAME : ${ARGOCD_APP_NAME}"
           else
             ARGOCD_APP_NAME=${{ inputs.DEFAULT_APP_NAME }}
           fi
 
-          if [ -n "${{ inputs.OVERRIDE_NAME_PREFIX }}" ]; then
-            OVERRIDE_NAME_PREFIX=${{ inputs.OVERRIDE_NAME_PREFIX }}
+          if [ -n "${OVERRIDE_NAME_PREFIX}" ]; then
+            echo "Using OVERRIDE_NAME_PREFIX : ${OVERRIDE_NAME_PREFIX}"
           else
             OVERRIDE_NAME_PREFIX=${{ inputs.DEFAULT_APP_NAME }}
           fi
 
-          if [ -n "${{ inputs.OVERRIDE_CHART_APP_NAME_PREFIX }}" ]; then
-            OVERRIDE_CHART_APP_NAME_PREFIX=${{ inputs.OVERRIDE_CHART_APP_NAME_PREFIX }}
+          if [ -n "${OVERRIDE_CHART_APP_NAME_PREFIX}" ]; then
+            echo "Using OVERRIDE_CHART_APP_NAME_PREFIX : ${OVERRIDE_CHART_APP_NAME_PREFIX}"
           else
             OVERRIDE_CHART_APP_NAME_PREFIX=${{ inputs.DEFAULT_APP_NAME }}
           fi
 
-          INPUT_TENANT=${{ inputs.TENANT }}
-
+          TENANT=${DEFAULT_TENANT}
           if [ -n "${INPUT_TENANT}" ]; then
             echo "INPUT_TENANT: ${INPUT_TENANT}"
             TENANT=${INPUT_TENANT}
@@ -164,7 +169,7 @@ jobs:
           OVERRIDE_NAME=${OVERRIDE_NAME_PREFIX}-${TENANT}
           OVERRIDE_CHART_APP_NAME=${OVERRIDE_CHART_APP_NAME_PREFIX}-${TENANT}
 
-          INPUT_DO_RELEASE_BUILD=${{ inputs.RELEASE_BUILD }}
+          # INPUT_DO_RELEASE_BUILD=${{ inputs.RELEASE_BUILD }}
           if [ "${INPUT_DO_RELEASE_BUILD}" = "true" ]; then
             DO_RELEASE_BUILD="true"
           elif [ "${INPUT_DO_RELEASE_BUILD}" = "false" ]; then
