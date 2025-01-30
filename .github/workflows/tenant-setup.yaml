@@ -13,8 +13,8 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       DEFAULT_TENANT:
-        # default: 'agilenetwork'
-        default: 'speedofai'
+        default: 'agilenetwork'
+        # default: 'speedofai'
         # default: 'fanfuzenil'
         # default: 'vtnil'
         # default: 'nilgameplan'
