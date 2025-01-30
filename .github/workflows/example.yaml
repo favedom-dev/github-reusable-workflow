@@ -7,13 +7,18 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
 
+      GH_RUNS_ON:
+        default: 'ubuntu-latest'
+        required: false
+        type: string
+
 jobs:
 
   debug:
     timeout-minutes: 2
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
-      - name: "GITHUB INFO"
+      - name: "📄 GITHUB INFO"
         env:
           GITHUB_CONTEXT: ${{ toJSON(github) }}
         run: |-
@@ -24,7 +29,7 @@ jobs:
           echo "--------------------------------------"
           echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
 
-      - name: Fetch workflow runs for PR
+      - name: "Fetch workflow runs for PR"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

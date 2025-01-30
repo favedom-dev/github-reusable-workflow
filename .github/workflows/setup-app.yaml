@@ -75,10 +75,6 @@ jobs:
       IS_MONOREPO: ${{ steps.extra-vars.outputs.IS_MONOREPO }}
     steps:
 
-      - name: "⚠️ Deprecation Warning"
-        run: |
-          echo "::warning title=Deprecation Notice::This workflow is deprecated. Please use the new workflow instead: setup-app.yaml"
-
       - name: "📝 Set Name"
         id: set-name
         env:

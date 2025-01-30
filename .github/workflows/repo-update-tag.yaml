@@ -7,8 +7,14 @@ on:  # yamllint disable-line rule:truthy
       TAG_NAME:
         required: true
         type: string
+
       BRANCH_NAME:
         required: true
+        type: string
+
+      GH_RUNS_ON:
+        default: 'ubuntu-latest'
+        required: false
         type: string
 
     secrets:
@@ -18,7 +24,7 @@ on:  # yamllint disable-line rule:truthy
 jobs:
 
   move-tag:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.GH_RUNS_ON }}
 
     steps:
 
@@ -27,11 +33,11 @@ jobs:
         with:
           fetch-depth: 0  # Fetch all history to ensure tags are included
 
-      - name: Fetch all branches and tags
+      - name: "🐶 Fetch all branches and tags"
         run: |
           git fetch --all
 
-      - name: Move tag to latest commit
+      - name: "🚚 Move tag to latest commit"
         env:
           TAG_NAME: ${{ inputs.TAG_NAME }}  # The tag you want to move
           BRANCH_NAME: ${{ inputs.BRANCH_NAME }}   # The branch you want to track
@@ -58,6 +64,6 @@ jobs:
           git tag ${TAG_NAME} ${LATEST_COMMIT}
           git push origin ${TAG_NAME}
 
-      - name: Push the new tag
+      - name: "🫸 Push the new tag"
         run: |
           git push origin --tags

@@ -3,70 +3,96 @@ name: Flyway Cloud Run Job
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
-      NAME:  # name of service, (ex: peeq-tracking-db)
+      NAME:
+        description: "Name of service"
         required: true
         type: string
+
       VERSION:
         default: 'latest'
         required: false
         type: string
+
       PROJECT_ID:
         default: 'favedom-dev'
         required: false
         type: string
+
       GAR_LOCATION:
         default: 'us-central1'
         required: false
         type: string
+
       GCR_LOCATION:
         default: 'gcr.io'
         required: false
         type: string
+
       DOCKER_REGISTRY:
         default: 'peeq-docker'
         required: false
         type: string
+
       JOB_NAME:
         required: true
         type: string
+
       REGION:
         default: 'europe-west9'
         required: false
         type: string
+
       CLOUDSQL_INSTANCES:
         required: true
         type: string
+
       CLOUD_SQL_CONNECTION_NAME:
         required: true
         type: string
+
       DB_DRIVER:
         default: 'jdbc:postgresql:'
         required: false
         type: string
+
       DB_HOST:
         default: 127.0.0.1
         required: true
         type: string
+
       DB_PORT:
-        default: 5432
+        default: "5432"
         required: false
         type: string
+
       DB_NAME:
         required: true
         type: string
+
       DB_USER:
         required: true
         type: string
+
       DB_PASSWORD:
         required: true
         type: string
+
       SQL_PROXY_KEY:
         required: true
         type: string
+
+      GH_RUNS_ON:
+        default: 'ubuntu-latest'
+        required: false
+        type: string
+
     secrets:
       WIF_PROVIDER:
+        description: "Workload Identity Federation Provider"
         required: true
+
       WIF_SERVICE_ACCOUNT:
+        description: "Workload Identity Federation Service Account"
         required: true
 
 jobs:
@@ -76,10 +102,10 @@ jobs:
     permissions:
       contents: 'read'
       id-token: 'write'
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
 
-      - name: "🔧 Google Auth Token"
+      - name: "🔑 Google Auth Token"
         id: auth-gcp-token
         uses: 'google-github-actions/auth@v2'
         with:
@@ -103,7 +129,7 @@ jobs:
           gcloud beta run jobs list --filter=${{ inputs.JOB_NAME }} | cut -f 3 -d ' ' | grep ^${{ inputs.JOB_NAME }}$
           echo "JOB_EXISTS=$?" >> $GITHUB_ENV
 
-      - name: "📦 Create Cloud Run Job"
+      - name: "🏗️ Create Cloud Run Job"
         if: steps.job-exist.outcome == 'failure'
         run: |-
           gcloud beta run jobs create ${{ inputs.JOB_NAME }} \
@@ -124,7 +150,7 @@ jobs:
           --region ${{ inputs.REGION }} \
           --quiet
 
-      - name: "📦 Update Cloud Run Job"
+      - name: "🔄 Update Cloud Run Job"
         if: steps.job-exist.outcome == 'success'
         run: |-
           gcloud beta run jobs update ${{ inputs.JOB_NAME }} \
@@ -132,7 +158,7 @@ jobs:
           --region ${{ inputs.REGION }}
 
       # https://console.cloud.google.com/run/jobs/details/europe-west9/staging-peeq-tracking-db/executions?project=favedom-dev
-      - name: "🌐 Link to Cloud Run Job"
+      - name: "🔗 Link to Cloud Run Job"
         run: |-
           echo "https://console.cloud.google.com/run/jobs/details/${{ inputs.REGION }}/${{ inputs.JOB_NAME }}/executions?project=${{ inputs.PROJECT_ID }}"
 

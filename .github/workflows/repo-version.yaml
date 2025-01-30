@@ -7,29 +7,40 @@ on:  # yamllint disable-line rule:truthy
         default: ''
         required: false
         type: string
+
       INCREMENT_SCRIPT_NAME:
         default: 'auto_increment_version.sh'
         required: false
         type: string
+
       SCRIPT_GIT_BRANCH:
         default: 'master'
         required: false
         type: string
+
       SCRIPTS_DOWNLOAD_BASE_URL:
         default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
+        required: false
+        type: string
+
+      GH_RUNS_ON:
+        default: 'ubuntu-latest'
         required: false
         type: string
 
     secrets:
       GH_TOKEN:
         required: true
+
     outputs:
       version:
         description: "Repo Version"
         value: ${{ jobs.repo-version.outputs.version }}
+
       tag:
         description: "Repo Tag"
         value: ${{ jobs.repo-version.outputs.tag }}
+
       build-version:
         description: "Build Version"
         value: ${{ jobs.repo-version.outputs.build-version }}
@@ -37,7 +48,7 @@ on:  # yamllint disable-line rule:truthy
 jobs:
 
   repo-version:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.GH_RUNS_ON }}
     env:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
@@ -48,7 +59,7 @@ jobs:
     steps:
 
       # https://docs.github.com/en/actions/learn-github-actions/environment-variables
-      # - name: "GITHUB INFO"
+      # - name: "📄 GITHUB INFO"
       #   env:
       #     GITHUB_CONTEXT: ${{ toJSON(github) }}
       #   run: |-
@@ -60,7 +71,7 @@ jobs:
       #     echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
 
       # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run
-      - name: Set PR Version
+      - name: "📝 Set PR Version"
         id: pr-version
         if: github.event_name == 'pull_request'
         run: |
@@ -79,7 +90,8 @@ jobs:
       - name: "☁️ Get ${{ inputs.INCREMENT_SCRIPT_NAME }}"
         if: github.event_name != 'pull_request'
         run: |
-          wget ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${{ inputs.SCRIPT_GIT_BRANCH }}/scripts/${{ inputs.INCREMENT_SCRIPT_NAME }}
+          # wget ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${{ inputs.SCRIPT_GIT_BRANCH }}/scripts/${{ inputs.INCREMENT_SCRIPT_NAME }}
+          curl -o ${{ inputs.INCREMENT_SCRIPT_NAME }} ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${{ inputs.SCRIPT_GIT_BRANCH }}/scripts/${{ inputs.INCREMENT_SCRIPT_NAME }}
           chmod 777 ./${{ inputs.INCREMENT_SCRIPT_NAME }}
 
       - name: "☑ Release version"
@@ -97,7 +109,7 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
-      - name: "📜 Set version"
+      - name: "📝 Set version"
         id: set-version
         env:
           PR_VERSION: ${{ steps.pr-version.outputs.version }}
@@ -119,7 +131,7 @@ jobs:
           fi
           # echo "${{ steps.version.outputs.version }}"
 
-      - name: "📜 Display version: ${{ steps.set-version.outputs.version }}"
+      - name: "👀 Display version: ${{ steps.set-version.outputs.version }}"
         env:
           PR_VERSION: ${{ steps.pr-version.outputs.version }}
         run: |

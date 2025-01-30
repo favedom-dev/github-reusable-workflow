@@ -1,0 +1,226 @@
+name: App Setup
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      TENANT:
+        # default: 'speedofai'
+        # default: 'agilenetwork'
+        # default: 'fanfuzenil'
+        # default: 'vtnil'
+        # default: 'nilgameplan'
+        required: false
+        type: string
+
+      DEFAULT_TENANT:
+        default: 'agilenetwork'
+        # default: 'speedofai'
+        # default: 'fanfuzenil'
+        # default: 'vtnil'
+        # default: 'nilgameplan'
+        required: false
+        type: string
+
+      DEFAULT_APP_NAME:
+        # default: 'mono-web'
+        required: false
+        type: string
+
+      ARGOCD_APP_NAME:
+        # default: 'mono-web'
+        required: false
+        type: string
+
+      OVERRIDE_NAME_PREFIX:
+        required: false
+        type: string
+
+      OVERRIDE_NAME:
+        required: false
+        type: string
+
+      OVERRIDE_CHART_APP_NAME_PREFIX:
+        required: false
+        type: string
+
+      OVERRIDE_CHART_APP_NAME:
+        required: false
+        type: string
+
+      RELEASE_BUILD:
+        # default: "true"
+        description: "TRUE to force a Release build || False to do a Preview build"
+        required: false
+        type: string
+
+      PR_NUMBER:
+        description: "Enter the PR number to build"
+        required: false
+        type: string
+
+      OVERRIDE_PREVIEW_NAMESPACE:
+        required: false
+        type: string
+
+      GH_RUNS_ON:
+        default: 'ubuntu-latest'
+        # default: 'core'
+        required: false
+        type: string
+
+    outputs:
+      TENANT:
+        value: ${{ jobs.tenant.outputs.TENANT }}
+        description: "Tenant name"
+
+      DO_RELEASE_BUILD:
+        value: ${{ jobs.tenant.outputs.DO_RELEASE_BUILD }}
+        description: "Build as a Release not a PR"
+
+      OVERRIDE_NAME:
+        value: ${{ jobs.tenant.outputs.OVERRIDE_NAME }}
+        description: "App name to use"
+
+      OVERRIDE_PREVIEW_NAMESPACE:
+        value: ${{ jobs.tenant.outputs.OVERRIDE_PREVIEW_NAMESPACE }}
+        description: "Preview Namespace to use"
+
+      OVERRIDE_CHART_APP_NAME:
+        value: ${{ jobs.tenant.outputs.OVERRIDE_CHART_APP_NAME }}
+        description: "Chart app name to use"
+
+      ARGOCD_APP_NAME:
+        value: ${{ jobs.tenant.outputs.ARGOCD_APP_NAME }}
+        description: "ArgoCD app name (dir name)"
+
+jobs:
+
+  tenant:
+    runs-on: ${{ inputs.GH_RUNS_ON }}
+
+    outputs:
+      TENANT: ${{ steps.tenant.outputs.TENANT }}
+      DO_RELEASE_BUILD: ${{ steps.tenant.outputs.DO_RELEASE_BUILD }}
+      OVERRIDE_NAME: ${{ steps.tenant.outputs.OVERRIDE_NAME }}
+      OVERRIDE_PREVIEW_NAMESPACE: ${{ steps.tenant.outputs.OVERRIDE_PREVIEW_NAMESPACE }}
+      OVERRIDE_CHART_APP_NAME: ${{ steps.tenant.outputs.OVERRIDE_CHART_APP_NAME }}
+      ARGOCD_APP_NAME: ${{ steps.tenant.outputs.ARGOCD_APP_NAME }}
+
+    steps:
+      # - name: "DEBUG: GITHUB INFO"
+      #   env:
+      #     GITHUB_CONTEXT: ${{ toJSON(github) }}
+      #   run: |-
+      #     echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
+
+      - name: "☁️ Set tenant via PR label or input"
+        id: tenant
+        env:
+          GH_REF: ${{ github.ref }}
+          GITHUB_CONTEXT: ${{ toJSON(github) }}
+          DEFAULT_TENANT: ${{ inputs.DEFAULT_TENANT }}
+          DEFAULT_APP_NAME: ${{ inputs.DEFAULT_APP_NAME }}
+          ARGOCD_APP_NAME: ${{ inputs.ARGOCD_APP_NAME }}
+          OVERRIDE_NAME_PREFIX: ${{ inputs.OVERRIDE_NAME_PREFIX }}
+          OVERRIDE_CHART_APP_NAME_PREFIX: ${{ inputs.OVERRIDE_CHART_APP_NAME_PREFIX }}
+          INPUT_TENANT: ${{ inputs.TENANT }}
+          INPUT_DO_RELEASE_BUILD: ${{ inputs.RELEASE_BUILD }}
+        run: |
+          if [ -n "${DEFAULT_APP_NAME}" ]; then
+            echo "Using DEFAULT_APP_NAME : ${DEFAULT_APP_NAME}"
+          else
+            DEFAULT_APP_NAME=${{ github.event.repository.name }}
+          fi
+
+          if [ -n "${ARGOCD_APP_NAME}" ]; then
+            echo "Using ARGOCD_APP_NAME : ${ARGOCD_APP_NAME}"
+          else
+            ARGOCD_APP_NAME=${{ inputs.DEFAULT_APP_NAME }}
+          fi
+
+          if [ -n "${OVERRIDE_NAME_PREFIX}" ]; then
+            echo "Using OVERRIDE_NAME_PREFIX : ${OVERRIDE_NAME_PREFIX}"
+          else
+            OVERRIDE_NAME_PREFIX=${{ inputs.DEFAULT_APP_NAME }}
+          fi
+
+          if [ -n "${OVERRIDE_CHART_APP_NAME_PREFIX}" ]; then
+            echo "Using OVERRIDE_CHART_APP_NAME_PREFIX : ${OVERRIDE_CHART_APP_NAME_PREFIX}"
+          else
+            OVERRIDE_CHART_APP_NAME_PREFIX=${{ inputs.DEFAULT_APP_NAME }}
+          fi
+
+          TENANT=${DEFAULT_TENANT}
+          if [ -n "${INPUT_TENANT}" ]; then
+            echo "INPUT_TENANT: ${INPUT_TENANT}"
+            TENANT=${INPUT_TENANT}
+          elif [ "${GH_REF}" != "refs/heads/master" ]; then
+            echo ""
+            GH_LABELS=(${{ join(github.event.pull_request.labels.*.name, ' ') }})
+            echo "GH_LABELS: ${GH_LABELS}"
+            for l in "${GH_LABELS[@]}"; do
+              if [[ ${l} = tenant-* ]]; then
+                TENANT=${l//tenant-/}
+                break
+              fi
+            done
+          fi
+
+          OVERRIDE_NAME=${OVERRIDE_NAME_PREFIX}-${TENANT}
+          OVERRIDE_CHART_APP_NAME=${OVERRIDE_CHART_APP_NAME_PREFIX}-${TENANT}
+
+          # INPUT_DO_RELEASE_BUILD=${{ inputs.RELEASE_BUILD }}
+          if [ "${INPUT_DO_RELEASE_BUILD}" = "true" ]; then
+            DO_RELEASE_BUILD="true"
+          elif [ "${INPUT_DO_RELEASE_BUILD}" = "false" ]; then
+            DO_RELEASE_BUILD="false"
+          else
+            if [ "${GH_REF}" = "refs/heads/master" ]; then
+              DO_RELEASE_BUILD="true"
+            else
+              DO_RELEASE_BUILD="false"
+            fi
+          fi
+
+          if [ "${GH_REF}" != "refs/heads/master" ]; then
+            GH_PR_NUM=${{ github.event.number }}
+            if [ -n "${GH_PR_NUM}" ]; then
+              PR_NUM=${GH_PR_NUM}
+              echo "GH_PR_NUM: PR_NUM = ${PR_NUM}"
+            else
+              INPUT_PR_NUMBER=${{ inputs.PR_NUMBER }}
+              if [ -n "${INPUT_PR_NUMBER}" ]; then
+                PR_NUM=${{ inputs.PR_NUMBER }}
+                echo "INPUT_PR_NUMBER: PR_NUM = ${PR_NUM}"
+              else
+                PR_NUM=${{ github.run_number }}
+                echo "run_number: PR_NUM = ${PR_NUM}"
+              fi
+              OVERRIDE_PREVIEW_NAMESPACE=pr-${OVERRIDE_NAME}-${PR_NUM}
+              echo "OVERRIDE_PREVIEW_NAMESPACE= ${OVERRIDE_PREVIEW_NAMESPACE}"
+            fi
+          fi
+
+          echo "--------------------------------------"
+          echo "TENANT                         : ${TENANT}"
+          echo "OVERRIDE_NAME_PREFIX           : ${OVERRIDE_NAME_PREFIX}"
+          echo "OVERRIDE_NAME                  : ${OVERRIDE_NAME}"
+          echo "OVERRIDE_PREVIEW_NAMESPACE     : ${OVERRIDE_PREVIEW_NAMESPACE}"
+          echo "OVERRIDE_CHART_APP_NAME_PREFIX : ${OVERRIDE_CHART_APP_NAME_PREFIX}"
+          echo "OVERRIDE_CHART_APP_NAME        : ${OVERRIDE_CHART_APP_NAME}"
+          echo "ARGOCD_APP_NAME                : ${ARGOCD_APP_NAME}"
+          echo "DO_RELEASE_BUILD               : ${DO_RELEASE_BUILD}"
+          echo "======================================"
+
+          echo "TENANT=${TENANT}" >> $GITHUB_OUTPUT
+          echo "OVERRIDE_NAME=${OVERRIDE_NAME}" >> $GITHUB_OUTPUT
+          echo "OVERRIDE_PREVIEW_NAMESPACE=${OVERRIDE_PREVIEW_NAMESPACE}" >> $GITHUB_OUTPUT
+          echo "OVERRIDE_CHART_APP_NAME=${OVERRIDE_CHART_APP_NAME}" >> $GITHUB_OUTPUT
+          echo "ARGOCD_APP_NAME=${ARGOCD_APP_NAME}" >> $GITHUB_OUTPUT
+          echo "DO_RELEASE_BUILD=${DO_RELEASE_BUILD}" >> $GITHUB_OUTPUT
+          echo "--------------------------------------"
+          echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
+
+      - name: "TENANT: ${{ steps.tenant.outputs.TENANT }}"
+        run: |
+          echo "TENANT : ${{ steps.tenant.outputs.TENANT }}"

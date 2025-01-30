@@ -227,10 +227,6 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
 
-      - name: "⚠️ Deprecation Warning"
-        run: |
-          echo "::warning title=Deprecation Notice::This workflow is deprecated. Please use the new workflow instead: deploy-helm-preview.yaml"
-
       - name: "🧰 Set up gh cli"
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
         if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
