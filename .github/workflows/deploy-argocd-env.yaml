@@ -235,5 +235,10 @@ jobs:
 
           if [ "${DO_PR_MERGE}" = "true" ]; then
             echo "Auto Squash & Merge: gh pr merge ${BRANCH_NAME} --auto --squash"
-            gh pr merge ${BRANCH_NAME} --auto --squash
+            # gh pr merge ${BRANCH_NAME} --auto --squash
+            while ! gh pr merge ${BRANCH_NAME} --auto --squash; do
+              SLEEP_TIME=10
+              echo "Retrying auto-merge in ${SLEEP_TIME} seconds..."
+              sleep "${SLEEP_TIME}"
+            done
           fi
