@@ -112,7 +112,8 @@ jobs:
           format: 'json'
           exit-code: '0' # Change to 1
           ignore-unfixed: true # Change to false
-          output: 'trivy-results.txt'
+          # output: 'trivy-results.txt'
+          output: 'trivy-results.json'
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
         continue-on-error: ${{ inputs.TRIVY_CONTINUE_ON_ERROR }}
