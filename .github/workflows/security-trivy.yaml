@@ -160,7 +160,7 @@ jobs:
           DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
         run: |
           echo "---------"
-          cat trivy-report.md
+          cat trivy-results.md
           echo "========="
 
       # - name: "⬆️ Upload Scan Results"
