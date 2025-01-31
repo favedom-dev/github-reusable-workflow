@@ -43,6 +43,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: boolean
 
+      TRIVY_TEMPLATE_FILE:
+        default: 'trivy-template.tpl'
+        required: false
+        type: string
+
       GH_RUNS_ON:
         default: 'ubuntu-latest'
         required: false
@@ -100,36 +105,55 @@ jobs:
           echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_ENV
           echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_OUTPUT
 
-      - name: "Run Trivy vulnerability scanner: arm64"
+      - name: " Trivy template"
+        env:
+          TEMPLATE_FILE: ${{ inputs.TRIVY_TEMPLATE_FILE }}
+        run: |
+          cat <<EOF > ${TEMPLATE_FILE}
+          echo "{{- range . }}"
+          ### {{ .Target }}
+          | CVE ID | Severity | Package | Installed Version | Fixed Version |
+          |--------|----------|---------|-------------------|--------------|
+          {{- range .Vulnerabilities }}
+          | [{{ .VulnerabilityID }}]({{ .PrimaryURL }}) | {{ .Severity }} | {{ .PkgName }} | {{ .InstalledVersion }} | {{ .FixedVersion }} |
+          {{- end }}
+          {{- end }}
+          EOF
+
+      - name: "🚀 Run Trivy vulnerability scanner: arm64"
         # uses: aquasecurity/trivy-action@master
         uses: aquasecurity/trivy-action@0.29.0
         env:
           TRIVY_PLATFORMS: linux/arm64
           DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
+          TEMPLATE_FILE: trivy-template.tpl
         with:
           image-ref: '${{ env.DOCKER_LOCATION }}:${{ inputs.VERSION }}'
+          # output: 'trivy-results.txt'
+          # output: 'trivy-results.json'
+          output: 'trivy-results.md'
           # format: 'table'
-          format: 'json'
+          # format: 'json'
+          format: 'template'
+          template: "@${{ inputs.TRIVY_TEMPLATE_FILE }}"
           exit-code: '0' # Change to 1
           ignore-unfixed: true # Change to false
-          # output: 'trivy-results.txt'
-          output: 'trivy-results.json'
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
         continue-on-error: ${{ inputs.TRIVY_CONTINUE_ON_ERROR }}
 
-      - name: " Update Scan Results"
-        env:
-          DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
-        run: |
-          echo "## Trivy Scan Results" > trivy-report.md
-          echo "Scanned Image: ${IMAGE_NAME}" >> trivy-report.md
-          echo "" >> trivy-report.md
-          # cat trivy-results.txt >> trivy-report.md
-          # echo "" >> trivy-report.md
-          echo "\`\`\`json" >> trivy-report.md
-          cat trivy-results.json >> trivy-report.md
-          echo "\`\`\`" >> trivy-report.md
+      # - name: " Update Scan Results"
+      #   env:
+      #     DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
+      #   run: |
+      #     echo "## Trivy Scan Results" > trivy-report.md
+      #     echo "Scanned Image: ${IMAGE_NAME}" >> trivy-report.md
+      #     echo "" >> trivy-report.md
+      #     # cat trivy-results.txt >> trivy-report.md
+      #     # echo "" >> trivy-report.md
+      #     echo "\`\`\`json" >> trivy-report.md
+      #     cat trivy-results.json >> trivy-report.md
+      #     echo "\`\`\`" >> trivy-report.md
 
       - name: " View updated scan results"
         env:
