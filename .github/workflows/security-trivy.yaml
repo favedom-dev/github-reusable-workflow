@@ -48,6 +48,21 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      TRIVY_OUTPUT:
+        default: 'trivy-results.md'
+        required: false
+        type: string
+
+      TRIVY_IGNORE_UNFIXED:
+        default: true   # Change to false
+        required: false
+        type: boolean
+
+      TRIVY_EXIT_CODE:
+        default: '0'  # Change to 1
+        required: false
+        type: string
+
       GH_RUNS_ON:
         default: 'ubuntu-latest'
         required: false
@@ -104,14 +119,30 @@ jobs:
           echo "DOCKER_LOCATION : ${DOCKER_LOCATION}"
           echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_ENV
           echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_OUTPUT
+          DOCKER_URL="https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
+          echo "DOCKER_URL : ${DOCKER_URL}"
+          echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_ENV
+          echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_OUTPUT
 
       - name: " Trivy template"
         env:
+          DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
           TEMPLATE_FILE: ${{ inputs.TRIVY_TEMPLATE_FILE }}
         run: |
+          echo "github.repositoryUrl : ${{ github.repositoryUrl }}"
+          echo "github.run_id        : ${{ github.run_id }}"
+          echo "github.server_url    : ${{ github.server_url }}"
+          echo "github.repository    : ${{ github.repository }}"
+          echo "DOCKER_URL           : ${DOCKER_URL}"
+          echo "TEMPLATE_FILE        : ${TEMPLATE_FILE}"
+
           cat <<EOF > ${TEMPLATE_FILE}
-          echo "{{- range . }}"
-          ### {{ .Target }}
+          # ${{ inputs.NAME }} ${{ inputs.VERSION }}
+            - GitHub [repo ${{ inputs.NAME }}](${{ github.repositoryUrl }})
+            - GHA [run ${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            - GAR [registry ${{ inputs.NAME }}](${DOCKER_URL})
+          {{- range . }}
+          ## {{ .Target }}
           | CVE ID | Severity | Package | Installed Version | Fixed Version |
           |--------|----------|---------|-------------------|--------------|
           {{- range .Vulnerabilities }}
@@ -131,13 +162,13 @@ jobs:
           image-ref: '${{ env.DOCKER_LOCATION }}:${{ inputs.VERSION }}'
           # output: 'trivy-results.txt'
           # output: 'trivy-results.json'
-          output: 'trivy-results.md'
+          output: '${{ inputs.TRIVY_OUTPUT }}'
           # format: 'table'
           # format: 'json'
           format: 'template'
           template: "@${{ inputs.TRIVY_TEMPLATE_FILE }}"
-          exit-code: '0' # Change to 1
-          ignore-unfixed: true # Change to false
+          exit-code: ${{ inputs.TRIVY_EXIT_CODE }}
+          ignore-unfixed: ${{ inputs.TRIVY_IGNORE_UNFIXED }}
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
         continue-on-error: ${{ inputs.TRIVY_CONTINUE_ON_ERROR }}
@@ -156,12 +187,8 @@ jobs:
       #     echo "\`\`\`" >> trivy-report.md
 
       - name: " View updated scan results"
-        env:
-          DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
         run: |
-          echo "---------"
-          cat trivy-results.md
-          echo "========="
+          cat ${{ inputs.TRIVY_OUTPUT }}
 
       # - name: "⬆️ Upload Scan Results"
       #   uses: actions/upload-artifact@v4
