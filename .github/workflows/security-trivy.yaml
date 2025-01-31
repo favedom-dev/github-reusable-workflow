@@ -38,6 +38,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: boolean
 
+      TRIVY_CONTINUE_ON_ERROR:
+        default: true
+        required: false
+        type: boolean
+
       GH_RUNS_ON:
         default: 'ubuntu-latest'
         required: false
@@ -107,6 +112,7 @@ jobs:
           ignore-unfixed: true # Change to false
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+        continue-on-error: ${{ inputs.TRIVY_CONTINUE_ON_ERROR }}
 
       # - name: "⬆️ Upload Scan Results"
       #   uses: actions/upload-artifact@v3
