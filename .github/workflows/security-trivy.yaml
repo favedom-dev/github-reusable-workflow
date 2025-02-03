@@ -97,7 +97,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       SLACK_COLOR:
-        default: "#ff0000"
+        default: "#0a0b23"
         required: false
         type: string
 
@@ -240,7 +240,7 @@ jobs:
           echo "ARCH_WIKI_FILE=$ARCH_WIKI_FILE" >> $GITHUB_ENV
           echo "ARCH_WIKI_FILE=$ARCH_WIKI_FILE" >> $GITHUB_OUTPUT
 
-          ARCH_WIKI_LINK=https://github.com/${{ needs.setup.outputs.WIKI_REPO_NAME }}/wiki/${ARCH_WIKI_FILE}
+          ARCH_WIKI_LINK=https://github.com/${{ needs.setup.outputs.WIKI_REPO_NAME }}/wiki/${ARCH_WIKI_FILE%.*}
           echo "ARCH_WIKI_LINK : ${ARCH_WIKI_LINK}"
           echo "ARCH_WIKI_LINK=$ARCH_WIKI_LINK" >> $GITHUB_ENV
           echo "ARCH_WIKI_LINK=$ARCH_WIKI_LINK" >> $GITHUB_OUTPUT
@@ -369,17 +369,13 @@ jobs:
             sleep 5
           done
 
-          # TODO
-          echo "TODO link to wiki page: ${{ steps.setup-arch-variables.outputs.ARCH_WIKI_LINK}}"
-          # echo "TODO link to wiki page: https://github.com/${{ needs.setup.outputs.WIKI_REPO_NAME }}/wiki/${WIKI_DIR}/${WIKI_FILE}"
-          # https://github.com/${{ needs.setup.outputs.WIKI_REPO_NAME }}/wiki/${WIKI_FILE}
+          echo "Link to wiki page: ${{ steps.setup-arch-variables.outputs.ARCH_WIKI_LINK}}"
 
-      # TODO
-      # - name: "📢 Notify Slack"
-      #   uses: rtCamp/action-slack-notify@v2
-      #   env:
-      #     SLACK_WEBHOOK: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
-      #     SLACK_USERNAME: ${{ inputs.SLACK_USERNAME }}
-      #     SLACK_TITLE: "Trivy Scan Results | ${{ inputs.NAME }} : ${{ inputs.VERSION }} ${{ matrix.arch }}"
-      #     SLACK_MESSAGE: "Trivy scan completed. [See results in GitHub Wiki](${{ steps.setup-arch-variables.outputs.ARCH_WIKI_LINK}})"
-      #     SLACK_COLOR: ${{ inputs.SLACK_COLOR }}
+      - name: "📢 Notify Slack"
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
+          SLACK_USERNAME: ${{ inputs.SLACK_USERNAME }}
+          SLACK_TITLE: "Trivy Scan Results | ${{ inputs.NAME }} : ${{ inputs.VERSION }} ${{ matrix.arch }}"
+          SLACK_MESSAGE: "Trivy scan completed. [See results in GitHub Wiki](${{ steps.setup-arch-variables.outputs.ARCH_WIKI_LINK}})"
+          SLACK_COLOR: ${{ inputs.SLACK_COLOR }}
