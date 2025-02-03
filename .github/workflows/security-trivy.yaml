@@ -186,49 +186,18 @@ jobs:
           echo "WIKI_BASE_FILE=${WIKI_BASE_FILE}" >> $GITHUB_ENV
           echo "WIKI_BASE_FILE=${WIKI_BASE_FILE}" >> $GITHUB_OUTPUT
 
-      - name: "🔩 Git config"
-        run: |
-          git config --global user.email ""
-          git config --global user.name "${{ inputs.GH_USER_NAME }}"
+      # - name: "🔩 Git config"
+      #   run: |
+      #     git config --global user.email ""
+      #     git config --global user.name "${{ inputs.GH_USER_NAME }}"
 
-      - name: "☁️ Checkout wiki repository ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}"
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_TOKEN }}
-          repository: ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}
-          path: 'wiki'
+      # - name: "☁️ Checkout wiki repository ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}"
+      #   uses: actions/checkout@v4
+      #   with:
+      #     token: ${{ secrets.GH_TOKEN }}
+      #     repository: ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}
+      #     path: 'wiki'
 
-      - name: " Trivy template"
-        env:
-          DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
-          REPO_URL: ${{ steps.setup-variables.outputs.REPO_URL }}
-          GHA_RUN_URL: ${{ steps.setup-variables.outputs.GHA_RUN_URL }}
-          TEMPLATE_FILE: ${{ inputs.TRIVY_TEMPLATE_FILE }}
-        run: |
-          echo "github.repositoryUrl : ${{ github.repositoryUrl }}"
-          echo "github.run_id        : ${{ github.run_id }}"
-          echo "github.server_url    : ${{ github.server_url }}"
-          echo "github.repository    : ${{ github.repository }}"
-          echo "DOCKER_URL           : ${DOCKER_URL}"
-          echo "REPO_URL             : ${REPO_URL}"
-          echo "GHA_RUN_URL          : ${GHA_RUN_URL}"
-          echo "TEMPLATE_FILE        : ${TEMPLATE_FILE}"
-
-          cat <<EOF > ${TEMPLATE_FILE}
-          # ${{ inputs.NAME }} ${{ inputs.VERSION }} ++REPLACE_OS++
-            - GitHub repo: [${{ github.repository }}](${REPO_URL})
-            - GHA run: [${{ github.run_id }}](${GHA_RUN_URL})
-            - GAR registry: [${{ inputs.NAME }}](${DOCKER_URL})
-          ---
-          {{- range . }}
-          ## {{ .Target }}
-          | CVE ID | Severity | Package | Installed Version | Fixed Version |
-          |--------|----------|---------|-------------------|--------------|
-          {{- range .Vulnerabilities }}
-          | [{{ .VulnerabilityID }}]({{ .PrimaryURL }}) | {{ .Severity }} | {{ .PkgName }} | {{ .InstalledVersion }} | {{ .FixedVersion }} |
-          {{- end }}
-          {{- end }}
-          EOF
 
   # TODO
   trivy-scan:
@@ -252,6 +221,23 @@ jobs:
           echo "ARCH_OUTPUT_FILE=$ARCH_OUTPUT_FILE" >> $GITHUB_ENV
           echo "ARCH_OUTPUT_FILE=$ARCH_OUTPUT_FILE" >> $GITHUB_OUTPUT
 
+          ARCH_TEMPLATE_FILE=${{ inputs.TRIVY_TEMPLATE_FILE }}-${ARCH//\//-}.md
+          echo "ARCH_TEMPLATE_FILE : ${ARCH_TEMPLATE_FILE}"
+          echo "ARCH_TEMPLATE_FILE=$ARCH_TEMPLATE_FILE" >> $GITHUB_ENV
+          echo "ARCH_TEMPLATE_FILE=$ARCH_TEMPLATE_FILE" >> $GITHUB_OUTPUT
+
+      - name: "🔩 Git config"
+        run: |
+          git config --global user.email ""
+          git config --global user.name "${{ inputs.GH_USER_NAME }}"
+
+      - name: "☁️ Checkout wiki repository ${{ needs.setup.outputs.WIKI_REPO_NAME }}"
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          repository: ${{ needs.setup.outputs.WIKI_REPO_NAME }}
+          path: 'wiki'
+
       - name: "🔑 Google Auth Token"
         id: auth-gcp-token
         uses: 'google-github-actions/auth@v2'
@@ -269,6 +255,38 @@ jobs:
           username: 'oauth2accesstoken'
           password: '${{ steps.auth-gcp-token.outputs.access_token }}'
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
+
+      - name: " Trivy template"
+        env:
+          DOCKER_URL: ${{ needs.setup.outputs.DOCKER_URL }}
+          REPO_URL: ${{ needs.setup.outputs.REPO_URL }}
+          GHA_RUN_URL: ${{ needs.setup.outputs.GHA_RUN_URL }}
+          TEMPLATE_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TEMPLATE_FILE }}
+        run: |
+          echo "github.repositoryUrl : ${{ github.repositoryUrl }}"
+          echo "github.run_id        : ${{ github.run_id }}"
+          echo "github.server_url    : ${{ github.server_url }}"
+          echo "github.repository    : ${{ github.repository }}"
+          echo "DOCKER_URL           : ${DOCKER_URL}"
+          echo "REPO_URL             : ${REPO_URL}"
+          echo "GHA_RUN_URL          : ${GHA_RUN_URL}"
+          echo "TEMPLATE_FILE        : ${TEMPLATE_FILE}"
+
+          cat <<EOF > ${TEMPLATE_FILE}
+          # ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }}
+            - GitHub repo: [${{ github.repository }}](${REPO_URL})
+            - GHA run: [${{ github.run_id }}](${GHA_RUN_URL})
+            - GAR registry: [${{ inputs.NAME }}](${DOCKER_URL})
+          ---
+          {{- range . }}
+          ## {{ .Target }}
+          | CVE ID | Severity | Package | Installed Version | Fixed Version |
+          |--------|----------|---------|-------------------|--------------|
+          {{- range .Vulnerabilities }}
+          | [{{ .VulnerabilityID }}]({{ .PrimaryURL }}) | {{ .Severity }} | {{ .PkgName }} | {{ .InstalledVersion }} | {{ .FixedVersion }} |
+          {{- end }}
+          {{- end }}
+          EOF
 
       - name: "🚀 Run Trivy vulnerability scanner: ${{ matrix.arch }}"
       # - name: "🚀 Run Trivy vulnerability scanner: linux/arm64"
@@ -295,25 +313,23 @@ jobs:
 
       - name: "👀 View updated scan results"
         run: |
-          cat ${{ inputs.TRIVY_OUTPUT }}.md
+          cat ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}
 
-  # TODO
-  trivy-results:
-    # name: "Commit Scan Results and Notify"
-    permissions:
-      contents: 'read'
-      id-token: 'write'
-    runs-on: ${{ inputs.GH_RUNS_ON }}
-    needs: [setup, trivy-scan]
-    steps:
+  # # TODO
+  # trivy-results:
+  #   # name: "Commit Scan Results and Notify"
+  #   permissions:
+  #     contents: 'read'
+  #     id-token: 'write'
+  #   runs-on: ${{ inputs.GH_RUNS_ON }}
+  #   needs: [setup, trivy-scan]
+  #   steps:
 
       - name: "📖 Commit Scan Results to GitHub Wiki"
         working-directory: wiki
         env:
           WIKI_DIR: ${{ needs.setup.outputs.WIKI_DIR }}
           WIKI_BASE_FILE: ${{ needs.setup.outputs.WIKI_BASE_FILE }}
-          # WIKI_DIR: ${{ steps.setup-variables.outputs.WIKI_DIR }}
-          # WIKI_BASE_FILE: ${{ steps.setup-variables.outputs.WIKI_BASE_FILE }}
         run: |
           # platform="linux/arm64"
           # WIKI_FILE=${WIKI_DIR}/${WIKI_BASE_FILE}-${platform//\//-}.md
