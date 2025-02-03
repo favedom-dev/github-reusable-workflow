@@ -344,21 +344,7 @@ jobs:
           fi
           mv ${OUTPUT_FILE} "${WIKI_DIR}/${WIKI_FILE}"
           cat "${WIKI_DIR}/${WIKI_FILE}"
-          git add "${WIKI_FILE}"
-
-          # TODO
-          # for platform in ${{ inputs.ARCHITECTURES }}; do
-          #   platform_filename=${platform//\//-}
-          #   WIKI_FILE=${WIKI_DIR}/${WIKI_BASE_FILE}-${platform_filename}.md
-          #   echo "platform_filename : ${platform_filename}"
-          #   echo "WIKI_FILE         : ${WIKI_FILE}"
-
-          #   sed 's|++REPLACE_OS++|'"${platform}"'|g' ../${{ inputs.TRIVY_OUTPUT }}-${platform_filename}.md > ${WIKI_FILE}
-
-          #   echo "WIKI_FILE content:"
-          #   cat ${WIKI_FILE}
-          #   git add "${WIKI_FILE}"
-          # done
+          git add "${WIKI_DIR}/${WIKI_FILE}"
 
           # TODO
           echo "TODO add in git commit and push"
