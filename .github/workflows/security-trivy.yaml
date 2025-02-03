@@ -85,6 +85,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      SLACK_ICON:
+        # default: ''
+        required: false
+        type: string
+
       SLACK_USERNAME:
         default: 'Trivy Scanner'
         required: false
@@ -372,6 +377,7 @@ jobs:
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
+          # SLACK_ICON: ${{ inputs.SLACK_ICON }}
           SLACK_USERNAME: ${{ inputs.SLACK_USERNAME }}
           SLACK_TITLE: "Trivy Scan Results | ${{ inputs.NAME }} : ${{ inputs.VERSION }} ${{ matrix.arch }}"
           SLACK_MESSAGE: "Trivy scan completed. [See results in GitHub Wiki](${{ steps.setup-arch-variables.outputs.ARCH_WIKI_LINK}})"
