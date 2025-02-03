@@ -262,7 +262,7 @@ jobs:
           password: '${{ steps.auth-gcp-token.outputs.access_token }}'
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
-      - name: " Trivy template"
+      - name: "📄 Trivy template"
         env:
           DOCKER_URL: ${{ needs.setup.outputs.DOCKER_URL }}
           REPO_URL: ${{ needs.setup.outputs.REPO_URL }}
