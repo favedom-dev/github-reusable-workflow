@@ -281,7 +281,7 @@ jobs:
 
       - name: "👀 View updated scan results"
         run: |
-          cat ${{ inputs.TRIVY_OUTPUT }}
+          cat ${{ inputs.TRIVY_OUTPUT }}.md
 
   # TODO
   # trivy-results:
