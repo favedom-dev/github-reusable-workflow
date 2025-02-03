@@ -15,7 +15,7 @@ on:  # yamllint disable-line rule:truthy
 
       ARCHITECTURES:
         default: "linux/amd64,linux/arm64"
-        description: "Comma-separated list of architectures to scan (e.g., 'amd64', 'arm64')"
+        description: "Comma-separated list of architectures to scan (e.g., 'linux/amd64,linux/arm64')"
         required: false
         type: string
 
@@ -55,7 +55,8 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       TRIVY_OUTPUT:
-        default: 'trivy-results.md'
+        # default: 'trivy-results.md'
+        default: 'trivy-results'
         required: false
         type: string
 
@@ -113,8 +114,7 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
 
-  # setup: # TODO
-  trivy:
+  setup:
     # timeout-minutes: 15
     permissions:
       contents: 'read'
@@ -126,12 +126,11 @@ jobs:
       GHA_RUN_URL: ${{ steps.setup-variables.outputs.GHA_RUN_URL }}
       MATRIX_ARCH: ${{ steps.setup-variables.outputs.MATRIX_ARCH }}
       REPO_URL: ${{ steps.setup-variables.outputs.REPO_URL }}
-      WIKI_REPO_NAME=: ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}
+      WIKI_DIR: ${{ steps.setup-variables.outputs.WIKI_DIR }}
+      WIKI_BASE_FILE: ${{ steps.setup-variables.outputs.WIKI_BASE_FILE }}
+      WIKI_REPO_NAME: ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}
       WIKI_REPO_URL: ${{ steps.setup-variables.outputs.WIKI_REPO_URL }}
     steps:
-
-      # - name: "☁️ Checkout repository"
-      #   uses: actions/checkout@v4
 
       - name: "🏷️ Set up variables"
         id: setup-variables
@@ -139,11 +138,8 @@ jobs:
           ARCHES="${{ inputs.architectures }}"
           MATRIX_JSON=$(echo "$ARCHES" | jq -R 'split(",")' | jq -c '{arch: .}')
           echo "MATRIX_JSON : ${MATRIX_JSON}"
-          echo "---"
-          echo "MATRIX_ARCH : ${MATRIX_ARCH}"
           echo "MATRIX_ARCH=$MATRIX_JSON" >> $GITHUB_ENV
           echo "MATRIX_ARCH=$MATRIX_JSON" >> $GITHUB_OUTPUT
-          echo "==="
 
           DOCKER_LOCATION=${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}
           echo "DOCKER_LOCATION : ${DOCKER_LOCATION}"
@@ -155,12 +151,12 @@ jobs:
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_ENV
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_OUTPUT
 
-          REPO_URL="${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}"
+          REPO_URL="${{ github.server_url }}/${{ github.repository }}"
           echo "REPO_URL : ${REPO_URL}"
           echo "REPO_URL=${REPO_URL}" >> $GITHUB_ENV
           echo "REPO_URL=${REPO_URL}" >> $GITHUB_OUTPUT
 
-          GHA_RUN_URL="${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}"
+          GHA_RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           echo "GHA_RUN_URL : ${GHA_RUN_URL}"
           echo "GHA_RUN_URL=${GHA_RUN_URL}" >> $GITHUB_ENV
           echo "GHA_RUN_URL=${GHA_RUN_URL}" >> $GITHUB_OUTPUT
@@ -180,10 +176,15 @@ jobs:
           else
             RELEASE_TYPE="Release"
           fi
-          WIKI_FILE="${{ inputs.NAME }}/${RELEASE_TYPE}/Trivy-Scan-Results-${{ inputs.VERSION }}.md"
-          echo "WIKI_FILE : ${WIKI_FILE}"
-          echo "WIKI_FILE=${WIKI_FILE}" >> $GITHUB_ENV
-          echo "WIKI_FILE=${WIKI_FILE}" >> $GITHUB_OUTPUT
+          WIKI_DIR="${{ inputs.NAME }}/${RELEASE_TYPE}"
+          echo "WIKI_DIR : ${WIKI_DIR}"
+          echo "WIKI_DIR=${WIKI_DIR}" >> $GITHUB_ENV
+          echo "WIKI_DIR=${WIKI_DIR}" >> $GITHUB_OUTPUT
+
+          WIKI_BASE_FILE="Trivy-Scan-Results-${{ inputs.VERSION }}"
+          echo "WIKI_BASE_FILE : ${WIKI_BASE_FILE}"
+          echo "WIKI_BASE_FILE=${WIKI_BASE_FILE}" >> $GITHUB_ENV
+          echo "WIKI_BASE_FILE=${WIKI_BASE_FILE}" >> $GITHUB_OUTPUT
 
       - name: "🔩 Git config"
         if: github.ref == 'refs/heads/master'
@@ -233,7 +234,7 @@ jobs:
           echo "TEMPLATE_FILE        : ${TEMPLATE_FILE}"
 
           cat <<EOF > ${TEMPLATE_FILE}
-          # ${{ inputs.NAME }} ${{ inputs.VERSION }}
+          # ${{ inputs.NAME }} ${{ inputs.VERSION }} ++OS++
             - GitHub repo: [${{ github.repository }}](${REPO_URL})
             - GHA run: [${{ github.run_id }}](${GHA_RUN_URL})
             - GAR registry: [${{ inputs.NAME }}](${DOCKER_URL})
@@ -260,7 +261,7 @@ jobs:
   #   steps:
 
       # - name: "🚀 Run Trivy vulnerability scanner: ${{ matrix.arch }}"
-      - name: "🚀 Run Trivy vulnerability scanner: arm64"
+      - name: "🚀 Run Trivy vulnerability scanner: linux/arm64"
         uses: aquasecurity/trivy-action@0.29.0
         env:
           TRIVY_PLATFORMS: linux/arm64
@@ -268,7 +269,8 @@ jobs:
           DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
         with:
           image-ref: '${{ env.DOCKER_LOCATION }}:${{ inputs.VERSION }}'
-          output: '${{ inputs.TRIVY_OUTPUT }}'
+          output: '${{ inputs.TRIVY_OUTPUT }}.md'
+          # output: '${{ inputs.TRIVY_OUTPUT }}-${{ matrix.platform }}.md'
           format: 'template'
           template: "@${{ inputs.TRIVY_TEMPLATE_FILE }}"
           exit-code: ${{ inputs.TRIVY_EXIT_CODE }}
@@ -281,19 +283,38 @@ jobs:
         run: |
           cat ${{ inputs.TRIVY_OUTPUT }}
 
+  # TODO
+  # trivy-results:
+  #   # name: "Commit Scan Results and Notify"
+  #   runs-on: ${{ inputs.GH_RUNS_ON }}
+  #   needs: trivy-scan
+
+      - name: "📖 Commit Scan Results to GitHub Wiki"
+        working-directory: wiki
+        env:
+          WIKI_DIR: ${{ steps.setup-variables.outputs.WIKI_DIR }}
+          WIKI_BASE_FILE: ${{ steps.setup-variables.outputs.WIKI_BASE_FILE }}
+        run: |
+          platform="linux/arm64"
+          WIKI_FILE=${WIKI_DIR}/${WIKI_BASE_FILE}-${platform//\//-}.md
+          echo "WIKI_FILE : ${WIKI_FILE}"
+          # mv ../${{ inputs.TRIVY_OUTPUT }} "${WIKI_DIR}/${WIKI_BASE_FILE}.md"
+          sed 's|++OS++|linux/arm64|g' ../${{ inputs.TRIVY_OUTPUT }}.md > "${WIKI_DIR}/${WIKI_BASE_FILE}.md"
+          cat "${WIKI_DIR}/${WIKI_BASE_FILE}.md"
+
+          # TODO
+          # for platform in ${{ inputs.ARCHITECTURES }}; do
+          #   WIKI_FILE=${WIKI_DIR}/${WIKI_BASE_FILE}-${platform}.md
+          #   mv ../${{ inputs.TRIVY_OUTPUT }}-${platform}.md ${WIKI_FILE}
+          #   # sed 's|++OS++|'"${platform}"'|g' ../${{ inputs.TRIVY_OUTPUT }}-${platform}.md > ${WIKI_FILE}
+          #   cat ${WIKI_FILE}
+          #   git add "${WIKI_FILE}"
+          # done
+
+          # git commit -m "chore: ${{ inputs.NAME }} : ${{ inputs.VERSION }} Update Trivy scan results "
+          # git push
 
       # TODO
-      # - name: "📖 Commit Scan Results to GitHub Wiki"
-      #   working-directory: wiki
-      #   env:
-      #     WIKI_FILE: ${{ steps.setup-variables.outputs.WIKI_FILE }}
-      #   run: |
-      #     mv ../${{ inputs.TRIVY_OUTPUT }} "${WIKI_FILE}"
-
-      #     git add "${WIKI_FILE}"
-      #     git commit -m "chore: ${{ inputs.NAME }} : ${{ inputs.VERSION }} Update Trivy scan results "
-      #     git push
-
       # - name: "📢 Notify Slack"
       #   uses: rtCamp/action-slack-notify@v2
       #   env:
