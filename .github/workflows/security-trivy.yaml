@@ -76,7 +76,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       WIKI_REPO_NAME:
-        default: 'trivy-scans'
+        default: 'favedom-dev/trivy-scans'
         required: false
         type: string
 
@@ -187,17 +187,16 @@ jobs:
           echo "WIKI_BASE_FILE=${WIKI_BASE_FILE}" >> $GITHUB_OUTPUT
 
       - name: "🔩 Git config"
-        if: github.ref == 'refs/heads/master'
         run: |
           git config --global user.email ""
           git config --global user.name "${{ inputs.GH_USER_NAME }}"
 
-      # - name: "☁️ Checkout wiki repository ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}"
-      #   uses: actions/checkout@v4
-      #   with:
-      #     token: ${{ secrets.GH_TOKEN }}
-      #     repository: ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}
-      #     path: 'wiki'
+      - name: "☁️ Checkout wiki repository ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}"
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          repository: ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}
+          path: 'wiki'
 
       - name: "🔑 Google Auth Token"
         id: auth-gcp-token
