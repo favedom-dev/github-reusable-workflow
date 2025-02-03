@@ -181,7 +181,8 @@ jobs:
           echo "WIKI_DIR=${WIKI_DIR}" >> $GITHUB_ENV
           echo "WIKI_DIR=${WIKI_DIR}" >> $GITHUB_OUTPUT
 
-          WIKI_BASE_FILE="Trivy-Scan-Results-${{ inputs.VERSION }}"
+          # WIKI_BASE_FILE="Trivy-Scan-Results-${{ inputs.VERSION }}"
+          WIKI_BASE_FILE="${{ inputs.VERSION }}"
           echo "WIKI_BASE_FILE : ${WIKI_BASE_FILE}"
           echo "WIKI_BASE_FILE=${WIKI_BASE_FILE}" >> $GITHUB_ENV
           echo "WIKI_BASE_FILE=${WIKI_BASE_FILE}" >> $GITHUB_OUTPUT
@@ -334,13 +335,13 @@ jobs:
           # WIKI_BASE_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_WIKI_FILE }}
           WIKI_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_WIKI_FILE }}
         run: |
-          WIKI_FILE=${WIKI_DIR}/${WIKI_FILE}
-          echo "WIKI_FILE : ${WIKI_FILE}"
+          echo "WIKI_DIR    : ${WIKI_DIR}"
+          echo "WIKI_FILE   : ${WIKI_FILE}"
+          echo "OUTPUT_FILE : ${OUTPUT_FILE}"
           if [ ! -d "${WIKI_DIR}" ]; then
             echo "Creating dir: ${WIKI_DIR}"
             mkdir -p "${WIKI_DIR}"
           fi
-          echo "OUTPUT_FILE : ${OUTPUT_FILE}"
           mv ${OUTPUT_FILE} "${WIKI_DIR}/${WIKI_FILE}"
           cat "${WIKI_DIR}/${WIKI_FILE}"
           git add "${WIKI_FILE}"
