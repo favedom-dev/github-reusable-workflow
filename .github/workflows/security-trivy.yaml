@@ -85,12 +85,6 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
-      SLACK_TRIVY_WEBHOOK_URL:
-        default: 'https://hooks.slack.com/services/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'
-        description: "Slack webhook url for trivy"
-        required: false
-        type: string
-
       SLACK_USERNAME:
         default: 'Trivy Scanner'
         required: false
@@ -119,6 +113,9 @@ on:  # yamllint disable-line rule:truthy
         description: "Workload Identity Federation Service Account"
         required: true
 
+      SLACK_TRIVY_WEBHOOK_URL:
+        description: "Slack webhook url for trivy"
+        required: false
 
 jobs:
 
