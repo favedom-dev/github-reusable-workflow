@@ -329,6 +329,7 @@ jobs:
       - name: "📖 Commit Scan Results to GitHub Wiki"
         working-directory: wiki
         env:
+          OUTPUT_FILE: ../${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}
           WIKI_DIR: ${{ needs.setup.outputs.WIKI_DIR }}
           # WIKI_BASE_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_WIKI_FILE }}
           WIKI_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_WIKI_FILE }}
@@ -339,7 +340,8 @@ jobs:
             echo "Creating dir: ${WIKI_DIR}"
             mkdir -p "${WIKI_DIR}"
           fi
-          sed 's|++REPLACE_OS++|linux/arm64|g' ../${{ inputs.TRIVY_OUTPUT }}.md > "${WIKI_DIR}/${WIKI_FILE}"
+          echo "OUTPUT_FILE : ${OUTPUT_FILE}"
+          mv ${OUTPUT_FILE} "${WIKI_DIR}/${WIKI_FILE}"
           cat "${WIKI_DIR}/${WIKI_FILE}"
           git add "${WIKI_FILE}"
 
