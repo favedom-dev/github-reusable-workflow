@@ -80,6 +80,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      WIKI_MAIN_BRANCH:
+        default: 'master'
+        required: false
+        type: string
+
       SLACK_TRIVY_WEBHOOK_URL:
         default: 'https://hooks.slack.com/services/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'
         description: "Slack webhook url for trivy"
@@ -352,7 +357,7 @@ jobs:
           git commit -m "chore: ${{ inputs.NAME }} : ${{ inputs.VERSION }} Update Trivy scan results "
 
           for i in {1..5}; do
-            git pull --rebase origin main && git push origin main && break
+            git pull --rebase origin ${{ inputs.WIKI_MAIN_BRANCH }} && git push origin ${{ inputs.WIKI_MAIN_BRANCH }} && break
             echo "Retrying push... attempt $i"
             sleep 5
           done
