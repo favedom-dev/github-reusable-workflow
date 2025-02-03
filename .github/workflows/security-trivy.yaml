@@ -198,24 +198,6 @@ jobs:
           repository: ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}
           path: 'wiki'
 
-      - name: "🔑 Google Auth Token"
-        id: auth-gcp-token
-        uses: 'google-github-actions/auth@v2'
-        with:
-          token_format: 'access_token'
-          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
-          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-          create_credentials_file: ${{ inputs.CREATE_CREDENTIALS_FILE }}
-          export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
-
-      - name: "🔑 Docker Auth: GAR"
-        id: auth-docker
-        uses: 'docker/login-action@v3'
-        with:
-          username: 'oauth2accesstoken'
-          password: '${{ steps.auth-gcp-token.outputs.access_token }}'
-          registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
-
       - name: " Trivy template"
         env:
           DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
@@ -259,6 +241,35 @@ jobs:
       matrix: ${{ fromJson(needs.setup.outputs.MATRIX_ARCH) }}
     steps:
 
+      - name: "🏷️ Set up arch variables"
+        id: setup-arch-variables
+        run: |
+          ARCH="${{ matrix.arch }}"
+          echo "ARCH : ${ARCH}"
+
+          ARCH_OUTPUT_FILE=${{ inputs.TRIVY_OUTPUT }}-${ARCH//\//-}.md
+          echo "ARCH_OUTPUT_FILE : ${ARCH_OUTPUT_FILE}"
+          echo "ARCH_OUTPUT_FILE=$ARCH_OUTPUT_FILE" >> $GITHUB_ENV
+          echo "ARCH_OUTPUT_FILE=$ARCH_OUTPUT_FILE" >> $GITHUB_OUTPUT
+
+      - name: "🔑 Google Auth Token"
+        id: auth-gcp-token
+        uses: 'google-github-actions/auth@v2'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
+          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+          create_credentials_file: ${{ inputs.CREATE_CREDENTIALS_FILE }}
+          export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
+
+      - name: "🔑 Docker Auth: GAR"
+        id: auth-docker
+        uses: 'docker/login-action@v3'
+        with:
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth-gcp-token.outputs.access_token }}'
+          registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
+
       - name: "🚀 Run Trivy vulnerability scanner: ${{ matrix.arch }}"
       # - name: "🚀 Run Trivy vulnerability scanner: linux/arm64"
         uses: aquasecurity/trivy-action@0.29.0
@@ -270,8 +281,10 @@ jobs:
           # image-ref: '${{ env.DOCKER_LOCATION }}:${{ inputs.VERSION }}'
           image-ref: '${{ needs.setup.outputs.DOCKER_LOCATION }}:${{ inputs.VERSION }}'
           # output: '${{ inputs.TRIVY_OUTPUT }}.md'
-          output: '${{ inputs.TRIVY_OUTPUT }}-${{ matrix.platform }}.md'
+          # output: '${{ inputs.TRIVY_OUTPUT }}-${{ matrix.platform }}.md'
           # output: '${{ inputs.TRIVY_OUTPUT }}-${{ matrix.platform.replace("/", "-") }}.md'
+          # output: '${{ inputs.TRIVY_OUTPUT }}-${{ format('{0}-{1}', matrix.platform.split('/')[0], matrix.platform.split('/')[1]) }}.md'
+          output: "${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}"
           format: 'template'
           template: "@${{ inputs.TRIVY_TEMPLATE_FILE }}"
           exit-code: ${{ inputs.TRIVY_EXIT_CODE }}
@@ -318,7 +331,9 @@ jobs:
             WIKI_FILE=${WIKI_DIR}/${WIKI_BASE_FILE}-${platform_filename}.md
             echo "platform_filename : ${platform_filename}"
             echo "WIKI_FILE         : ${WIKI_FILE}"
+
             sed 's|++REPLACE_OS++|'"${platform}"'|g' ../${{ inputs.TRIVY_OUTPUT }}-${platform_filename}.md > ${WIKI_FILE}
+
             echo "WIKI_FILE content:"
             cat ${WIKI_FILE}
             git add "${WIKI_FILE}"
