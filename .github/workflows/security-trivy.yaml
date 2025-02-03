@@ -133,29 +133,11 @@ jobs:
       # - name: "☁️ Checkout repository"
       #   uses: actions/checkout@v4
 
-      - name: "🔑 Google Auth Token"
-        id: auth-gcp-token
-        uses: 'google-github-actions/auth@v2'
-        with:
-          token_format: 'access_token'
-          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
-          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-          create_credentials_file: ${{ inputs.CREATE_CREDENTIALS_FILE }}
-          export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
-
-      - name: "🔑 Docker Auth: GAR"
-        id: auth-docker
-        uses: 'docker/login-action@v3'
-        with:
-          username: 'oauth2accesstoken'
-          password: '${{ steps.auth-gcp-token.outputs.access_token }}'
-          registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
-
       - name: "🏷️ Set up variables"
         id: setup-variables
         run: |
           ARCHES="${{ inputs.architectures }}"
-          MATRIX_JSON=$(echo "$ARCHES" | jq -R 'split(",") | {arch: .}')
+          MATRIX_JSON=$(echo "$ARCHES" | jq -R 'split(",")' | jq -c '{arch: .}')
           echo "MATRIX_JSON : ${MATRIX_JSON}"
           echo "---"
           echo "MATRIX_ARCH : ${MATRIX_ARCH}"
@@ -209,12 +191,30 @@ jobs:
           git config --global user.email ""
           git config --global user.name "${{ inputs.GH_USER_NAME }}"
 
-      - name: "☁️ Checkout wiki repository ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}"
-        uses: actions/checkout@v4
+      # - name: "☁️ Checkout wiki repository ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}"
+      #   uses: actions/checkout@v4
+      #   with:
+      #     token: ${{ secrets.GH_TOKEN }}
+      #     repository: ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}
+      #     path: 'wiki'
+
+      - name: "🔑 Google Auth Token"
+        id: auth-gcp-token
+        uses: 'google-github-actions/auth@v2'
         with:
-          token: ${{ secrets.GH_TOKEN }}
-          repository: ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}
-          path: 'wiki'
+          token_format: 'access_token'
+          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
+          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+          create_credentials_file: ${{ inputs.CREATE_CREDENTIALS_FILE }}
+          export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
+
+      - name: "🔑 Docker Auth: GAR"
+        id: auth-docker
+        uses: 'docker/login-action@v3'
+        with:
+          username: 'oauth2accesstoken'
+          password: '${{ steps.auth-gcp-token.outputs.access_token }}'
+          registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
       - name: " Trivy template"
         env:
