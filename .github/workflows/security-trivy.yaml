@@ -297,6 +297,10 @@ jobs:
           platform="linux/arm64"
           WIKI_FILE=${WIKI_DIR}/${WIKI_BASE_FILE}-${platform//\//-}.md
           echo "WIKI_FILE : ${WIKI_FILE}"
+          if [ -d "${WIKI_DIR}" ]; then
+            echo "Need to create dir: ${WIKI_DIR}"
+            mkdir -p "${WIKI_DIR}"
+          fi
           # mv ../${{ inputs.TRIVY_OUTPUT }} "${WIKI_DIR}/${WIKI_BASE_FILE}.md"
           sed 's|++OS++|linux/arm64|g' ../${{ inputs.TRIVY_OUTPUT }}.md > "${WIKI_DIR}/${WIKI_BASE_FILE}.md"
           cat "${WIKI_DIR}/${WIKI_BASE_FILE}.md"
