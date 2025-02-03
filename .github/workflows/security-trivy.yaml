@@ -226,6 +226,11 @@ jobs:
           echo "ARCH_TEMPLATE_FILE=$ARCH_TEMPLATE_FILE" >> $GITHUB_ENV
           echo "ARCH_TEMPLATE_FILE=$ARCH_TEMPLATE_FILE" >> $GITHUB_OUTPUT
 
+          ARCH_WIKI_FILE=${{ needs.setup.outputs.WIKI_BASE_FILE }}-${ARCH//\//-}.md
+          echo "ARCH_WIKI_FILE : ${ARCH_WIKI_FILE}"
+          echo "ARCH_WIKI_FILE=$ARCH_WIKI_FILE" >> $GITHUB_ENV
+          echo "ARCH_WIKI_FILE=$ARCH_WIKI_FILE" >> $GITHUB_OUTPUT
+
       - name: "🔩 Git config"
         run: |
           git config --global user.email ""
@@ -292,7 +297,6 @@ jobs:
             cat ${TEMPLATE_FILE}
 
       - name: "🚀 Run Trivy vulnerability scanner: ${{ matrix.arch }}"
-      # - name: "🚀 Run Trivy vulnerability scanner: linux/arm64"
         uses: aquasecurity/trivy-action@0.29.0
         env:
           TRIVY_PLATFORMS: ${{ matrix.arch }}
@@ -326,32 +330,35 @@ jobs:
         working-directory: wiki
         env:
           WIKI_DIR: ${{ needs.setup.outputs.WIKI_DIR }}
-          WIKI_BASE_FILE: ${{ needs.setup.outputs.WIKI_BASE_FILE }}
+          # WIKI_BASE_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_WIKI_FILE }}
+          WIKI_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_WIKI_FILE }}
         run: |
-          # platform="linux/arm64"
-          # WIKI_FILE=${WIKI_DIR}/${WIKI_BASE_FILE}-${platform//\//-}.md
-          # echo "WIKI_FILE : ${WIKI_FILE}"
-          # if [ ! -d "${WIKI_DIR}" ]; then
-          #   echo "Creating dir: ${WIKI_DIR}"
-          #   mkdir -p "${WIKI_DIR}"
-          # fi
-          # sed 's|++REPLACE_OS++|linux/arm64|g' ../${{ inputs.TRIVY_OUTPUT }}.md > "${WIKI_DIR}/${WIKI_BASE_FILE}.md"
-          # cat "${WIKI_DIR}/${WIKI_BASE_FILE}.md"
+          WIKI_FILE=${WIKI_DIR}/${WIKI_FILE}
+          echo "WIKI_FILE : ${WIKI_FILE}"
+          if [ ! -d "${WIKI_DIR}" ]; then
+            echo "Creating dir: ${WIKI_DIR}"
+            mkdir -p "${WIKI_DIR}"
+          fi
+          sed 's|++REPLACE_OS++|linux/arm64|g' ../${{ inputs.TRIVY_OUTPUT }}.md > "${WIKI_DIR}/${WIKI_FILE}"
+          cat "${WIKI_DIR}/${WIKI_FILE}"
+          git add "${WIKI_FILE}"
 
           # TODO
-          for platform in ${{ inputs.ARCHITECTURES }}; do
-            platform_filename=${platform//\//-}
-            WIKI_FILE=${WIKI_DIR}/${WIKI_BASE_FILE}-${platform_filename}.md
-            echo "platform_filename : ${platform_filename}"
-            echo "WIKI_FILE         : ${WIKI_FILE}"
+          # for platform in ${{ inputs.ARCHITECTURES }}; do
+          #   platform_filename=${platform//\//-}
+          #   WIKI_FILE=${WIKI_DIR}/${WIKI_BASE_FILE}-${platform_filename}.md
+          #   echo "platform_filename : ${platform_filename}"
+          #   echo "WIKI_FILE         : ${WIKI_FILE}"
 
-            sed 's|++REPLACE_OS++|'"${platform}"'|g' ../${{ inputs.TRIVY_OUTPUT }}-${platform_filename}.md > ${WIKI_FILE}
+          #   sed 's|++REPLACE_OS++|'"${platform}"'|g' ../${{ inputs.TRIVY_OUTPUT }}-${platform_filename}.md > ${WIKI_FILE}
 
-            echo "WIKI_FILE content:"
-            cat ${WIKI_FILE}
-            git add "${WIKI_FILE}"
-          done
+          #   echo "WIKI_FILE content:"
+          #   cat ${WIKI_FILE}
+          #   git add "${WIKI_FILE}"
+          # done
 
+          # TODO
+          echo "TODO add in git commit and push"
           # git commit -m "chore: ${{ inputs.NAME }} : ${{ inputs.VERSION }} Update Trivy scan results "
           # git push
 
