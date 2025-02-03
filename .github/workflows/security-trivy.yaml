@@ -240,6 +240,13 @@ jobs:
           echo "ARCH_WIKI_FILE=$ARCH_WIKI_FILE" >> $GITHUB_ENV
           echo "ARCH_WIKI_FILE=$ARCH_WIKI_FILE" >> $GITHUB_OUTPUT
 
+          ARCH_WIKI_LINK=https://github.com/${{ needs.setup.outputs.WIKI_REPO_NAME }}/wiki/${ARCH_WIKI_FILE}
+          echo "ARCH_WIKI_LINK : ${ARCH_WIKI_LINK}"
+          echo "ARCH_WIKI_LINK=$ARCH_WIKI_LINK" >> $GITHUB_ENV
+          echo "ARCH_WIKI_LINK=$ARCH_WIKI_LINK" >> $GITHUB_OUTPUT
+
+
+
       - name: "🔩 Git config"
         run: |
           git config --global user.email ""
@@ -363,7 +370,9 @@ jobs:
           done
 
           # TODO
-          echo "TODO link to wiki page: https://github.com/${{ needs.setup.outputs.WIKI_REPO_NAME }}/wiki/${WIKI_DIR}/${WIKI_FILE}"
+          echo "TODO link to wiki page: ${{ steps.setup-arch-variables.outputs.ARCH_WIKI_LINK}}"
+          # echo "TODO link to wiki page: https://github.com/${{ needs.setup.outputs.WIKI_REPO_NAME }}/wiki/${WIKI_DIR}/${WIKI_FILE}"
+          # https://github.com/${{ needs.setup.outputs.WIKI_REPO_NAME }}/wiki/${WIKI_FILE}
 
       # TODO
       # - name: "📢 Notify Slack"
@@ -371,7 +380,6 @@ jobs:
       #   env:
       #     SLACK_WEBHOOK: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
       #     SLACK_USERNAME: ${{ inputs.SLACK_USERNAME }}
-      #     SLACK_TITLE: "Trivy Scan Results | ${{ inputs.NAME }} : ${{ inputs.VERSION }}"
-      #     SLACK_MESSAGE: "Trivy scan completed. [See results in GitHub Wiki](https://github.com/${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}/wiki/${{ steps.setup-variables.outputs.WIKI_FILE }})"
-      #     # SLACK_MESSAGE: "Trivy scan completed. [See results in GitHub Wiki]( ${{ steps.setup-variables.outputs.WIKI_REPO_URL }}/wiki/${{ steps.setup-variables.outputs.WIKI_FILE }})"
+      #     SLACK_TITLE: "Trivy Scan Results | ${{ inputs.NAME }} : ${{ inputs.VERSION }} ${{ matrix.arch }}"
+      #     SLACK_MESSAGE: "Trivy scan completed. [See results in GitHub Wiki](${{ steps.setup-arch-variables.outputs.ARCH_WIKI_LINK}})"
       #     SLACK_COLOR: ${{ inputs.SLACK_COLOR }}
