@@ -339,22 +339,11 @@ jobs:
         run: |
           cat ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}
 
-  # # TODO
-  # trivy-results:
-  #   # name: "Commit Scan Results and Notify"
-  #   permissions:
-  #     contents: 'read'
-  #     id-token: 'write'
-  #   runs-on: ${{ inputs.GH_RUNS_ON }}
-  #   needs: [setup, trivy-scan]
-  #   steps:
-
       - name: "📖 Commit Scan Results to GitHub Wiki"
         working-directory: ${{ needs.setup.outputs.TRIVY_REPO_NAME }}
         env:
           OUTPUT_FILE: ../${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}
           TRIVY_DIR: ${{ needs.setup.outputs.TRIVY_DIR }}
-          # TRIVY_BASE_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}
           TRIVY_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}
         run: |
           echo "TRIVY_DIR    : ${TRIVY_DIR}"
@@ -391,13 +380,25 @@ jobs:
       #     SLACK_COLOR: ${{ inputs.SLACK_COLOR }}
 
       # https://github.com/slackapi/slack-github-action
+      # - name: "📢 Notify Slack"
+      #   uses: slackapi/slack-github-action@v2.0.0
+      #   with:
+      #     method: chat.postMessage
+      #     token: ${{ secrets.SLACK_DEVOPS_TOKEN }}
+      #     payload: |
+      #       channel: ${{ inputs.SLACK_CHANNEL }}
+      #       text: "🚨 *Trivy Scan Completed! | ${{ inputs.NAME }} : ${{ inputs.VERSION }} ${{ matrix.arch }}* 🚨"
+      #       blocks:
+      #         - type: "section"
+      #           text:
+      #             type: "mrkdwn"
+      #             text: "🔗 Workflow Run: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\n🔍 Scan Results: [${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}](${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK}})"
       - name: "📢 Notify Slack"
         uses: slackapi/slack-github-action@v2.0.0
         with:
-          method: chat.postMessage
-          token: ${{ secrets.SLACK_DEVOPS_TOKEN }}
+          webhook: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
           payload: |
-            channel: ${{ inputs.SLACK_CHANNEL }}
             text: "🚨 *Trivy Scan Completed! | ${{ inputs.NAME }} : ${{ inputs.VERSION }} ${{ matrix.arch }}* 🚨"
             blocks:
               - type: "section"
