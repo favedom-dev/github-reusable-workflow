@@ -154,7 +154,7 @@ jobs:
           echo "TRIVY_REPO_FULLNAME=${TRIVY_REPO_FULLNAME}" >> $GITHUB_ENV
           echo "TRIVY_REPO_FULLNAME=${TRIVY_REPO_FULLNAME}" >> $GITHUB_OUTPUT
           # ===
-          TRIVY_WORKING_DIR="${{ inputs.TRIVY_REPO_NAME }}/${{ inputs.NAMES }}/PR"
+          TRIVY_WORKING_DIR="${{ inputs.TRIVY_REPO_NAME }}/${{ inputs.NAME }}/PR"
           echo "TRIVY_WORKING_DIR : ${TRIVY_WORKING_DIR}"
           echo "TRIVY_WORKING_DIR=${TRIVY_WORKING_DIR}" >> $GITHUB_ENV
           echo "TRIVY_WORKING_DIR=${TRIVY_WORKING_DIR}" >> $GITHUB_OUTPUT
