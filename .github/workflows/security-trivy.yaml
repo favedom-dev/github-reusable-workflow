@@ -419,7 +419,7 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "🔗 *Workflow Run*: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\n🔍 *Scan Results*: [${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}](${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK}})"
+                  text: "🔗 *Workflow Run*: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.run_id }}>\n🔍 *Scan Results*: <${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK }}|${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}>"
           # payload: |
           #   blocks:
           #     - type: "section"
