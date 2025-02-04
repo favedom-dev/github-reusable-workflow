@@ -353,6 +353,7 @@ jobs:
             echo "Creating dir: ${TRIVY_DIR}"
             mkdir -p "${TRIVY_DIR}"
           fi
+
           mv ${OUTPUT_FILE} "${TRIVY_DIR}/${TRIVY_FILE}"
           cat "${TRIVY_DIR}/${TRIVY_FILE}"
           git add "${TRIVY_DIR}/${TRIVY_FILE}"
@@ -367,63 +368,27 @@ jobs:
 
           echo "Link to Trivy scan: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK}}"
 
-      # - name: "📢 Notify Slack"
-      #   uses: rtCamp/action-slack-notify@v2
-      #   env:
-      #     SLACK_WEBHOOK: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
-      #     SLACK_DEVOPS_TOKEN: ${{ secrets.SLACK_DEVOPS_TOKEN }}
-      #     SLACK_CHANNEL: ${{ inputs.SLACK_CHANNEL }}
-      #     # SLACK_ICON: ${{ inputs.SLACK_ICON }}
-      #     SLACK_USERNAME: ${{ inputs.SLACK_USERNAME }}
-      #     SLACK_TITLE: "Trivy Scan Results | ${{ inputs.NAME }} : ${{ inputs.VERSION }} ${{ matrix.arch }}"
-      #     SLACK_MESSAGE: "Trivy scan completed. [See results in GitHub Wiki](${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK}})"
-      #     SLACK_COLOR: ${{ inputs.SLACK_COLOR }}
-
       # https://github.com/slackapi/slack-github-action
-      # - name: "📢 Notify Slack"
-      #   uses: slackapi/slack-github-action@v2.0.0
-      #   with:
-      #     method: chat.postMessage
-      #     token: ${{ secrets.SLACK_DEVOPS_TOKEN }}
-      #     payload: |
-      #       channel: ${{ inputs.SLACK_CHANNEL }}
-      #       text: "🚨 *Trivy Scan Completed! | ${{ inputs.NAME }} : ${{ inputs.VERSION }} ${{ matrix.arch }}* 🚨"
-      #       blocks:
-      #         - type: "section"
-      #           text:
-      #             type: "mrkdwn"
-      #             text: "🔗 Workflow Run: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\n🔍 Scan Results: [${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}](${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK}})"
       - name: "📢 Notify Slack"
         uses: slackapi/slack-github-action@v2.0.0
         with:
           errors: true
           webhook: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
           webhook-type: incoming-webhook
-          # payload: |
-          #   text: "*GitHub Action build result*: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
-          #   blocks:
-          #     - type: "section"
-          #       text:
-          #         type: "mrkdwn"
-          #         text: "GitHub Action build result: ${{ job.status }}\n${{ github.event.pull_request.html_url || github.event.head_commit.url }}"
-          # webhook: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
-          # webhook-type: incoming-webhook
           payload: |
-            text: "🚨 *Trivy Scan Completed! | ${{ inputs.NAME }} : ${{ inputs.VERSION }} ${{ matrix.arch }}* 🚨"
+            text: "🚨 *Trivy Scan Completed: ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }}* 🚨"
             blocks:
-              - type: "section"
+              - type: "header"
                 text:
-                  type: "mrkdwn"
-                  text: "🚨 *Trivy Scan Completed! | ${{ inputs.NAME }} : ${{ inputs.VERSION }} ${{ matrix.arch }}* 🚨"
+                  type: "plain_text"
+                  text: "🚨 Trivy Scan Completed! | ${{ inputs.NAME }} : ${{ inputs.VERSION }} ${{ matrix.arch }} 🚨"
               - type: "divider"
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "🔗 *Workflow Run*: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.run_id }}>\n🔍 *Scan Results*: <${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK }}|${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}>"
-          # payload: |
-          #   blocks:
-          #     - type: "section"
-          #       text:
-          #         type: "mrkdwn"
-          #         text: "🔗 Workflow Run: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\n🔍 Scan Results: [${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}](${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK}})"
-          #         text: "Workflow Run: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+                  text: "🔗 Workflow Run: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.run_id }}>"
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "🔍 Scan Results: <${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK }}|${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}>"
+              - type: "divider"
