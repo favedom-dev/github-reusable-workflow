@@ -75,13 +75,23 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
-      WIKI_REPO_NAME:
-        default: 'favedom-dev/trivy-scans'
+      TRIVY_REPO_NAME:
+        default: 'trivy-scans'
         required: false
         type: string
 
-      WIKI_MAIN_BRANCH:
+      TRIVY_REPO_ORG_NAME:
+        default: 'favedom-dev'
+        required: false
+        type: string
+
+      TRIVY_MAIN_BRANCH:
         default: 'master'
+        required: false
+        type: string
+
+      SLACK_CHANNEL:
+        default: 'trivy-scans'
         required: false
         type: string
 
@@ -118,6 +128,10 @@ on:  # yamllint disable-line rule:truthy
         description: "Workload Identity Federation Service Account"
         required: true
 
+      SLACK_DEVOPS_TOKEN:
+        description: "Slack token"
+        required: false
+
       SLACK_TRIVY_WEBHOOK_URL:
         description: "Slack webhook url for trivy"
         required: false
@@ -136,10 +150,11 @@ jobs:
       GHA_RUN_URL: ${{ steps.setup-variables.outputs.GHA_RUN_URL }}
       MATRIX_ARCH: ${{ steps.setup-variables.outputs.MATRIX_ARCH }}
       REPO_URL: ${{ steps.setup-variables.outputs.REPO_URL }}
-      WIKI_DIR: ${{ steps.setup-variables.outputs.WIKI_DIR }}
-      WIKI_BASE_FILE: ${{ steps.setup-variables.outputs.WIKI_BASE_FILE }}
-      WIKI_REPO_NAME: ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}
-      WIKI_REPO_URL: ${{ steps.setup-variables.outputs.WIKI_REPO_URL }}
+      TRIVY_DIR: ${{ steps.setup-variables.outputs.TRIVY_DIR }}
+      TRIVY_BASE_FILE: ${{ steps.setup-variables.outputs.TRIVY_BASE_FILE }}
+      TRIVY_REPO_NAME: ${{ steps.setup-variables.outputs.TRIVY_REPO_NAME }}
+      TRIVY_REPO_FULLNAME: ${{ steps.setup-variables.outputs.TRIVY_REPO_FULLNAME }}
+      TRIVY_REPO_URL: ${{ steps.setup-variables.outputs.TRIVY_REPO_URL }}
     steps:
 
       - name: "🏷️ Set up variables"
@@ -171,46 +186,37 @@ jobs:
           echo "GHA_RUN_URL=${GHA_RUN_URL}" >> $GITHUB_ENV
           echo "GHA_RUN_URL=${GHA_RUN_URL}" >> $GITHUB_OUTPUT
 
-          WIKI_REPO_NAME="${{ inputs.WIKI_REPO_NAME }}"
-          echo "WIKI_REPO_NAME : ${WIKI_REPO_NAME}"
-          echo "WIKI_REPO_NAME=${WIKI_REPO_NAME}" >> $GITHUB_ENV
-          echo "WIKI_REPO_NAME=${WIKI_REPO_NAME}" >> $GITHUB_OUTPUT
+          TRIVY_REPO_NAME="${{ inputs.TRIVY_REPO_NAME }}"
+          echo "TRIVY_REPO_NAME : ${TRIVY_REPO_NAME}"
+          echo "TRIVY_REPO_NAME=${TRIVY_REPO_NAME}" >> $GITHUB_ENV
+          echo "TRIVY_REPO_NAME=${TRIVY_REPO_NAME}" >> $GITHUB_OUTPUT
 
-          WIKI_REPO_URL="https://github.com/${WIKI_REPO_NAME}.wiki"
-          echo "WIKI_REPO_URL : ${WIKI_REPO_URL}"
-          echo "WIKI_REPO_URL=${WIKI_REPO_URL}" >> $GITHUB_ENV
-          echo "WIKI_REPO_URL=${WIKI_REPO_URL}" >> $GITHUB_OUTPUT
+          TRIVY_REPO_FULLNAME="${{ inputs.TRIVY_REPO_ORG_NAME }}/${{ inputs.TRIVY_REPO_NAME }}"
+          echo "TRIVY_REPO_FULLNAME : ${TRIVY_REPO_FULLNAME}"
+          echo "TRIVY_REPO_FULLNAME=${TRIVY_REPO_FULLNAME}" >> $GITHUB_ENV
+          echo "TRIVY_REPO_FULLNAME=${TRIVY_REPO_FULLNAME}" >> $GITHUB_OUTPUT
+
+          TRIVY_REPO_URL="https://github.com/${TRIVY_REPO_FULLNAME}"
+          echo "TRIVY_REPO_URL : ${TRIVY_REPO_URL}"
+          echo "TRIVY_REPO_URL=${TRIVY_REPO_URL}" >> $GITHUB_ENV
+          echo "TRIVY_REPO_URL=${TRIVY_REPO_URL}" >> $GITHUB_OUTPUT
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             RELEASE_TYPE="PR"
           else
             RELEASE_TYPE="Release"
           fi
-          WIKI_DIR="${{ inputs.NAME }}/${RELEASE_TYPE}"
-          echo "WIKI_DIR : ${WIKI_DIR}"
-          echo "WIKI_DIR=${WIKI_DIR}" >> $GITHUB_ENV
-          echo "WIKI_DIR=${WIKI_DIR}" >> $GITHUB_OUTPUT
+          TRIVY_DIR="${{ inputs.NAME }}/${RELEASE_TYPE}"
+          echo "TRIVY_DIR : ${TRIVY_DIR}"
+          echo "TRIVY_DIR=${TRIVY_DIR}" >> $GITHUB_ENV
+          echo "TRIVY_DIR=${TRIVY_DIR}" >> $GITHUB_OUTPUT
 
-          # WIKI_BASE_FILE="Trivy-Scan-Results-${{ inputs.VERSION }}"
-          WIKI_BASE_FILE="${{ inputs.VERSION }}"
-          echo "WIKI_BASE_FILE : ${WIKI_BASE_FILE}"
-          echo "WIKI_BASE_FILE=${WIKI_BASE_FILE}" >> $GITHUB_ENV
-          echo "WIKI_BASE_FILE=${WIKI_BASE_FILE}" >> $GITHUB_OUTPUT
+          # TRIVY_BASE_FILE="Trivy-Scan-Results-${{ inputs.VERSION }}"
+          TRIVY_BASE_FILE="${{ inputs.VERSION }}"
+          echo "TRIVY_BASE_FILE : ${TRIVY_BASE_FILE}"
+          echo "TRIVY_BASE_FILE=${TRIVY_BASE_FILE}" >> $GITHUB_ENV
+          echo "TRIVY_BASE_FILE=${TRIVY_BASE_FILE}" >> $GITHUB_OUTPUT
 
-      # - name: "🔩 Git config"
-      #   run: |
-      #     git config --global user.email ""
-      #     git config --global user.name "${{ inputs.GH_USER_NAME }}"
-
-      # - name: "☁️ Checkout wiki repository ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}"
-      #   uses: actions/checkout@v4
-      #   with:
-      #     token: ${{ secrets.GH_TOKEN }}
-      #     repository: ${{ steps.setup-variables.outputs.WIKI_REPO_NAME }}
-      #     path: 'wiki'
-
-
-  # TODO
   trivy-scan:
     needs: setup
     permissions:
@@ -237,16 +243,16 @@ jobs:
           echo "ARCH_TEMPLATE_FILE=$ARCH_TEMPLATE_FILE" >> $GITHUB_ENV
           echo "ARCH_TEMPLATE_FILE=$ARCH_TEMPLATE_FILE" >> $GITHUB_OUTPUT
 
-          ARCH_WIKI_FILE=${{ needs.setup.outputs.WIKI_BASE_FILE }}-${ARCH//\//-}.md
-          echo "ARCH_WIKI_FILE : ${ARCH_WIKI_FILE}"
-          echo "ARCH_WIKI_FILE=$ARCH_WIKI_FILE" >> $GITHUB_ENV
-          echo "ARCH_WIKI_FILE=$ARCH_WIKI_FILE" >> $GITHUB_OUTPUT
+          ARCH_TRIVY_FILE=${{ needs.setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}.md
+          echo "ARCH_TRIVY_FILE : ${ARCH_TRIVY_FILE}"
+          echo "ARCH_TRIVY_FILE=$ARCH_TRIVY_FILE" >> $GITHUB_ENV
+          echo "ARCH_TRIVY_FILE=$ARCH_TRIVY_FILE" >> $GITHUB_OUTPUT
 
-          ARCH_WIKI_LINK=https://github.com/${{ needs.setup.outputs.WIKI_REPO_NAME }}/wiki/${ARCH_WIKI_FILE%.*}
-          echo "ARCH_WIKI_LINK : ${ARCH_WIKI_LINK}"
-          echo "ARCH_WIKI_LINK=$ARCH_WIKI_LINK" >> $GITHUB_ENV
-          echo "ARCH_WIKI_LINK=$ARCH_WIKI_LINK" >> $GITHUB_OUTPUT
-
+          # ARCH_TRIVY_LINK=https://github.com/${{ needs.setup.outputs.TRIVY_REPO_NAME }}/wiki/${ARCH_TRIVY_FILE%.*}
+          ARCH_TRIVY_LINK=https://github.com/${{ needs.setup.outputs.TRIVY_REPO_NAME }}/blob/${{ inputs.TRIVY_MAIN_BRANCH }}/${{ needs.setup.outputs.TRIVY_DIR }}/${ARCH_TRIVY_FILE}
+          echo "ARCH_TRIVY_LINK : ${ARCH_TRIVY_LINK}"
+          echo "ARCH_TRIVY_LINK=$ARCH_TRIVY_LINK" >> $GITHUB_ENV
+          echo "ARCH_TRIVY_LINK=$ARCH_TRIVY_LINK" >> $GITHUB_OUTPUT
 
 
       - name: "🔩 Git config"
@@ -254,12 +260,12 @@ jobs:
           git config --global user.email ""
           git config --global user.name "${{ inputs.GH_USER_NAME }}"
 
-      - name: "☁️ Checkout wiki repository ${{ needs.setup.outputs.WIKI_REPO_NAME }}"
+      - name: "☁️ Checkout repository ${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}"
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_TOKEN }}
-          repository: ${{ needs.setup.outputs.WIKI_REPO_NAME }}.wiki
-          path: 'wiki'
+          repository: ${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}.git
+          path: '${{ needs.setup.outputs.TRIVY_REPO_NAME }}'
 
       - name: "🔑 Google Auth Token"
         id: auth-gcp-token
@@ -345,40 +351,57 @@ jobs:
   #   steps:
 
       - name: "📖 Commit Scan Results to GitHub Wiki"
-        working-directory: wiki
+        working-directory: ${{ needs.setup.outputs.TRIVY_REPO_NAME }}
         env:
           OUTPUT_FILE: ../${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}
-          WIKI_DIR: ${{ needs.setup.outputs.WIKI_DIR }}
-          # WIKI_BASE_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_WIKI_FILE }}
-          WIKI_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_WIKI_FILE }}
+          TRIVY_DIR: ${{ needs.setup.outputs.TRIVY_DIR }}
+          # TRIVY_BASE_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}
+          TRIVY_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}
         run: |
-          echo "WIKI_DIR    : ${WIKI_DIR}"
-          echo "WIKI_FILE   : ${WIKI_FILE}"
+          echo "TRIVY_DIR    : ${TRIVY_DIR}"
+          echo "TRIVY_FILE   : ${TRIVY_FILE}"
           echo "OUTPUT_FILE : ${OUTPUT_FILE}"
-          if [ ! -d "${WIKI_DIR}" ]; then
-            echo "Creating dir: ${WIKI_DIR}"
-            mkdir -p "${WIKI_DIR}"
+          if [ ! -d "${TRIVY_DIR}" ]; then
+            echo "Creating dir: ${TRIVY_DIR}"
+            mkdir -p "${TRIVY_DIR}"
           fi
-          mv ${OUTPUT_FILE} "${WIKI_DIR}/${WIKI_FILE}"
-          cat "${WIKI_DIR}/${WIKI_FILE}"
-          git add "${WIKI_DIR}/${WIKI_FILE}"
+          mv ${OUTPUT_FILE} "${TRIVY_DIR}/${TRIVY_FILE}"
+          cat "${TRIVY_DIR}/${TRIVY_FILE}"
+          git add "${TRIVY_DIR}/${TRIVY_FILE}"
 
           git commit -m "chore: ${{ inputs.NAME }} : ${{ inputs.VERSION }} Update Trivy scan results "
 
           for i in {1..5}; do
-            git pull --rebase origin ${{ inputs.WIKI_MAIN_BRANCH }} && git push origin ${{ inputs.WIKI_MAIN_BRANCH }} && break
+            git pull --rebase origin ${{ inputs.TRIVY_MAIN_BRANCH }} && git push origin ${{ inputs.TRIVY_MAIN_BRANCH }} && break
             echo "Retrying push... attempt $i"
             sleep 5
           done
 
-          echo "Link to wiki page: ${{ steps.setup-arch-variables.outputs.ARCH_WIKI_LINK}}"
+          echo "Link to Trivy scan: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK}}"
 
+      # - name: "📢 Notify Slack"
+      #   uses: rtCamp/action-slack-notify@v2
+      #   env:
+      #     SLACK_WEBHOOK: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
+      #     SLACK_DEVOPS_TOKEN: ${{ secrets.SLACK_DEVOPS_TOKEN }}
+      #     SLACK_CHANNEL: ${{ inputs.SLACK_CHANNEL }}
+      #     # SLACK_ICON: ${{ inputs.SLACK_ICON }}
+      #     SLACK_USERNAME: ${{ inputs.SLACK_USERNAME }}
+      #     SLACK_TITLE: "Trivy Scan Results | ${{ inputs.NAME }} : ${{ inputs.VERSION }} ${{ matrix.arch }}"
+      #     SLACK_MESSAGE: "Trivy scan completed. [See results in GitHub Wiki](${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK}})"
+      #     SLACK_COLOR: ${{ inputs.SLACK_COLOR }}
+
+      # https://github.com/slackapi/slack-github-action
       - name: "📢 Notify Slack"
-        uses: rtCamp/action-slack-notify@v2
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
-          # SLACK_ICON: ${{ inputs.SLACK_ICON }}
-          SLACK_USERNAME: ${{ inputs.SLACK_USERNAME }}
-          SLACK_TITLE: "Trivy Scan Results | ${{ inputs.NAME }} : ${{ inputs.VERSION }} ${{ matrix.arch }}"
-          SLACK_MESSAGE: "Trivy scan completed. [See results in GitHub Wiki](${{ steps.setup-arch-variables.outputs.ARCH_WIKI_LINK}})"
-          SLACK_COLOR: ${{ inputs.SLACK_COLOR }}
+        uses: slackapi/slack-github-action@v2.0.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_DEVOPS_TOKEN }}
+          payload: |
+            channel: ${{ inputs.SLACK_CHANNEL }}
+            text: "🚨 *Trivy Scan Completed! | ${{ inputs.NAME }} : ${{ inputs.VERSION }} ${{ matrix.arch }}* 🚨"
+            blocks:
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "🔗 Workflow Run: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\n🔍 Scan Results: [${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}](${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK}})"
