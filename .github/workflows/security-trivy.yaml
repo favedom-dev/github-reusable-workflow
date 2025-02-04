@@ -375,12 +375,12 @@ jobs:
           webhook: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
-            text: "🚨 *Trivy Scan Completed: ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }}* 🚨"
+            text: "🚨 *Trivy Scan Completed: ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }}*"
             blocks:
               - type: "header"
                 text:
                   type: "plain_text"
-                  text: "🚨 Trivy Scan Completed: ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }} 🚨"
+                  text: "🚨 Trivy Scan Completed: ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }}"
               - type: "divider"
               - type: "section"
                 text:
