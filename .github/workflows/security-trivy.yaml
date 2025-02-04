@@ -381,7 +381,7 @@ jobs:
               - type: "header"
                 text:
                   type: "plain_text"
-                  text: "🚨 Trivy Scan Completed! | ${{ inputs.NAME }} : ${{ inputs.VERSION }} ${{ matrix.arch }} 🚨"
+                  text: "🚨 Trivy Scan Completed: ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }} 🚨"
               - type: "divider"
               - type: "section"
                 text:
