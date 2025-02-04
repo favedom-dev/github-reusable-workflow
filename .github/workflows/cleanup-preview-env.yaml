@@ -63,6 +63,26 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      GH_USER_NAME:
+        default: 'PowerVZ GitHub Bot'
+        required: false
+        type: string
+
+      TRIVY_REPO_NAME:
+        default: 'trivy-scans'
+        required: false
+        type: string
+
+      TRIVY_REPO_ORG_NAME:
+        default: 'favedom-dev'
+        required: false
+        type: string
+
+      TRIVY_MAIN_BRANCH:
+        default: 'master'
+        required: false
+        type: string
+
       GH_RUNS_ON:
         default: 'ubuntu-latest'
         required: false
@@ -128,7 +148,19 @@ jobs:
           DOCKER_TAG_PREFIX="${PR_VERSION}-"
           echo "DOCKER_TAG_PREFIX=${DOCKER_TAG_PREFIX}" >> $GITHUB_ENV
           echo "DOCKER_TAG_PREFIX=${DOCKER_TAG_PREFIX}" >> $GITHUB_OUTPUT
-          echo "======================"
+          # ===
+          TRIVY_REPO_FULLNAME="${{ inputs.TRIVY_REPO_ORG_NAME }}/${{ inputs.TRIVY_REPO_NAME }}"
+          echo "TRIVY_REPO_FULLNAME : ${TRIVY_REPO_FULLNAME}"
+          echo "TRIVY_REPO_FULLNAME=${TRIVY_REPO_FULLNAME}" >> $GITHUB_ENV
+          echo "TRIVY_REPO_FULLNAME=${TRIVY_REPO_FULLNAME}" >> $GITHUB_OUTPUT
+          # ===
+          TRIVY_WORKING_DIR="$${{ inputs.TRIVY_REPO_NAME }}/${{ inputs.NAMES }}/PR"
+          echo "TRIVY_WORKING_DIR : ${TRIVY_WORKING_DIR}"
+          echo "TRIVY_WORKING_DIR=${TRIVY_WORKING_DIR}" >> $GITHUB_ENV
+          echo "TRIVY_WORKING_DIR=${TRIVY_WORKING_DIR}" >> $GITHUB_OUTPUT
+
+
+          echo "----------------------"
           echo "GAR                  : ${GAR}"
           echo "PR_NUM               : ${PR_NUM}"
           echo "PR_VERSION           : ${PR_VERSION}"
@@ -136,6 +168,9 @@ jobs:
           echo "DOCKER_LOCATION      : ${DOCKER_LOCATION}"
           echo "DOCKER_URL           : ${DOCKER_URL}"
           echo "DOCKER_TAG_PREFIX    : ${DOCKER_TAG_PREFIX}"
+          echo "TRIVY_REPO_FULLNAME  : ${TRIVY_REPO_FULLNAME}"
+          echo "TRIVY_WORKING_DIR  : ${TRIVY_WORKING_DIR}"
+          echo "======================"
 
       - name: "🔑 Google Auth Token"
         id: auth-gcp-token
@@ -221,4 +256,41 @@ jobs:
             kubectl delete namespace ${PREVIEW_NAMESPACE}
           else
             echo "SKIPPING: namespace \"${PREVIEW_NAMESPACE}\" does not exist"
+          fi
+
+      - name: "🔩 Git config"
+        run: |
+          git config --global user.email ""
+          git config --global user.name "${{ inputs.GH_USER_NAME }}"
+
+      - name: "☁️ Checkout repository ${{ steps.setup-variables.outputs.TRIVY_REPO_FULLNAME }}"
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          repository: ${{ steps.setup-variables.outputs.TRIVY_REPO_FULLNAME }}
+          path: '${{ inputs.TRIVY_REPO_NAME }}'
+
+      - name: "🗑️ Delete PR trivy scan(s): ${{ steps.setup-variables.outputs.PR_VERSION }}*"
+        working-directory: ${{ steps.setup-variables.outputs.TRIVY_WORKING_DIR }}
+        run: |
+          pwd
+          PATTERN="${{ steps.setup-variables.outputs.PR_VERSION }}*"
+          MATCHED_FILES=$(find . -type f -name "${PATTERN}")
+
+          if [ -n "$MATCHED_FILES" ]; then
+            echo "Deleting files:"
+            echo "${MATCHED_FILES}"
+            rm -f ${MATCHED_FILES}
+            git status
+
+            git add .
+            git commit -m "chore: ${{ inputs.NAME }} PR ${{ steps.setup-variables.outputs.PR_NUM }} Delete Trivy scan results"
+
+            for i in {1..5}; do
+              git pull --rebase origin ${{ inputs.TRIVY_MAIN_BRANCH }} && git push origin ${{ inputs.TRIVY_MAIN_BRANCH }} && break
+              echo "Retrying push... attempt $i"
+              sleep 5
+            done
+          else
+            echo "No matching files found. Skipping deletion."
           fi

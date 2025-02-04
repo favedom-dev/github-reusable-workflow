@@ -253,7 +253,6 @@ jobs:
           echo "ARCH_TRIVY_LINK=$ARCH_TRIVY_LINK" >> $GITHUB_ENV
           echo "ARCH_TRIVY_LINK=$ARCH_TRIVY_LINK" >> $GITHUB_OUTPUT
 
-
       - name: "🔩 Git config"
         run: |
           git config --global user.email ""
