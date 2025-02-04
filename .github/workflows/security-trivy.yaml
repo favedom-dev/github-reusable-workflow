@@ -248,8 +248,7 @@ jobs:
           echo "ARCH_TRIVY_FILE=$ARCH_TRIVY_FILE" >> $GITHUB_ENV
           echo "ARCH_TRIVY_FILE=$ARCH_TRIVY_FILE" >> $GITHUB_OUTPUT
 
-          # ARCH_TRIVY_LINK=https://github.com/${{ needs.setup.outputs.TRIVY_REPO_NAME }}/wiki/${ARCH_TRIVY_FILE%.*}
-          ARCH_TRIVY_LINK=https://github.com/${{ needs.setup.outputs.TRIVY_REPO_NAME }}/blob/${{ inputs.TRIVY_MAIN_BRANCH }}/${{ needs.setup.outputs.TRIVY_DIR }}/${ARCH_TRIVY_FILE}
+          ARCH_TRIVY_LINK=https://github.com/${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}/blob/${{ inputs.TRIVY_MAIN_BRANCH }}/${{ needs.setup.outputs.TRIVY_DIR }}/${ARCH_TRIVY_FILE}
           echo "ARCH_TRIVY_LINK : ${ARCH_TRIVY_LINK}"
           echo "ARCH_TRIVY_LINK=$ARCH_TRIVY_LINK" >> $GITHUB_ENV
           echo "ARCH_TRIVY_LINK=$ARCH_TRIVY_LINK" >> $GITHUB_OUTPUT
