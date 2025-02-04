@@ -191,7 +191,7 @@ jobs:
           echo "TRIVY_REPO_NAME=${TRIVY_REPO_NAME}" >> $GITHUB_ENV
           echo "TRIVY_REPO_NAME=${TRIVY_REPO_NAME}" >> $GITHUB_OUTPUT
 
-          TRIVY_REPO_FULLNAME="${{ inputs.TRIVY_REPO_ORG_NAME }}/${{ inputs.TRIVY_REPO_NAME }}"
+          TRIVY_REPO_FULLNAME="${{ inputs.TRIVY_REPO_ORG_NAME }}/${TRIVY_REPO_NAME}"
           echo "TRIVY_REPO_FULLNAME : ${TRIVY_REPO_FULLNAME}"
           echo "TRIVY_REPO_FULLNAME=${TRIVY_REPO_FULLNAME}" >> $GITHUB_ENV
           echo "TRIVY_REPO_FULLNAME=${TRIVY_REPO_FULLNAME}" >> $GITHUB_OUTPUT
@@ -264,7 +264,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_TOKEN }}
-          repository: ${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}.git
+          repository: ${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}
           path: '${{ needs.setup.outputs.TRIVY_REPO_NAME }}'
 
       - name: "🔑 Google Auth Token"
