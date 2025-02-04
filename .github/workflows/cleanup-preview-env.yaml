@@ -290,13 +290,10 @@ jobs:
             ARR_APPS+=("./${{ inputs.NAME }}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*")
           fi
 
-          # PATTERN="${{ steps.setup-variables.outputs.PR_VERSION }}*"
-          # MATCHED_FILES=$(find . -type f -name "${PATTERN}")
-
           # Build the find command for multiple patterns
           FIND_CMD="find . -type f"
           for pattern in "${ARR_APPS[@]}"; do
-            FIND_CMD+=" -o -name \"$pattern\""
+            FIND_CMD+=" -o -path \"$pattern\""
           done
 
           # Remove first "-o" to avoid syntax error
