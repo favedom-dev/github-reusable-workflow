@@ -414,7 +414,12 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "🔗 Workflow Run: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\n🔍 Scan Results: [${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}](${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK}})"
+                  text: "🚨 *Trivy Scan Completed! | ${{ inputs.NAME }} : ${{ inputs.VERSION }} ${{ matrix.arch }}* 🚨"
+              - type: "divider"
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "🔗 *Workflow Run*: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\n🔍 *Scan Results*: [${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}](${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK}})"
           # payload: |
           #   blocks:
           #     - type: "section"
