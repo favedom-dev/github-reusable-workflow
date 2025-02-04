@@ -271,11 +271,39 @@ jobs:
           path: '${{ inputs.TRIVY_REPO_NAME }}'
 
       - name: "🗑️ Delete PR trivy scan(s): ${{ steps.setup-variables.outputs.PR_VERSION }}*"
-        working-directory: ${{ steps.setup-variables.outputs.TRIVY_WORKING_DIR }}
+        # working-directory: ${{ steps.setup-variables.outputs.TRIVY_WORKING_DIR }}
+        working-directory: ${{ inputs.TRIVY_REPO_NAME }}
+        env:
+          NAMES: ${{ inputs.NAMES }}
         run: |
           pwd
-          PATTERN="${{ steps.setup-variables.outputs.PR_VERSION }}*"
-          MATCHED_FILES=$(find . -type f -name "${PATTERN}")
+
+          declare -a ARR_APPS
+          if [ "${#NAMES}" -gt 0 ]; then
+            read -a ARR_NAMES <<< "${NAMES}"
+            for name in "${ARR_NAMES[@]}"; do
+              echo "Adding ${name}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*"
+              ARR_APPS+=("${name}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*")
+            done
+          else
+            echo "Adding ${{ inputs.NAME }}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*"
+            ARR_APPS+=("${{ inputs.NAME }}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*")
+          fi
+
+          # PATTERN="${{ steps.setup-variables.outputs.PR_VERSION }}*"
+          # MATCHED_FILES=$(find . -type f -name "${PATTERN}")
+
+          # Build the find command for multiple patterns
+          FIND_CMD="find . -type f"
+          for pattern in "${ARR_APPS[@]}"; do
+            FIND_CMD+=" -o -name \"$pattern\""
+          done
+
+          # Remove first "-o" to avoid syntax error
+          FIND_CMD=$(echo "$FIND_CMD" | sed 's/-o //')
+
+          echo "Executing: $FIND_CMD"
+          MATCHED_FILES=$(eval "$FIND_CMD")
 
           if [ -n "$MATCHED_FILES" ]; then
             echo "Deleting files:"
