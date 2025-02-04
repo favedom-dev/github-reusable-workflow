@@ -282,12 +282,12 @@ jobs:
           if [ "${#NAMES}" -gt 0 ]; then
             read -a ARR_NAMES <<< "${NAMES}"
             for name in "${ARR_NAMES[@]}"; do
-              echo "Adding ${name}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*"
-              ARR_APPS+=("${name}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*")
+              echo "Adding ./${name}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*"
+              ARR_APPS+=("./${name}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*")
             done
           else
-            echo "Adding ${{ inputs.NAME }}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*"
-            ARR_APPS+=("${{ inputs.NAME }}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*")
+            echo "Adding ./${{ inputs.NAME }}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*"
+            ARR_APPS+=("./${{ inputs.NAME }}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*")
           fi
 
           # PATTERN="${{ steps.setup-variables.outputs.PR_VERSION }}*"
