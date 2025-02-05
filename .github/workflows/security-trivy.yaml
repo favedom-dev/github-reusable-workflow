@@ -284,40 +284,40 @@ jobs:
           password: '${{ steps.auth-gcp-token.outputs.access_token }}'
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
-      - name: "📄 Trivy template"
-        env:
-          DOCKER_URL: ${{ needs.setup.outputs.DOCKER_URL }}
-          REPO_URL: ${{ needs.setup.outputs.REPO_URL }}
-          GHA_RUN_URL: ${{ needs.setup.outputs.GHA_RUN_URL }}
-          TEMPLATE_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TEMPLATE_FILE }}
-        run: |
-          echo "github.repositoryUrl : ${{ github.repositoryUrl }}"
-          echo "github.run_id        : ${{ github.run_id }}"
-          echo "github.server_url    : ${{ github.server_url }}"
-          echo "github.repository    : ${{ github.repository }}"
-          echo "DOCKER_URL           : ${DOCKER_URL}"
-          echo "REPO_URL             : ${REPO_URL}"
-          echo "GHA_RUN_URL          : ${GHA_RUN_URL}"
-          echo "TEMPLATE_FILE        : ${TEMPLATE_FILE}"
+      # - name: "📄 Trivy template"
+      #   env:
+      #     DOCKER_URL: ${{ needs.setup.outputs.DOCKER_URL }}
+      #     REPO_URL: ${{ needs.setup.outputs.REPO_URL }}
+      #     GHA_RUN_URL: ${{ needs.setup.outputs.GHA_RUN_URL }}
+      #     TEMPLATE_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TEMPLATE_FILE }}
+      #   run: |
+      #     echo "github.repositoryUrl : ${{ github.repositoryUrl }}"
+      #     echo "github.run_id        : ${{ github.run_id }}"
+      #     echo "github.server_url    : ${{ github.server_url }}"
+      #     echo "github.repository    : ${{ github.repository }}"
+      #     echo "DOCKER_URL           : ${DOCKER_URL}"
+      #     echo "REPO_URL             : ${REPO_URL}"
+      #     echo "GHA_RUN_URL          : ${GHA_RUN_URL}"
+      #     echo "TEMPLATE_FILE        : ${TEMPLATE_FILE}"
 
-          cat <<EOF > ${TEMPLATE_FILE}
-          # ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }}
-            - GitHub repo: [${{ github.repository }}](${REPO_URL})
-            - GHA run: [${{ github.run_id }}](${GHA_RUN_URL})
-            - GAR registry: [${{ inputs.NAME }}](${DOCKER_URL})
-          ---
-          {{- range . }}
-          ## {{ .Target }}
-          | CVE ID | Severity | Package | Installed Version | Fixed Version |
-          |--------|----------|---------|-------------------|--------------|
-          {{- range .Vulnerabilities }}
-          | [{{ .VulnerabilityID }}]({{ .PrimaryURL }}) | {{ .Severity }} | {{ .PkgName }} | {{ .InstalledVersion }} | {{ .FixedVersion }} |
-          {{- end }}
-          {{- end }}
-          EOF
+      #     cat <<EOF > ${TEMPLATE_FILE}
+      #     # ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }}
+      #       - GitHub repo: [${{ github.repository }}](${REPO_URL})
+      #       - GHA run: [${{ github.run_id }}](${GHA_RUN_URL})
+      #       - GAR registry: [${{ inputs.NAME }}](${DOCKER_URL})
+      #     ---
+      #     {{- range . }}
+      #     ## {{ .Target }}
+      #     | CVE ID | Severity | Package | Installed Version | Fixed Version |
+      #     |--------|----------|---------|-------------------|--------------|
+      #     {{- range .Vulnerabilities }}
+      #     | [{{ .VulnerabilityID }}]({{ .PrimaryURL }}) | {{ .Severity }} | {{ .PkgName }} | {{ .InstalledVersion }} | {{ .FixedVersion }} |
+      #     {{- end }}
+      #     {{- end }}
+      #     EOF
 
-          echo "TEMPLATE_FILE ${TEMPLATE_FILE}":
-            cat ${TEMPLATE_FILE}
+      #     echo "TEMPLATE_FILE ${TEMPLATE_FILE}":
+      #     cat ${TEMPLATE_FILE}
 
       # - name: "🚀 Run Trivy vulnerability scanner: ${{ matrix.arch }}"
       #   uses: aquasecurity/trivy-action@0.29.0
@@ -349,6 +349,9 @@ jobs:
           severity: "CRITICAL,HIGH"
         continue-on-error: ${{ inputs.TRIVY_CONTINUE_ON_ERROR }}
 
+      - name: "📄 Trivy JSON"
+        run: |
+          cat ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.json
       # - name: "📄 Generate Markdown report"
       #   run: |
       #     trivy image \
@@ -361,8 +364,11 @@ jobs:
         env:
           JSON_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.json
         run: |
-          CRITICAL_COUNT=$(jq '[.Results[].Vulnerabilities[] | select(.Severity=="CRITICAL")] | length' ${JSON_FILE})
-          HIGH_COUNT=$(jq '[.Results[].Vulnerabilities[] | select(.Severity=="HIGH")] | length' ${JSON_FILE})
+          CRITICAL_COUNT=$(jq '[.Results[].Vulnerabilities[] | select(.Severity=="CRITICAL")] | length // 0' ${JSON_FILE})
+          HIGH_COUNT=$(jq '[.Results[].Vulnerabilities[] | select(.Severity=="HIGH")] | length // 0' ${JSON_FILE})
+
+          CRITICAL_COUNT=${CRITICAL_COUNT:-0}
+          HIGH_COUNT=${HIGH_COUNT:-0}
 
           echo "CRITICAL_COUNT : ${CRITICAL_COUNT}"
           echo "HIGH_COUNT     : ${HIGH_COUNT}"
