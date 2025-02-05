@@ -406,9 +406,9 @@ jobs:
       - name: "📖 Commit Scan Results to GitHub ${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}"
         working-directory: ${{ needs.setup.outputs.TRIVY_REPO_NAME }}
         env:
-          OUTPUT_FILE: ../${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}
+          OUTPUT_FILE: ../${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.md
           TRIVY_DIR: ${{ needs.setup.outputs.TRIVY_DIR }}
-          TRIVY_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}.md
+          TRIVY_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}
         run: |
           echo "TRIVY_DIR    : ${TRIVY_DIR}"
           echo "TRIVY_FILE   : ${TRIVY_FILE}"
