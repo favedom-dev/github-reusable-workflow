@@ -233,7 +233,7 @@ jobs:
           ARCH="${{ matrix.arch }}"
           echo "ARCH : ${ARCH}"
 
-          ARCH_OUTPUT_FILE=${{ inputs.TRIVY_OUTPUT }}-${ARCH//\//-}.md
+          ARCH_OUTPUT_FILE=${{ inputs.TRIVY_OUTPUT }}-${ARCH//\//-}
           echo "ARCH_OUTPUT_FILE : ${ARCH_OUTPUT_FILE}"
           echo "ARCH_OUTPUT_FILE=$ARCH_OUTPUT_FILE" >> $GITHUB_ENV
           echo "ARCH_OUTPUT_FILE=$ARCH_OUTPUT_FILE" >> $GITHUB_OUTPUT
@@ -283,65 +283,74 @@ jobs:
           password: '${{ steps.auth-gcp-token.outputs.access_token }}'
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
-      - name: "📄 Trivy template"
+      - name: "🚀 Run Trivy vulnerability scanner: ${{ matrix.arch }}"
+        uses: aquasecurity/trivy-action@0.29.0
+        env:
+          TRIVY_PLATFORMS: ${{ matrix.arch }}
+        with:
+          image-ref: '${{ needs.setup.outputs.DOCKER_LOCATION }}:${{ inputs.VERSION }}'
+          output: "${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.json"
+          format: "json"
+          exit-code: ${{ inputs.TRIVY_EXIT_CODE }}
+          ignore-unfixed: ${{ inputs.TRIVY_IGNORE_UNFIXED }}
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
+        continue-on-error: ${{ inputs.TRIVY_CONTINUE_ON_ERROR }}
+
+      - name: "👀 Trivy JSON"
+        run: |
+          cat ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.json
+
+      - name: "🔍 Extract vulnerability counts"
+        id: trivy-summary
+        env:
+          JSON_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.json
+        run: |
+          CRITICAL_COUNT=$(jq '[.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity=="CRITICAL")] | length' ${JSON_FILE} || echo 0)
+          HIGH_COUNT=$(jq '[.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity=="HIGH")] | length' ${JSON_FILE} || echo 0)
+
+          echo "CRITICAL_COUNT : ${CRITICAL_COUNT}"
+          echo "HIGH_COUNT     : ${HIGH_COUNT}"
+          echo "CRITICAL_COUNT=${CRITICAL_COUNT}" >> $GITHUB_ENV
+          echo "CRITICAL_COUNT=${CRITICAL_COUNT}" >> $GITHUB_OUTPUT
+          echo "HIGH_COUNT=${HIGH_COUNT}" >> $GITHUB_ENV
+          echo "HIGH_COUNT=${HIGH_COUNT}" >> $GITHUB_OUTPUT
+
+      - name: "📄 Convert JSON to Markdown"
         env:
           DOCKER_URL: ${{ needs.setup.outputs.DOCKER_URL }}
           REPO_URL: ${{ needs.setup.outputs.REPO_URL }}
           GHA_RUN_URL: ${{ needs.setup.outputs.GHA_RUN_URL }}
           TEMPLATE_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TEMPLATE_FILE }}
+          MARKDOWN_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.md
+          JSON_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.json
         run: |
-          echo "github.repositoryUrl : ${{ github.repositoryUrl }}"
-          echo "github.run_id        : ${{ github.run_id }}"
-          echo "github.server_url    : ${{ github.server_url }}"
-          echo "github.repository    : ${{ github.repository }}"
-          echo "DOCKER_URL           : ${DOCKER_URL}"
-          echo "REPO_URL             : ${REPO_URL}"
-          echo "GHA_RUN_URL          : ${GHA_RUN_URL}"
-          echo "TEMPLATE_FILE        : ${TEMPLATE_FILE}"
+          echo "# ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }}" > ${MARKDOWN_FILE}
+          echo "- GitHub repo: [${{ github.repository }}](${REPO_URL})" >> ${MARKDOWN_FILE}
+          echo "- GHA run: [${{ github.run_id }}](${GHA_RUN_URL})" >> ${MARKDOWN_FILE}
+          echo "- GAR registry: [${{ inputs.NAME }}](${DOCKER_URL})" >> ${MARKDOWN_FILE}
+          echo "---" >> ${MARKDOWN_FILE}
 
-          cat <<EOF > ${TEMPLATE_FILE}
-          # ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }}
-            - GitHub repo: [${{ github.repository }}](${REPO_URL})
-            - GHA run: [${{ github.run_id }}](${GHA_RUN_URL})
-            - GAR registry: [${{ inputs.NAME }}](${DOCKER_URL})
-          ---
-          {{- range . }}
-          ## {{ .Target }}
-          | CVE ID | Severity | Package | Installed Version | Fixed Version |
-          |--------|----------|---------|-------------------|--------------|
-          {{- range .Vulnerabilities }}
-          | [{{ .VulnerabilityID }}]({{ .PrimaryURL }}) | {{ .Severity }} | {{ .PkgName }} | {{ .InstalledVersion }} | {{ .FixedVersion }} |
-          {{- end }}
-          {{- end }}
-          EOF
-
-          echo "TEMPLATE_FILE ${TEMPLATE_FILE}":
-            cat ${TEMPLATE_FILE}
-
-      - name: "🚀 Run Trivy vulnerability scanner: ${{ matrix.arch }}"
-        uses: aquasecurity/trivy-action@0.29.0
-        env:
-          TRIVY_PLATFORMS: ${{ matrix.arch }}
-          # DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
-        with:
-          image-ref: '${{ needs.setup.outputs.DOCKER_LOCATION }}:${{ inputs.VERSION }}'
-          output: "${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}"
-          format: 'template'
-          template: "@${{ steps.setup-arch-variables.outputs.ARCH_TEMPLATE_FILE }}"
-          exit-code: ${{ inputs.TRIVY_EXIT_CODE }}
-          ignore-unfixed: ${{ inputs.TRIVY_IGNORE_UNFIXED }}
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-        continue-on-error: ${{ inputs.TRIVY_CONTINUE_ON_ERROR }}
+          jq -r '
+          [.Results[] | select(.Vulnerabilities != null)] |
+          if length == 0 then "## No vulnerabilities found." else
+          (group_by(.Target)[] |
+          "# " + .[0].Target + "\n" +
+          "| CVE ID | Severity | Package | Installed Version | Fixed Version |\n" +
+          "|--------|----------|---------|-------------------|--------------|\n" +
+          (.[0].Vulnerabilities | map(
+          "| [" + .VulnerabilityID + "](" + .PrimaryURL + ") | " + .Severity + " | " + .PkgName + " | " + .InstalledVersion + " | " + (.FixedVersion // "N/A") + " |"
+          ) | join("\n"))
+          ) end'  ${JSON_FILE} >> ${MARKDOWN_FILE}
 
       - name: "👀 View updated scan results"
         run: |
-          cat ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}
+          cat ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.md
 
-      - name: "📖 Commit Scan Results to GitHub Wiki"
+      - name: "📖 Commit Scan Results to GitHub ${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}"
         working-directory: ${{ needs.setup.outputs.TRIVY_REPO_NAME }}
         env:
-          OUTPUT_FILE: ../${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}
+          OUTPUT_FILE: ../${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.md
           TRIVY_DIR: ${{ needs.setup.outputs.TRIVY_DIR }}
           TRIVY_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}
         run: |
@@ -375,13 +384,12 @@ jobs:
           webhook: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
-            text: "🚨 *Trivy Scan Completed: ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }}*"
+            text: "🚨 *Trivy Scan: ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }}*"
             blocks:
               - type: "header"
                 text:
                   type: "plain_text"
-                  text: "🚨 Trivy Scan Completed: ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }}"
-              - type: "divider"
+                  text: "🚨 ${{ inputs.NAME }} | ${{ inputs.VERSION }} | ${{ matrix.arch }}"
               - type: "section"
                 text:
                   type: "mrkdwn"
@@ -390,4 +398,9 @@ jobs:
                 text:
                   type: "mrkdwn"
                   text: "🔍 Scan Results: <${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK }}|${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}>"
+              - type: "section"
+                text:
+                  type: "mrkdwn"
+                  text: "📝 Summary: 🛑 Critical: ${{ steps.trivy-summary.outputs.CRITICAL_COUNT }} ⚠️ High: ${{ steps.trivy-summary.outputs.HIGH_COUNT }}"
               - type: "divider"
+
