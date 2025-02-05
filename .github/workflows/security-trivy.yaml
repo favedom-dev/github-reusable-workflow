@@ -243,12 +243,13 @@ jobs:
           echo "ARCH_TEMPLATE_FILE=$ARCH_TEMPLATE_FILE" >> $GITHUB_ENV
           echo "ARCH_TEMPLATE_FILE=$ARCH_TEMPLATE_FILE" >> $GITHUB_OUTPUT
 
-          ARCH_TRIVY_FILE=${{ needs.setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}.md
+          # ARCH_TRIVY_FILE=${{ needs.setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}.md
+          ARCH_TRIVY_FILE=${{ needs.setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}
           echo "ARCH_TRIVY_FILE : ${ARCH_TRIVY_FILE}"
           echo "ARCH_TRIVY_FILE=$ARCH_TRIVY_FILE" >> $GITHUB_ENV
           echo "ARCH_TRIVY_FILE=$ARCH_TRIVY_FILE" >> $GITHUB_OUTPUT
 
-          ARCH_TRIVY_LINK=https://github.com/${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}/blob/${{ inputs.TRIVY_MAIN_BRANCH }}/${{ needs.setup.outputs.TRIVY_DIR }}/${ARCH_TRIVY_FILE}
+          ARCH_TRIVY_LINK=https://github.com/${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}/blob/${{ inputs.TRIVY_MAIN_BRANCH }}/${{ needs.setup.outputs.TRIVY_DIR }}/${ARCH_TRIVY_FILE}.md
           echo "ARCH_TRIVY_LINK : ${ARCH_TRIVY_LINK}"
           echo "ARCH_TRIVY_LINK=$ARCH_TRIVY_LINK" >> $GITHUB_ENV
           echo "ARCH_TRIVY_LINK=$ARCH_TRIVY_LINK" >> $GITHUB_OUTPUT
@@ -350,21 +351,26 @@ jobs:
       - name: "📖 Commit Scan Results to GitHub ${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}"
         working-directory: ${{ needs.setup.outputs.TRIVY_REPO_NAME }}
         env:
-          OUTPUT_FILE: ../${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.md
+          OUTPUT_JSON_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.JSON
+          OUTPUT_MD_FILE: ../${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.md
           TRIVY_DIR: ${{ needs.setup.outputs.TRIVY_DIR }}
-          TRIVY_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}
+          TRIVY_JSON_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}.JSON
+          TRIVY_MD_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}.md
         run: |
-          echo "TRIVY_DIR    : ${TRIVY_DIR}"
-          echo "TRIVY_FILE   : ${TRIVY_FILE}"
-          echo "OUTPUT_FILE : ${OUTPUT_FILE}"
+          echo "TRIVY_DIR        : ${TRIVY_DIR}"
+          echo "TRIVY_JSON_FILE  : ${TRIVY_JSON_FILE}"
+          echo "TRIVY_MD_FILE    : ${TRIVY_MD_FILE}"
+          echo "OUTPUT_JSON_FILE : ${OUTPUT_JSON_FILE}"
+          echo "OUTPUT_MD_FILE   : ${OUTPUT_MD_FILE}"
           if [ ! -d "${TRIVY_DIR}" ]; then
             echo "Creating dir: ${TRIVY_DIR}"
             mkdir -p "${TRIVY_DIR}"
           fi
 
-          mv ${OUTPUT_FILE} "${TRIVY_DIR}/${TRIVY_FILE}"
-          cat "${TRIVY_DIR}/${TRIVY_FILE}"
-          git add "${TRIVY_DIR}/${TRIVY_FILE}"
+          mv ${OUTPUT_JSON_FILE} "${TRIVY_DIR}/${TRIVY_JSON_FILE}"
+          mv ${OUTPUT_MD_FILE} "${TRIVY_DIR}/${TRIVY_MD_FILE}"
+          cat "${TRIVY_DIR}/${TRIVY_MD_FILE}"
+          git add "${TRIVY_DIR}/${TRIVY_MD_FILE}" "${TRIVY_DIR}/${TRIVY_JSON_FILE}"
 
           git commit -m "chore: ${{ inputs.NAME }} : ${{ inputs.VERSION }} Update Trivy scan results "
 
@@ -376,6 +382,58 @@ jobs:
 
           echo "Link to Trivy scan: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK}}"
 
+  trivy-notification:
+    needs: setup
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ${{ inputs.GH_RUNS_ON }}
+    steps:
+
+
+      - name: "🔩 Git config"
+        run: |
+          git config --global user.email ""
+          git config --global user.name "${{ inputs.GH_USER_NAME }}"
+
+      - name: "☁️ Checkout repository ${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}"
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          repository: ${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}
+          path: '${{ needs.setup.outputs.TRIVY_REPO_NAME }}'
+
+      - name: "🏷️ Set up notification variables"
+        id: setup-notification-variables
+        working-directory: ${{ needs.setup.outputs.TRIVY_REPO_NAME }}
+        run: |
+          MATRIX_ARCH='${{ needs.setup.outputs.MATRIX_ARCH }}'
+          ARCH_LIST=$(echo "$MATRIX_ARCH" | jq -r '.arch | join(", ")')
+
+          SUMMARY=""
+          for ARCH in $(echo "$MATRIX_ARCH" | jq -r '.arch[]'); do
+            TRIVY_MD_FILE="${{ needs.setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}.md"
+            TRIVY_JSON_FILE="${{ needs.setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}.JSON"
+            TRIVY_MD_FILE_PATH="${{ needs.setup.outputs.TRIVY_DIR }}/${TRIVY_MD_FILE}"
+            TRIVY_JSON_FILE_PATH="${{ needs.setup.outputs.TRIVY_DIR }}/${TRIVY_JSON_FILE}"
+            TRIVY_LINK="https://github.com/${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}/blob/${{ inputs.TRIVY_MAIN_BRANCH }}/${{ needs.setup.outputs.TRIVY_DIR }}/${TRIVY_MD_FILE}"
+
+            echo "TRIVY_MD_FILE        : ${TRIVY_MD_FILE}"
+            echo "TRIVY_MD_FILE_PATH   : ${TRIVY_MD_FILE_PATH}"
+            echo "TRIVY_JSON_FILE      : ${TRIVY_JSON_FILE}"
+            echo "TRIVY_JSON_FILE_PATH : ${TRIVY_JSON_FILE_PATH}"
+            echo "TRIVY_LINK           : ${TRIVY_LINK}"
+
+            CRITICAL=$(jq '[.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity=="CRITICAL")] | length' "${TRIVY_JSON_FILE_PATH}" || echo 0)
+            HIGH=$(jq '[.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity=="HIGH")] | length' "${TRIVY_JSON_FILE_PATH}" || echo 0)
+
+            SUMMARY="${SUMMARY}\n🔍 *${ARCH}* → <${TRIVY_LINK}|Scan Results>: 🛑 Critical: ${CRITICAL} ⚠️ High: ${HIGH}"
+          done
+
+          echo "SUMMARY : ${SUMMARY}"
+          echo "SUMMARY=${SUMMARY}" >> $GITHUB_ENV
+          echo "SUMMARY=${SUMMARY}" >> $GITHUB_OUTPUT
+
       # https://github.com/slackapi/slack-github-action
       - name: "📢 Notify Slack"
         uses: slackapi/slack-github-action@v2.0.0
@@ -384,12 +442,12 @@ jobs:
           webhook: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
-            text: "🚨 *Trivy Scan: ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }}*"
+            text: "🚨 *Trivy Scan: ${{ inputs.NAME }} ${{ inputs.VERSION }} (${ARCH_LIST})*"
             blocks:
               - type: "header"
                 text:
                   type: "plain_text"
-                  text: "🚨 ${{ inputs.NAME }} | ${{ inputs.VERSION }} | ${{ matrix.arch }}"
+                  text: "🚨 ${{ inputs.NAME }} | ${{ inputs.VERSION }} | (${ARCH_LIST})"
               - type: "section"
                 text:
                   type: "mrkdwn"
@@ -397,10 +455,6 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "🔍 Scan Results: <${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK }}|${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}>"
-              - type: "section"
-                text:
-                  type: "mrkdwn"
-                  text: "📝 Summary: 🛑 Critical: ${{ steps.trivy-summary.outputs.CRITICAL_COUNT }} ⚠️ High: ${{ steps.trivy-summary.outputs.HIGH_COUNT }}"
+                  text: "${{ steps.setup-notification-variables.outputs.SUMMARY }}"
               - type: "divider"
 
