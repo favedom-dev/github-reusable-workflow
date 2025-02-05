@@ -367,9 +367,6 @@ jobs:
           CRITICAL_COUNT=$(jq '[.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity=="CRITICAL")] | length' ${JSON_FILE} || echo 0)
           HIGH_COUNT=$(jq '[.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity=="HIGH")] | length' ${JSON_FILE} || echo 0)
 
-          CRITICAL_COUNT=${CRITICAL_COUNT:-0}
-          HIGH_COUNT=${HIGH_COUNT:-0}
-
           echo "CRITICAL_COUNT : ${CRITICAL_COUNT}"
           echo "HIGH_COUNT     : ${HIGH_COUNT}"
           echo "CRITICAL_COUNT=${CRITICAL_COUNT}" >> $GITHUB_ENV
