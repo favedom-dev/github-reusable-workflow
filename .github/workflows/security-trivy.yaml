@@ -383,7 +383,7 @@ jobs:
           echo "Link to Trivy scan: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK}}"
 
   trivy-notification:
-    needs: setup
+    needs: [setup, trivy-scan]
     permissions:
       contents: 'read'
       id-token: 'write'
