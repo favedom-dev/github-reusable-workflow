@@ -73,13 +73,13 @@ else
   git checkout -b "${BRANCH_NAME}"
 fi
 
-echo "List All Untracked Files..."
-# Dry-run: See which files will be removed
-git clean -nd
+# echo "List All Untracked Files..."
+# # Dry-run: See which files will be removed
+# git clean -nd
 
-echo "Remove All Untracked Files..."
-# Remove all untracked files & directories
-git clean -fd
+# echo "Remove All Untracked Files..."
+# # Remove all untracked files & directories
+# git clean -fd
 
 echo "Staging and committing changes..."
 git add .
