@@ -233,7 +233,6 @@ jobs:
           ARCH="${{ matrix.arch }}"
           echo "ARCH : ${ARCH}"
 
-          # ARCH_OUTPUT_FILE=${{ inputs.TRIVY_OUTPUT }}-${ARCH//\//-}.md
           ARCH_OUTPUT_FILE=${{ inputs.TRIVY_OUTPUT }}-${ARCH//\//-}
           echo "ARCH_OUTPUT_FILE : ${ARCH_OUTPUT_FILE}"
           echo "ARCH_OUTPUT_FILE=$ARCH_OUTPUT_FILE" >> $GITHUB_ENV
@@ -284,57 +283,6 @@ jobs:
           password: '${{ steps.auth-gcp-token.outputs.access_token }}'
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
-      # - name: "📄 Trivy template"
-      #   env:
-      #     DOCKER_URL: ${{ needs.setup.outputs.DOCKER_URL }}
-      #     REPO_URL: ${{ needs.setup.outputs.REPO_URL }}
-      #     GHA_RUN_URL: ${{ needs.setup.outputs.GHA_RUN_URL }}
-      #     TEMPLATE_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TEMPLATE_FILE }}
-      #   run: |
-      #     echo "github.repositoryUrl : ${{ github.repositoryUrl }}"
-      #     echo "github.run_id        : ${{ github.run_id }}"
-      #     echo "github.server_url    : ${{ github.server_url }}"
-      #     echo "github.repository    : ${{ github.repository }}"
-      #     echo "DOCKER_URL           : ${DOCKER_URL}"
-      #     echo "REPO_URL             : ${REPO_URL}"
-      #     echo "GHA_RUN_URL          : ${GHA_RUN_URL}"
-      #     echo "TEMPLATE_FILE        : ${TEMPLATE_FILE}"
-
-      #     cat <<EOF > ${TEMPLATE_FILE}
-      #     # ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }}
-      #       - GitHub repo: [${{ github.repository }}](${REPO_URL})
-      #       - GHA run: [${{ github.run_id }}](${GHA_RUN_URL})
-      #       - GAR registry: [${{ inputs.NAME }}](${DOCKER_URL})
-      #     ---
-      #     {{- range . }}
-      #     ## {{ .Target }}
-      #     | CVE ID | Severity | Package | Installed Version | Fixed Version |
-      #     |--------|----------|---------|-------------------|--------------|
-      #     {{- range .Vulnerabilities }}
-      #     | [{{ .VulnerabilityID }}]({{ .PrimaryURL }}) | {{ .Severity }} | {{ .PkgName }} | {{ .InstalledVersion }} | {{ .FixedVersion }} |
-      #     {{- end }}
-      #     {{- end }}
-      #     EOF
-
-      #     echo "TEMPLATE_FILE ${TEMPLATE_FILE}":
-      #     cat ${TEMPLATE_FILE}
-
-      # - name: "🚀 Run Trivy vulnerability scanner: ${{ matrix.arch }}"
-      #   uses: aquasecurity/trivy-action@0.29.0
-      #   env:
-      #     TRIVY_PLATFORMS: ${{ matrix.arch }}
-      #     # DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
-      #   with:
-      #     image-ref: '${{ needs.setup.outputs.DOCKER_LOCATION }}:${{ inputs.VERSION }}'
-      #     output: "${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.md"
-      #     format: 'template'
-      #     template: "@${{ steps.setup-arch-variables.outputs.ARCH_TEMPLATE_FILE }}"
-      #     exit-code: ${{ inputs.TRIVY_EXIT_CODE }}
-      #     ignore-unfixed: ${{ inputs.TRIVY_IGNORE_UNFIXED }}
-      #     vuln-type: 'os,library'
-      #     severity: 'CRITICAL,HIGH'
-      #   continue-on-error: ${{ inputs.TRIVY_CONTINUE_ON_ERROR }}
-
       - name: "🚀 Run Trivy vulnerability scanner: ${{ matrix.arch }}"
         uses: aquasecurity/trivy-action@0.29.0
         env:
@@ -352,12 +300,6 @@ jobs:
       - name: "👀 Trivy JSON"
         run: |
           cat ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.json
-      # - name: "📄 Generate Markdown report"
-      #   run: |
-      #     trivy image \
-      #     --format template \
-      #     --template "@${{ steps.setup-arch-variables.outputs.ARCH_TEMPLATE_FILE }}" \
-      #     -o ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.md ${{ needs.setup.outputs.DOCKER_LOCATION }}:${{ inputs.VERSION }}
 
       - name: "🔍 Extract vulnerability counts"
         id: trivy-summary
