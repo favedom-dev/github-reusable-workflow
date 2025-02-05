@@ -290,7 +290,7 @@ jobs:
           TRIVY_PLATFORMS: ${{ matrix.arch }}
         with:
           image-ref: '${{ needs.setup.outputs.DOCKER_LOCATION }}:${{ inputs.VERSION }}'
-          output: "${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.json"
+          output: "${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.JSON"
           format: "json"
           exit-code: ${{ inputs.TRIVY_EXIT_CODE }}
           ignore-unfixed: ${{ inputs.TRIVY_IGNORE_UNFIXED }}
@@ -300,12 +300,12 @@ jobs:
 
       - name: "👀 Trivy JSON"
         run: |
-          cat ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.json
+          cat ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.JSON
 
       - name: "🔍 Extract vulnerability counts"
         id: trivy-summary
         env:
-          JSON_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.json
+          JSON_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.JSON
         run: |
           CRITICAL_COUNT=$(jq '[.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity=="CRITICAL")] | length' ${JSON_FILE} || echo 0)
           HIGH_COUNT=$(jq '[.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity=="HIGH")] | length' ${JSON_FILE} || echo 0)
@@ -324,7 +324,7 @@ jobs:
           GHA_RUN_URL: ${{ needs.setup.outputs.GHA_RUN_URL }}
           TEMPLATE_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TEMPLATE_FILE }}
           MARKDOWN_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.md
-          JSON_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.json
+          JSON_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.JSON
         run: |
           echo "# ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }}" > ${MARKDOWN_FILE}
           echo "- GitHub repo: [${{ github.repository }}](${REPO_URL})" >> ${MARKDOWN_FILE}
@@ -351,7 +351,7 @@ jobs:
       - name: "📖 Commit Scan Results to GitHub ${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}"
         working-directory: ${{ needs.setup.outputs.TRIVY_REPO_NAME }}
         env:
-          OUTPUT_JSON_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.JSON
+          OUTPUT_JSON_FILE: ../${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.JSON
           OUTPUT_MD_FILE: ../${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.md
           TRIVY_DIR: ${{ needs.setup.outputs.TRIVY_DIR }}
           TRIVY_JSON_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}.JSON
