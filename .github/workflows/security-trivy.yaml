@@ -410,6 +410,10 @@ jobs:
           MATRIX_ARCH='${{ needs.setup.outputs.MATRIX_ARCH }}'
           ARCH_LIST=$(echo "$MATRIX_ARCH" | jq -r '.arch | join(", ")')
 
+          echo "ARCH_LIST : ${ARCH_LIST}"
+          echo "ARCH_LIST=${ARCH_LIST}" >> $GITHUB_ENV
+          echo "ARCH_LIST=${ARCH_LIST}" >> $GITHUB_OUTPUT
+
           SUMMARY=""
           for ARCH in $(echo "$MATRIX_ARCH" | jq -r '.arch[]'); do
             TRIVY_MD_FILE="${{ needs.setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}.md"
@@ -427,7 +431,7 @@ jobs:
             CRITICAL=$(jq '[.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity=="CRITICAL")] | length' "${TRIVY_JSON_FILE_PATH}" || echo 0)
             HIGH=$(jq '[.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity=="HIGH")] | length' "${TRIVY_JSON_FILE_PATH}" || echo 0)
 
-            SUMMARY="${SUMMARY}\n🔍 *${ARCH}* → <${TRIVY_LINK}|Scan Results>: 🛑 Critical: ${CRITICAL} ⚠️ High: ${HIGH}"
+            SUMMARY="${SUMMARY}\n🔍 *${ARCH}* → <${TRIVY_LINK}|Scan Results> | 🛑 Critical: ${CRITICAL} ⚠️ High: ${HIGH}"
           done
 
           echo "SUMMARY : ${SUMMARY}"
@@ -442,12 +446,12 @@ jobs:
           webhook: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
-            text: "🚨 *Trivy Scan: ${{ inputs.NAME }} ${{ inputs.VERSION }} (${ARCH_LIST})*"
+            text: "🚨 *Trivy Scan: ${{ inputs.NAME }} ${{ inputs.VERSION }} (${{ steps.setup-notification-variables.outputs.ARCH_LIST }})*"
             blocks:
               - type: "header"
                 text:
                   type: "plain_text"
-                  text: "🚨 ${{ inputs.NAME }} | ${{ inputs.VERSION }} | (${ARCH_LIST})"
+                  text: "🚨 ${{ inputs.NAME }} | ${{ inputs.VERSION }} | (${{ steps.setup-notification-variables.outputs.ARCH_LIST }})"
               - type: "section"
                 text:
                   type: "mrkdwn"
