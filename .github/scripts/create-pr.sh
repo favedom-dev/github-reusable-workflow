@@ -27,10 +27,10 @@ done
 
 # check secrets
 if [[ -z ${GH_TOKEN} ]]; then
-  echo "❌ ERROR: $VAR is not set."
+  echo "❌ ERROR: GH_TOKEN is not set."
   MISSING_VARS=1
 else
-  echo "✅ $VAR is set: ******"
+  echo "✅ GH_TOKEN is set: ******"
 fi
 
 # Exit with error if any variable is missing
