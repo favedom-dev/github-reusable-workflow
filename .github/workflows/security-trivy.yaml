@@ -408,7 +408,7 @@ jobs:
         env:
           OUTPUT_FILE: ../${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}
           TRIVY_DIR: ${{ needs.setup.outputs.TRIVY_DIR }}
-          TRIVY_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}
+          TRIVY_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}.md
         run: |
           echo "TRIVY_DIR    : ${TRIVY_DIR}"
           echo "TRIVY_FILE   : ${TRIVY_FILE}"
