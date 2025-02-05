@@ -370,7 +370,9 @@ jobs:
           echo "CRITICAL_COUNT : ${CRITICAL_COUNT}"
           echo "HIGH_COUNT     : ${HIGH_COUNT}"
           echo "CRITICAL_COUNT=${CRITICAL_COUNT}" >> $GITHUB_ENV
+          echo "CRITICAL_COUNT=${CRITICAL_COUNT}" >> $GITHUB_OUTPUT
           echo "HIGH_COUNT=${HIGH_COUNT}" >> $GITHUB_ENV
+          echo "HIGH_COUNT=${HIGH_COUNT}" >> $GITHUB_OUTPUT
 
       - name: "📄 Convert JSON to Markdown"
         env:
