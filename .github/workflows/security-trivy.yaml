@@ -391,13 +391,16 @@ jobs:
           echo "---" >> ${MARKDOWN_FILE}
 
           jq -r '
-          .Results[] | select(.Vulnerabilities) |
-          "# " + .Target + "\n" +
+          [.Results[] | select(.Vulnerabilities != null)] |
+          if length == 0 then "## No vulnerabilities found." else
+          (group_by(.Target)[] |
+          "# " + .[0].Target + "\n" +
           "| CVE ID | Severity | Package | Installed Version | Fixed Version |\n" +
           "|--------|----------|---------|-------------------|--------------|\n" +
-          (.Vulnerabilities[] |
+          (.[0].Vulnerabilities | map(
           "| [" + .VulnerabilityID + "](" + .PrimaryURL + ") | " + .Severity + " | " + .PkgName + " | " + .InstalledVersion + " | " + (.FixedVersion // "N/A") + " |"
-          )' ${JSON_FILE} >> ${MARKDOWN_FILE}
+          ) | join("\n"))
+          ) end'  ${JSON_FILE} >> ${MARKDOWN_FILE}
 
       - name: "👀 View updated scan results"
         run: |
