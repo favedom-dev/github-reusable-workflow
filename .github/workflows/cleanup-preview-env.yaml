@@ -1,4 +1,4 @@
-name: Preview Environment Cleanup
+name: PR Cleanup
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
