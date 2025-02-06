@@ -465,6 +465,6 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "```${{ steps.setup-notification-variables.outputs.SUMMARY }}```"
+                  text: "${{ steps.setup-notification-variables.outputs.SUMMARY }}"
               - type: "divider"
 
