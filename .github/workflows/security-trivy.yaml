@@ -138,7 +138,7 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
 
-  setup:
+  trivy-setup:
     # timeout-minutes: 15
     permissions:
       contents: 'read'
@@ -218,13 +218,13 @@ jobs:
           echo "TRIVY_BASE_FILE=${TRIVY_BASE_FILE}" >> $GITHUB_OUTPUT
 
   trivy-scan:
-    needs: setup
+    needs: trivy-setup
     permissions:
       contents: 'read'
       id-token: 'write'
     runs-on: ${{ inputs.GH_RUNS_ON }}
     strategy:
-      matrix: ${{ fromJson(needs.setup.outputs.MATRIX_ARCH) }}
+      matrix: ${{ fromJson(needs.trivy-setup.outputs.MATRIX_ARCH) }}
     steps:
 
       - name: "🏷️ Set up arch variables"
@@ -243,12 +243,12 @@ jobs:
           echo "ARCH_TEMPLATE_FILE=$ARCH_TEMPLATE_FILE" >> $GITHUB_ENV
           echo "ARCH_TEMPLATE_FILE=$ARCH_TEMPLATE_FILE" >> $GITHUB_OUTPUT
 
-          ARCH_TRIVY_FILE=${{ needs.setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}
+          ARCH_TRIVY_FILE=${{ needs.trivy-setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}
           echo "ARCH_TRIVY_FILE : ${ARCH_TRIVY_FILE}"
           echo "ARCH_TRIVY_FILE=$ARCH_TRIVY_FILE" >> $GITHUB_ENV
           echo "ARCH_TRIVY_FILE=$ARCH_TRIVY_FILE" >> $GITHUB_OUTPUT
 
-          ARCH_TRIVY_LINK=https://github.com/${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}/blob/${{ inputs.TRIVY_MAIN_BRANCH }}/${{ needs.setup.outputs.TRIVY_DIR }}/${ARCH_TRIVY_FILE}.md
+          ARCH_TRIVY_LINK=https://github.com/${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}/blob/${{ inputs.TRIVY_MAIN_BRANCH }}/${{ needs.trivy-setup.outputs.TRIVY_DIR }}/${ARCH_TRIVY_FILE}.md
           echo "ARCH_TRIVY_LINK : ${ARCH_TRIVY_LINK}"
           echo "ARCH_TRIVY_LINK=$ARCH_TRIVY_LINK" >> $GITHUB_ENV
           echo "ARCH_TRIVY_LINK=$ARCH_TRIVY_LINK" >> $GITHUB_OUTPUT
@@ -258,12 +258,12 @@ jobs:
           git config --global user.email ""
           git config --global user.name "${{ inputs.GH_USER_NAME }}"
 
-      - name: "☁️ Checkout repository ${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}"
+      - name: "☁️ Checkout repository ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}"
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_TOKEN }}
-          repository: ${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}
-          path: '${{ needs.setup.outputs.TRIVY_REPO_NAME }}'
+          repository: ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}
+          path: '${{ needs.trivy-setup.outputs.TRIVY_REPO_NAME }}'
 
       - name: "🔑 Google Auth Token"
         id: auth-gcp-token
@@ -288,7 +288,7 @@ jobs:
         env:
           TRIVY_PLATFORMS: ${{ matrix.arch }}
         with:
-          image-ref: '${{ needs.setup.outputs.DOCKER_LOCATION }}:${{ inputs.VERSION }}'
+          image-ref: '${{ needs.trivy-setup.outputs.DOCKER_LOCATION }}:${{ inputs.VERSION }}'
           output: "${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.JSON"
           format: "json"
           exit-code: ${{ inputs.TRIVY_EXIT_CODE }}
@@ -318,9 +318,9 @@ jobs:
 
       - name: "📄 Convert JSON to Markdown"
         env:
-          DOCKER_URL: ${{ needs.setup.outputs.DOCKER_URL }}
-          REPO_URL: ${{ needs.setup.outputs.REPO_URL }}
-          GHA_RUN_URL: ${{ needs.setup.outputs.GHA_RUN_URL }}
+          DOCKER_URL: ${{ needs.trivy-setup.outputs.DOCKER_URL }}
+          REPO_URL: ${{ needs.trivy-setup.outputs.REPO_URL }}
+          GHA_RUN_URL: ${{ needs.trivy-setup.outputs.GHA_RUN_URL }}
           TEMPLATE_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TEMPLATE_FILE }}
           MARKDOWN_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.md
           JSON_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.JSON
@@ -347,12 +347,12 @@ jobs:
         run: |
           cat ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.md
 
-      - name: "📖 Commit Scan Results to GitHub ${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}"
-        working-directory: ${{ needs.setup.outputs.TRIVY_REPO_NAME }}
+      - name: "📖 Commit Scan Results to GitHub ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}"
+        working-directory: ${{ needs.trivy-setup.outputs.TRIVY_REPO_NAME }}
         env:
           OUTPUT_JSON_FILE: ../${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.JSON
           OUTPUT_MD_FILE: ../${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.md
-          TRIVY_DIR: ${{ needs.setup.outputs.TRIVY_DIR }}
+          TRIVY_DIR: ${{ needs.trivy-setup.outputs.TRIVY_DIR }}
           TRIVY_JSON_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}.JSON
           TRIVY_MD_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_FILE }}.md
         run: |
@@ -388,7 +388,7 @@ jobs:
           echo "Link to Trivy scan: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK}}"
 
   trivy-notification:
-    needs: [setup, trivy-scan]
+    needs: [trivy-setup, trivy-scan]
     permissions:
       contents: 'read'
       id-token: 'write'
@@ -400,18 +400,18 @@ jobs:
           git config --global user.email ""
           git config --global user.name "${{ inputs.GH_USER_NAME }}"
 
-      - name: "☁️ Checkout repository ${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}"
+      - name: "☁️ Checkout repository ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}"
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_TOKEN }}
-          repository: ${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}
-          path: '${{ needs.setup.outputs.TRIVY_REPO_NAME }}'
+          repository: ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}
+          path: '${{ needs.trivy-setup.outputs.TRIVY_REPO_NAME }}'
 
       - name: "🏷️ Set up notification variables"
         id: setup-notification-variables
-        working-directory: ${{ needs.setup.outputs.TRIVY_REPO_NAME }}
+        working-directory: ${{ needs.trivy-setup.outputs.TRIVY_REPO_NAME }}
         run: |
-          MATRIX_ARCH='${{ needs.setup.outputs.MATRIX_ARCH }}'
+          MATRIX_ARCH='${{ needs.trivy-setup.outputs.MATRIX_ARCH }}'
           ARCH_LIST=$(echo "$MATRIX_ARCH" | jq -r '.arch | join(", ")')
 
           echo "ARCH_LIST : ${ARCH_LIST}"
@@ -420,11 +420,11 @@ jobs:
 
           SUMMARY=""
           for ARCH in $(echo "$MATRIX_ARCH" | jq -r '.arch[]'); do
-            TRIVY_MD_FILE="${{ needs.setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}.md"
-            TRIVY_JSON_FILE="${{ needs.setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}.JSON"
-            TRIVY_MD_FILE_PATH="${{ needs.setup.outputs.TRIVY_DIR }}/${TRIVY_MD_FILE}"
-            TRIVY_JSON_FILE_PATH="${{ needs.setup.outputs.TRIVY_DIR }}/${TRIVY_JSON_FILE}"
-            TRIVY_LINK="https://github.com/${{ needs.setup.outputs.TRIVY_REPO_FULLNAME }}/blob/${{ inputs.TRIVY_MAIN_BRANCH }}/${{ needs.setup.outputs.TRIVY_DIR }}/${TRIVY_MD_FILE}"
+            TRIVY_MD_FILE="${{ needs.trivy-setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}.md"
+            TRIVY_JSON_FILE="${{ needs.trivy-setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}.JSON"
+            TRIVY_MD_FILE_PATH="${{ needs.trivy-setup.outputs.TRIVY_DIR }}/${TRIVY_MD_FILE}"
+            TRIVY_JSON_FILE_PATH="${{ needs.trivy-setup.outputs.TRIVY_DIR }}/${TRIVY_JSON_FILE}"
+            TRIVY_LINK="https://github.com/${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}/blob/${{ inputs.TRIVY_MAIN_BRANCH }}/${{ needs.trivy-setup.outputs.TRIVY_DIR }}/${TRIVY_MD_FILE}"
 
             echo "TRIVY_MD_FILE        : ${TRIVY_MD_FILE}"
             echo "TRIVY_MD_FILE_PATH   : ${TRIVY_MD_FILE_PATH}"
