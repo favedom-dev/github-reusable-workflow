@@ -243,7 +243,6 @@ jobs:
           echo "ARCH_TEMPLATE_FILE=$ARCH_TEMPLATE_FILE" >> $GITHUB_ENV
           echo "ARCH_TEMPLATE_FILE=$ARCH_TEMPLATE_FILE" >> $GITHUB_OUTPUT
 
-          # ARCH_TRIVY_FILE=${{ needs.setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}.md
           ARCH_TRIVY_FILE=${{ needs.setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}
           echo "ARCH_TRIVY_FILE : ${ARCH_TRIVY_FILE}"
           echo "ARCH_TRIVY_FILE=$ARCH_TRIVY_FILE" >> $GITHUB_ENV
@@ -367,13 +366,19 @@ jobs:
             mkdir -p "${TRIVY_DIR}"
           fi
 
+          echo "Move ${OUTPUT_JSON_FILE}..."
           mv ${OUTPUT_JSON_FILE} "${TRIVY_DIR}/${TRIVY_JSON_FILE}"
+          echo "Move ${OUTPUT_MD_FILE}..."
           mv ${OUTPUT_MD_FILE} "${TRIVY_DIR}/${TRIVY_MD_FILE}"
-          cat "${TRIVY_DIR}/${TRIVY_MD_FILE}"
-          git add "${TRIVY_DIR}/${TRIVY_MD_FILE}" "${TRIVY_DIR}/${TRIVY_JSON_FILE}"
 
+          echo "${TRIVY_MD_FILE}:"
+          cat "${TRIVY_DIR}/${TRIVY_MD_FILE}"
+
+          echo "Staging and committing trivy files..."
+          git add "${TRIVY_DIR}/${TRIVY_MD_FILE}" "${TRIVY_DIR}/${TRIVY_JSON_FILE}"
           git commit -m "chore: ${{ inputs.NAME }} : ${{ inputs.VERSION }} Update Trivy scan results "
 
+          echo "Pushing to remote..."
           for i in {1..5}; do
             git pull --rebase origin ${{ inputs.TRIVY_MAIN_BRANCH }} && git push origin ${{ inputs.TRIVY_MAIN_BRANCH }} && break
             echo "Retrying push... attempt $i"
@@ -389,7 +394,6 @@ jobs:
       id-token: 'write'
     runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
-
 
       - name: "🔩 Git config"
         run: |
