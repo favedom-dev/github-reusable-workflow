@@ -332,18 +332,18 @@ jobs:
           echo "---" >> ${MARKDOWN_FILE}
 
           jq -r '
-          if ([.Results[] | select(.Vulnerabilities != null)] | length) == 0 then
+          if (.Results? // [] | length) == 0 then
             "## No vulnerabilities found."
           else
-            [.Results[] | select(.Vulnerabilities != null)]
+            [.Results[]? | select(.Vulnerabilities != null)]
             | group_by(.Target)[]
             | "# " + .[0].Target + "\n" +
               "| CVE ID | Severity | Package | Installed Version | Fixed Version |\n" +
               "|--------|----------|---------|-------------------|--------------|\n" +
-              (map(select(.Vulnerabilities != null) | .Vulnerabilities[] |
-                "| [" + .VulnerabilityID + "](" + .PrimaryURL + ") | " + .Severity + " | " + .PkgName + " | " + .InstalledVersion + " | " + (.FixedVersion // "N/A") + " |"
+              (map(select(.Vulnerabilities != null) | .Vulnerabilities[]? |
+                "| [" + .VulnerabilityID + "](" + (.PrimaryURL // "N/A") + ") | " + .Severity + " | " + .PkgName + " | " + .InstalledVersion + " | " + (.FixedVersion // "N/A") + " |"
               ) | join("\n"))
-          end' ${JSON_FILE} >> ${MARKDOWN_FILE}
+          end' "${JSON_FILE}" >> "${MARKDOWN_FILE}"
 
       - name: "👀 View updated scan results"
         run: |
@@ -465,6 +465,6 @@ jobs:
               - type: "section"
                 text:
                   type: "mrkdwn"
-                  text: "${{ steps.setup-notification-variables.outputs.SUMMARY }}"
+                  text: "```${{ steps.setup-notification-variables.outputs.SUMMARY }}```"
               - type: "divider"
 
