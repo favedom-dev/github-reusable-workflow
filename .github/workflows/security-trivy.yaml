@@ -390,6 +390,7 @@ jobs:
           echo "Link to Trivy scan: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK}}"
 
   trivy-notification:
+    if: github.event_name != 'pull_request'
     needs: [trivy-setup, trivy-scan]
     permissions:
       contents: 'read'
