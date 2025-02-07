@@ -118,5 +118,5 @@ jobs:
 
       - name: "⚠️ Deprecation Warning"
         run: |
-          echo "::warning title=Deprecation Notice::This workflow is deprecated. Please use the new workflow instead: build-deploy-jar-registry.yaml"
+          echo "::warning title=Deprecation Notice::This workflow is deprecated. Please use the new workflow instead: build-maven-jar.yaml"
           exit 1
