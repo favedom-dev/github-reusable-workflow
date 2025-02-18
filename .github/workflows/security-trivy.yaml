@@ -13,6 +13,11 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
 
+      RUN_PR:
+        description: "Set to true to run Trivy on PRs"
+        required: false
+        type: string
+
       ARCHITECTURES:
         default: "linux/amd64,linux/arm64"
         description: "Comma-separated list of architectures to scan (e.g., 'linux/amd64,linux/arm64')"
@@ -139,7 +144,7 @@ on:  # yamllint disable-line rule:truthy
 jobs:
 
   trivy-setup:
-    # timeout-minutes: 15
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && inputs.RUN_PR == 'true')
     permissions:
       contents: 'read'
       id-token: 'write'
@@ -219,6 +224,7 @@ jobs:
 
   trivy-scan:
     needs: trivy-setup
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && inputs.RUN_PR == 'true')
     permissions:
       contents: 'read'
       id-token: 'write'
@@ -390,7 +396,7 @@ jobs:
           echo "Link to Trivy scan: ${{ steps.setup-arch-variables.outputs.ARCH_TRIVY_LINK}}"
 
   trivy-notification:
-    if: github.event_name != 'pull_request'
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && inputs.RUN_PR == 'true')
     needs: [trivy-setup, trivy-scan]
     permissions:
       contents: 'read'
