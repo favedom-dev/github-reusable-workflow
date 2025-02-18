@@ -144,6 +144,7 @@ on:  # yamllint disable-line rule:truthy
 jobs:
 
   trivy-setup:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && inputs.RUN_PR == 'true')
     permissions:
       contents: 'read'
       id-token: 'write'
@@ -163,7 +164,6 @@ jobs:
 
       - name: "🏷️ Set up variables"
         id: setup-variables
-        if: github.event_name == 'push' || (github.event_name == 'pull_request' && inputs.RUN_PR == 'true')
         run: |
           ARCHES="${{ inputs.architectures }}"
           MATRIX_JSON=$(echo "$ARCHES" | jq -R 'split(",")' | jq -c '{arch: .}')
