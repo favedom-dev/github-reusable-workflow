@@ -37,6 +37,16 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      DOCKER_PUSH:
+        default: 'true'
+        required: false
+        type: string
+
+      DOCKER_PUSH_PR:
+        default: ''
+        required: false
+        type: string
+
       GH_RUNS_ON:
         default: 'ubuntu-latest'
         required: false
@@ -70,15 +80,26 @@ jobs:
 
       - name: "🏷️ Set up variables"
         id: setup-variables
+        env:
+          DOCKER_PUSH_PR: ${{ inputs.DOCKER_PUSH_PR }}
         run: |
           DOCKER_LOCATION=${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}
           echo "DOCKER_LOCATION : ${DOCKER_LOCATION}"
           echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_ENV
           echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_OUTPUT
+
           DOCKER_URL="https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
           echo "DOCKER_URL : ${DOCKER_URL}"
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_ENV
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_OUTPUT
+
+          DOCKER_PUSH="${{ inputs.DOCKER_PUSH }}"
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ -n "${DOCKER_PUSH_PR}" ]; then
+            DOCKER_PUSH="${{ inputs.DOCKER_PUSH_PR }}"
+          fi
+          echo "DOCKER_PUSH : ${DOCKER_PUSH}"
+          echo "DOCKER_PUSH=${DOCKER_PUSH}" >> $GITHUB_ENV
+          echo "DOCKER_PUSH=${DOCKER_PUSH}" >> $GITHUB_OUTPUT
 
       - name: "🧰 Set up gh cli"
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
@@ -131,7 +152,8 @@ jobs:
         with:
           context: .
           platforms: ${{ inputs.PLATFORMS }}
-          push: true
+          # push: true
+          push: ${{ steps.setup-variables.outputs.DOCKER_PUSH }}
 # yamllint disable-line
           tags: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}:${{ inputs.VERSION }},${{ steps.setup-variables.outputs.DOCKER_LOCATION }}:latest
         env:
