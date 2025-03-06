@@ -207,5 +207,5 @@ jobs:
           DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
         run: |-
           pwd
-          ls -la
-          ./${DOCKER_LINK_SCRIPT_NAME}
+          ls -la ../
+          ../${DOCKER_LINK_SCRIPT_NAME}
