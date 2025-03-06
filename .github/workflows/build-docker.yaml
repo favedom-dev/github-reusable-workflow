@@ -18,8 +18,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       FILE_GIT_BRANCH:
-        # default: 'v2'  # TODO
-        default: 'pr-docker'
+        default: 'v2'
         required: false
         type: string
 
