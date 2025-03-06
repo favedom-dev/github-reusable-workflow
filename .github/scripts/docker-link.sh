@@ -7,6 +7,8 @@ echo "NAME             : ${NAME}"
 echo "VERSION          : ${VERSION}"
 echo "DOCKER_URL       : ${DOCKER_URL}"
 echo "GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}"
+echo "GITHUB_EVENT_PATH: ${GITHUB_EVENT_PATH}"
+echo "GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}"
 echo "====================================================="
 
 echo "${DOCKER_URL}"
