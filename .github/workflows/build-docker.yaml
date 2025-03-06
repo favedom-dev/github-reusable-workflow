@@ -108,12 +108,13 @@ jobs:
       DOCKER_BUILDKIT: 1
     steps:
 
-      - name: "🏷️ Get scripts"
+      - name: "⬇️ Get scripts"
         id: get-scripts
         run: |
           get_script() {
-            echo "Getting ${SCRIPT_NAME}..."
-            curl -o ${SCRIPT_NAME} ${SCRIPTS_DOWNLOAD_BASE_URL}/${SCRIPT_GIT_BRANCH}/.github/scripts/${SCRIPT_NAME}
+            SCRIPT_URL=${SCRIPTS_DOWNLOAD_BASE_URL}/${SCRIPT_GIT_BRANCH}/.github/scripts/${SCRIPT_NAME}
+            echo "Getting ${SCRIPT_NAME} from ${SCRIPT_URL}"
+            curl -o ${SCRIPT_NAME} ${SCRIPT_URL}
             chmod 777 ./${SCRIPT_NAME}
           }
           SCRIPT_GIT_BRANCH=${{ inputs.SCRIPT_GIT_BRANCH }}
@@ -211,7 +212,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "🔗 Link to Container"
-        if: steps.setup-variables.outputs.DOCKER_PUSH == 'false'
+        if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
