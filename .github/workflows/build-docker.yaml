@@ -112,7 +112,8 @@ jobs:
         id: get-scripts
         run: |
           get_script() {
-            curl -o ${SCRIPT_NAME} ${SCRIPTS_DOWNLOAD_BASE_URL}/${SCRIPT_GIT_BRANCH}/scripts/${SCRIPT_NAME}
+            echo "Getting ${SCRIPT_NAME}..."
+            curl -o ${SCRIPT_NAME} ${SCRIPTS_DOWNLOAD_BASE_URL}/${SCRIPT_GIT_BRANCH}/.github/scripts/${SCRIPT_NAME}
             chmod 777 ./${SCRIPT_NAME}
           }
           SCRIPT_GIT_BRANCH=${{ inputs.SCRIPT_GIT_BRANCH }}
