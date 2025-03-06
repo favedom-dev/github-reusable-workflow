@@ -115,7 +115,7 @@ jobs:
           get_file() {
             FILE_URL=${FILE_DOWNLOAD_BASE_URL}/${FILE_GIT_BRANCH}/${FILE_SUBDIR}/${FILE_NAME}
             echo "Getting ${FILE_NAME} from ${FILE_URL}"
-            curl -o ${FILE_NAME} ${FILE_URL}
+            curl -o ../${FILE_NAME} ${FILE_URL}
             chmod 777 ./${FILE_NAME}
           }
           FILE_GIT_BRANCH=${{ inputs.FILE_GIT_BRANCH }}
@@ -130,6 +130,7 @@ jobs:
 
           pwd
           ls -la
+          ls -la ../
 
       - name: "🏷️ Set up variables"
         id: setup-variables
@@ -143,7 +144,7 @@ jobs:
           NAME: ${{ inputs.NAME }}
           PROJECT_ID: ${{ inputs.PROJECT_ID }}
         run: |
-          ./${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
+          ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
 
       - name: "🧰 Set up gh cli"
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
