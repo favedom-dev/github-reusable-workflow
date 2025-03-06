@@ -116,7 +116,7 @@ jobs:
             FILE_URL=${FILE_DOWNLOAD_BASE_URL}/${FILE_GIT_BRANCH}/${FILE_SUBDIR}/${FILE_NAME}
             echo "Getting ${FILE_NAME} from ${FILE_URL}"
             curl -o ../${FILE_NAME} ${FILE_URL}
-            chmod 777 ./${FILE_NAME}
+            chmod 777 ../${FILE_NAME}
           }
           FILE_GIT_BRANCH=${{ inputs.FILE_GIT_BRANCH }}
           FILE_DOWNLOAD_BASE_URL=${{ inputs.FILE_DOWNLOAD_BASE_URL }}
