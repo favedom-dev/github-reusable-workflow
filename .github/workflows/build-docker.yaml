@@ -130,23 +130,6 @@ jobs:
           FILE_NAME=${DOCKER_LINK_SCRIPT_NAME}
           get_file
 
-          pwd
-          echo "==="
-          ls -la
-          echo "==="
-          ls -la ../
-          echo "==="
-          env
-          echo "==="
-          echo "GITHUB_REPOSITORY : ${GITHUB_REPOSITORY}"
-          echo "==="
-          echo "GITHUB_EVENT_NAME : ${GITHUB_EVENT_NAME}"
-          echo "==="
-          echo "GITHUB_EVENT_PATH : ${GITHUB_EVENT_PATH}"
-          echo "==="
-          PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
-          echo "PR_NUMBER : ${PR_NUMBER}"
-
       - name: "🏷️ Set up variables"
         id: setup-variables
         env:
@@ -224,6 +207,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
+          NAME: ${{ inputs.NAME }}
+          VERSION: ${{ inputs.VERSION }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |-
           env
           echo "==="
