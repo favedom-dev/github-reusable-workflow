@@ -202,8 +202,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "🔗 Link to Container"
-        # if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'  # TODO
-        if: steps.setup-variables.outputs.DOCKER_PUSH == 'false'
+        if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
