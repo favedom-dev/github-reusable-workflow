@@ -109,17 +109,18 @@ jobs:
       DOCKER_LINK_SCRIPT_NAME: docker-link.sh
     steps:
 
-      - name: "⬇️ Get scripts"
-        id: get-scripts
+      - name: "⬇️ Get reusable files"
+        id: get-reusable-files
         run: |
           get_script() {
-            SCRIPT_URL=${SCRIPTS_DOWNLOAD_BASE_URL}/${SCRIPT_GIT_BRANCH}/.github/scripts/${SCRIPT_NAME}
+            SCRIPT_URL=${SCRIPTS_DOWNLOAD_BASE_URL}/${SCRIPT_GIT_BRANCH}/${SCRIPT_SUBDIR}/${SCRIPT_NAME}
             echo "Getting ${SCRIPT_NAME} from ${SCRIPT_URL}"
             curl -o ${SCRIPT_NAME} ${SCRIPT_URL}
             chmod 777 ./${SCRIPT_NAME}
           }
           SCRIPT_GIT_BRANCH=${{ inputs.SCRIPT_GIT_BRANCH }}
           SCRIPTS_DOWNLOAD_BASE_URL=${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}
+          SCRIPT_SUBDIR=.github/scripts
 
           SCRIPT_NAME=${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
           get_script
@@ -205,4 +206,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
         run: |-
+          pwd
+          ls -la
           ./${DOCKER_LINK_SCRIPT_NAME}
