@@ -11,7 +11,6 @@ echo "NAME             : ${NAME}"
 echo "PROJECT_ID       : ${PROJECT_ID}"
 echo "====================================================="
 
-
 if [ -n "${DOCKER_NAME}" ]; then
   D_NAME=${DOCKER_NAME}
 else
