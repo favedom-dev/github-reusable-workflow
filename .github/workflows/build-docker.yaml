@@ -12,12 +12,12 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
 
-      SCRIPTS_DOWNLOAD_BASE_URL:
+      FILE_DOWNLOAD_BASE_URL:
         default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
         required: false
         type: string
 
-      SCRIPT_GIT_BRANCH:
+      FILE_GIT_BRANCH:
         # default: 'v2'  # TODO
         default: 'pr-docker'
         required: false
@@ -112,21 +112,24 @@ jobs:
       - name: "⬇️ Get reusable files"
         id: get-reusable-files
         run: |
-          get_script() {
-            SCRIPT_URL=${SCRIPTS_DOWNLOAD_BASE_URL}/${SCRIPT_GIT_BRANCH}/${SCRIPT_SUBDIR}/${SCRIPT_NAME}
-            echo "Getting ${SCRIPT_NAME} from ${SCRIPT_URL}"
-            curl -o ${SCRIPT_NAME} ${SCRIPT_URL}
-            chmod 777 ./${SCRIPT_NAME}
+          get_file() {
+            FILE_URL=${FILE_DOWNLOAD_BASE_URL}/${FILE_GIT_BRANCH}/${FILE_SUBDIR}/${FILE_NAME}
+            echo "Getting ${FILE_NAME} from ${FILE_URL}"
+            curl -o ${FILE_NAME} ${FILE_URL}
+            chmod 777 ./${FILE_NAME}
           }
-          SCRIPT_GIT_BRANCH=${{ inputs.SCRIPT_GIT_BRANCH }}
-          SCRIPTS_DOWNLOAD_BASE_URL=${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}
-          SCRIPT_SUBDIR=.github/scripts
+          FILE_GIT_BRANCH=${{ inputs.FILE_GIT_BRANCH }}
+          FILE_DOWNLOAD_BASE_URL=${{ inputs.FILE_DOWNLOAD_BASE_URL }}
+          FILE_SUBDIR=.github/scripts
 
-          SCRIPT_NAME=${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
-          get_script
+          FILE_NAME=${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
+          get_file
 
-          SCRIPT_NAME=${DOCKER_LINK_SCRIPT_NAME}
-          get_script
+          FILE_NAME=${DOCKER_LINK_SCRIPT_NAME}
+          get_file
+
+          pwd
+          ls -la
 
       - name: "🏷️ Set up variables"
         id: setup-variables
