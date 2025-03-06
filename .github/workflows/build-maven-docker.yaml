@@ -12,6 +12,21 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
 
+      FILE_DOWNLOAD_BASE_URL:
+        default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
+        required: false
+        type: string
+
+      FILE_GIT_BRANCH:
+        default: 'v2'
+        required: false
+        type: string
+
+      VAR_DOCKER_SCRIPT_NAME:
+        default: 'var-docker.sh'
+        required: false
+        type: string
+
       APP_WORKING_DIR:
         default: '.'
         required: false
@@ -53,8 +68,22 @@ on:  # yamllint disable-line rule:truthy
         type: string
         default: linux/amd64,linux/arm64
 
+      DOCKER_NAME:
+        required: false
+        type: string
+
       DOCKERFILE_FILE:
         default: './Dockerfile'
+        required: false
+        type: string
+
+      DOCKER_PUSH:
+        default: 'true'
+        required: false
+        type: string
+
+      DOCKER_PUSH_PR:
+        default: ''
         required: false
         type: string
 
@@ -140,6 +169,11 @@ jobs:
       contents: 'read'
       id-token: 'write'
     runs-on: ${{ inputs.GH_RUNS_ON }}
+    env:
+      # GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      # DOCKER_BUILDKIT: 1
+      DOCKER_LINK_SCRIPT_NAME: docker-link.sh
+      MVN_SETTINGS_FILE: settings.xml
     steps:
 
       - name: "📄 GITHUB INFO"
@@ -155,17 +189,42 @@ jobs:
           echo "--------------------------------------"
           echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
 
+      - name: "⬇️ Get reusable files"
+        id: get-reusable-files
+        run: |
+          get_file() {
+            FILE_URL=${FILE_DOWNLOAD_BASE_URL}/${FILE_GIT_BRANCH}/${FILE_SUBDIR}/${FILE_NAME}
+            echo "Getting ${FILE_NAME} from ${FILE_URL}"
+            curl -o ../${FILE_NAME} ${FILE_URL}
+            chmod 777 ../${FILE_NAME}
+          }
+          FILE_GIT_BRANCH=${{ inputs.FILE_GIT_BRANCH }}
+          FILE_DOWNLOAD_BASE_URL=${{ inputs.FILE_DOWNLOAD_BASE_URL }}
+          FILE_SUBDIR=.github/scripts
+
+          FILE_NAME=${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
+          get_file
+
+          FILE_NAME=${DOCKER_LINK_SCRIPT_NAME}
+          get_file
+
+          # FILE_SUBDIR=.m2
+          # FILE_NAME=${MVN_SETTINGS_FILE}
+          # get_file
+
       - name: "🏷️ Set up variables"
         id: setup-variables
+        env:
+          DOCKER_NAME: ${{ inputs.DOCKER_NAME }}
+          DOCKER_PUSH: ${{ inputs.DOCKER_PUSH }}
+          DOCKER_PUSH_PR: ${{ inputs.DOCKER_PUSH_PR }}
+          DOCKER_REGISTRY: ${{ inputs.DOCKER_REGISTRY }}
+          GAR_LOCATION: ${{ inputs.GAR_LOCATION }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          NAME: ${{ inputs.NAME }}
+          PROJECT_ID: ${{ inputs.PROJECT_ID }}
         run: |
-          DOCKER_LOCATION=${{ inputs.GAR_LOCATION }}-docker.pkg.dev/${{ inputs.PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}
-          echo "DOCKER_LOCATION : ${DOCKER_LOCATION}"
-          echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_ENV
-          echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_OUTPUT
-          DOCKER_URL="https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
-          echo "DOCKER_URL : ${DOCKER_URL}"
-          echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_ENV
-          echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_OUTPUT
+          ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
 
       - name: "🧰 Set up gh cli"
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
@@ -321,25 +380,24 @@ jobs:
           echo "tags=${DOCKER_TAGS}" >> $GITHUB_OUTPUT
 
       - name: "🐳 Docker: build, tag, and push"
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         if: ${{ !env.ACT }}
         with:
           context: ${{ inputs.APP_WORKING_DIR }}
           file: ${{ env.DOCKERFILE_FILE }}
           platforms: ${{ inputs.PLATFORMS }}
-          push: true
+          push: ${{ steps.setup-variables.outputs.DOCKER_PUSH }}
           tags: ${{ steps.docker-tags.outputs.tags }}
 
       - name: "🔗 Link to Container"
-        if: ${{ !env.ACT }}
+        if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
-# yamllint disable rule:line-length
+          NAME: ${{ inputs.NAME }}
+          VERSION: ${{ inputs.VERSION }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |-
-          echo "${DOCKER_URL}"
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            gh pr comment ${{ github.event.number }} \
-            --body "🐳 Container: [${{ inputs.NAME }} ${{ inputs.VERSION }}](${DOCKER_URL})"
-          fi
-# yamllint enable rule:line-length
+          ../${DOCKER_LINK_SCRIPT_NAME}
