@@ -345,7 +345,7 @@ jobs:
           tags: ${{ steps.docker-tags.outputs.tags }}
 
       - name: "🔗 Link to Container"
-        if: ${{ !env.ACT }}
+        if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           DOCKER_DIGEST: ${{ steps.docker-build.outputs.digest }}
