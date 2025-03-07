@@ -16,7 +16,7 @@ echo "====================================================="
 
 if [ -n "${DOCKER_DIGEST}" ]; then
   # direct link to the container using the digest
-  DOCKER_URL="${DOCKER_URL%%\?*}/sha256:${DOCKER_DIGEST}?${DOCKER_URL#*\?}"
+  DOCKER_URL="${DOCKER_URL%%\?*}/${DOCKER_DIGEST}?${DOCKER_URL#*\?}"
 fi
 echo "${DOCKER_URL}"
 
