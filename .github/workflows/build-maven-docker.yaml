@@ -381,6 +381,7 @@ jobs:
 
       - name: "🐳 Docker: build, tag, and push"
         uses: docker/build-push-action@v6
+        id: docker-build
         if: ${{ !env.ACT }}
         with:
           context: ${{ inputs.APP_WORKING_DIR }}
@@ -394,6 +395,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
+          DOCKER_DIGEST: ${{ steps.docker-build.outputs.digest }}
           NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
