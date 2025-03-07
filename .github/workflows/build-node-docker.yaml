@@ -339,7 +339,7 @@ jobs:
         if: ${{ !env.ACT }}
         with:
           context: ${{ inputs.DOCKER_CONTEXT }}
-          file: ${{ env.DOCKERFILE_FILE }}
+          # file: ${{ env.DOCKERFILE_FILE }}
           platforms: ${{ inputs.PLATFORMS }}
           push: ${{ steps.setup-variables.outputs.DOCKER_PUSH }}
           tags: ${{ steps.docker-tags.outputs.tags }}
