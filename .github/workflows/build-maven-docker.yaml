@@ -394,8 +394,8 @@ jobs:
         if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
           DOCKER_DIGEST: ${{ steps.docker-build.outputs.digest }}
+          DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
           NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}

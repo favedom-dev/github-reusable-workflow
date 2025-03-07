@@ -218,6 +218,7 @@ jobs:
 
       - name: "🐳 Docker: build, tag, and push"
         uses: docker/build-push-action@v6
+        id: docker-build
         with:
           context: ${{ inputs.DOCKER_CONTEXT }}
           file: ${{ inputs.DOCKERFILE_FILE }}
@@ -228,6 +229,7 @@ jobs:
       - name: "🔗 Link to Container"
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          DOCKER_DIGEST: ${{ steps.docker-build.outputs.digest }}
           DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
           NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
