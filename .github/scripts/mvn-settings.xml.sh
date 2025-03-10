@@ -26,6 +26,4 @@ fi
 
 echo "Variables replaced and saved to: ${OUTPUT_FILE}"
 
-echo "====="
 cat ${OUTPUT_FILE}
-echo "====="

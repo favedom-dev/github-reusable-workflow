@@ -12,6 +12,16 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
 
+      FILE_DOWNLOAD_BASE_URL:
+        default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
+        required: false
+        type: string
+
+      FILE_GIT_BRANCH:
+        default: 'v2'
+        required: false
+        type: string
+
       JDK_VERSION:
         default: 21
         required: false
@@ -114,7 +124,29 @@ jobs:
       contents: 'read'
       id-token: 'write'
     runs-on: ${{ inputs.GH_RUNS_ON }}
+    env:
+      MVN_SETTINGS_FILE: settings.xml
     steps:
+
+      - name: "⬇️ Get reusable files"
+        id: get-reusable-files
+        run: |
+          get_file() {
+            FILE_URL=${FILE_DOWNLOAD_BASE_URL}/${FILE_GIT_BRANCH}/${FILE_SUBDIR}/${FILE_NAME}
+            echo "Getting ${FILE_NAME} from ${FILE_URL}"
+            curl -o ../${FILE_NAME} ${FILE_URL}
+            chmod 777 ../${FILE_NAME}
+          }
+          FILE_GIT_BRANCH=${{ inputs.FILE_GIT_BRANCH }}
+          FILE_DOWNLOAD_BASE_URL=${{ inputs.FILE_DOWNLOAD_BASE_URL }}
+          FILE_SUBDIR=.github/scripts
+
+          FILE_NAME=mvn-settings.xml.sh
+          get_file
+
+          FILE_SUBDIR=.m2
+          FILE_NAME=${MVN_SETTINGS_FILE}
+          get_file
 
       - name: "🏷️ Set up variables"
         id: setup-variables
@@ -171,36 +203,7 @@ jobs:
           maven-version: '${{ inputs.MVN_VERSION }}'
 
       - name: "🧰 Maven ~/.m2/settings.xml"
-        run: |
-          # wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
-
-          # Input and output files
-          INPUT_FILE="dl-settings.xml"
-          # OUTPUT_FILE="~/.m2/settings.xml"
-          OUTPUT_FILE="./settings.xml"
-
-          curl -o ${INPUT_FILE} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
-          # envsubst < ./settings.xml > ~/.m2/settings.xml
-
-          mkdir -p ~/.m2
-
-          # Read the entire content of the file into a variable
-          file_content=$(< "${INPUT_FILE}")
-
-          # Replace variables dynamically in the file content
-          # Escape quotes and use eval for variable expansion
-          eval "echo \"$(echo "$file_content" | sed 's/"/\\"/g')\"" > "${OUTPUT_FILE}"
-
-          echo "Variables replaced and saved to ${OUTPUT_FILE}"
-
-          echo "====="
-          cat ${OUTPUT_FILE}
-          echo "====="
-
-          mv "${OUTPUT_FILE}" ~/.m2/settings.xml
-          echo "====="
-          cat ~/.m2/settings.xml
-          echo "====="
+        run: ../mvn-settings.xml.sh
 
       - name: "⚙️ Maven set app version ${{ inputs.VERSION }}"
         working-directory: ${{ inputs.MAVEN_WORKING_DIR }}

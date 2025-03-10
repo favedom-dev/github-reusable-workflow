@@ -208,9 +208,12 @@ jobs:
           FILE_NAME=${DOCKER_LINK_SCRIPT_NAME}
           get_file
 
-          # FILE_SUBDIR=.m2
-          # FILE_NAME=${MVN_SETTINGS_FILE}
-          # get_file
+          FILE_NAME=mvn-settings.xml.sh
+          get_file
+
+          FILE_SUBDIR=.m2
+          FILE_NAME=${MVN_SETTINGS_FILE}
+          get_file
 
       - name: "🏷️ Set up variables"
         id: setup-variables
@@ -223,8 +226,7 @@ jobs:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           NAME: ${{ inputs.NAME }}
           PROJECT_ID: ${{ inputs.PROJECT_ID }}
-        run: |
-          ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
+        run: ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
 
       - name: "🧰 Set up gh cli"
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
@@ -292,36 +294,7 @@ jobs:
             ${{ inputs.NAME }}-${{ runner.os }}-maven-
 
       - name: "🧰 Maven ~/.m2/settings.xml"
-        run: |
-          # wget https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
-
-          # Input and output files
-          INPUT_FILE="dl-settings.xml"
-          # OUTPUT_FILE="~/.m2/settings.xml"
-          OUTPUT_FILE="./settings.xml"
-
-          curl -o ${INPUT_FILE} https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2/settings.xml
-          # envsubst < ./settings.xml > ~/.m2/settings.xml
-
-          mkdir -p ~/.m2
-
-          # Read the entire content of the file into a variable
-          file_content=$(< "${INPUT_FILE}")
-
-          # Replace variables dynamically in the file content
-          # Escape quotes and use eval for variable expansion
-          eval "echo \"$(echo "$file_content" | sed 's/"/\\"/g')\"" > "${OUTPUT_FILE}"
-
-          echo "Variables replaced and saved to ${OUTPUT_FILE}"
-
-          echo "====="
-          cat ${OUTPUT_FILE}
-          echo "====="
-
-          mv "${OUTPUT_FILE}" ~/.m2/settings.xml
-          echo "====="
-          cat ~/.m2/settings.xml
-          echo "====="
+        run: ../mvn-settings.xml.sh
 
       - name: "⚙️ Maven set app version ${{ inputs.VERSION }}"
         working-directory: ${{ inputs.APP_WORKING_DIR }}
@@ -401,5 +374,4 @@ jobs:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: |-
-          ../${DOCKER_LINK_SCRIPT_NAME}
+        run: ../${DOCKER_LINK_SCRIPT_NAME}
