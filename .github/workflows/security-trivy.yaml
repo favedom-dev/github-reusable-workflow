@@ -450,6 +450,8 @@ jobs:
           echo "SUMMARY : ${SUMMARY}"
           echo "SUMMARY=${SUMMARY}" >> $GITHUB_ENV
           echo "SUMMARY=${SUMMARY}" >> $GITHUB_OUTPUT
+          echo "# Trivy scans}" >> $GITHUB_STEP_SUMMARY
+          echo "SUMMARY=${SUMMARY}" >> $GITHUB_STEP_SUMMARY
 
       # https://github.com/slackapi/slack-github-action
       - name: "📢 Notify Slack"
