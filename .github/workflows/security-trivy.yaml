@@ -428,6 +428,9 @@ jobs:
           echo "ARCH_LIST=${ARCH_LIST}" >> $GITHUB_OUTPUT
 
           SUMMARY=""
+          echo "# Trivy scans:" >> $GITHUB_STEP_SUMMARY
+          echo "| 🏛️ | 🛑 | ⚠️ |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- | --- |" >> $GITHUB_STEP_SUMMARY
           for ARCH in $(echo "$MATRIX_ARCH" | jq -r '.arch[]'); do
             TRIVY_MD_FILE="${{ needs.trivy-setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}.md"
             TRIVY_JSON_FILE="${{ needs.trivy-setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}.JSON"
@@ -445,13 +448,12 @@ jobs:
             HIGH=$(jq '[.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity=="HIGH")] | length' "${TRIVY_JSON_FILE_PATH}" || echo 0)
 
             SUMMARY="${SUMMARY}\n🔍 *${ARCH}* → <${TRIVY_LINK}|Scan Results> | 🛑 Critical: ${CRITICAL} ⚠️ High: ${HIGH}"
+            echo "| 🔍 *${ARCH}* →  [Scan Results]{${TRIVY_LINK}} | 🛑 Critical: ${CRITICAL} | ⚠️ High: ${HIGH} |" >> $GITHUB_STEP_SUMMARY
           done
 
           echo "SUMMARY : ${SUMMARY}"
           echo "SUMMARY=${SUMMARY}" >> $GITHUB_ENV
           echo "SUMMARY=${SUMMARY}" >> $GITHUB_OUTPUT
-          echo "# Trivy scans}" >> $GITHUB_STEP_SUMMARY
-          echo "SUMMARY=${SUMMARY}" >> $GITHUB_STEP_SUMMARY
 
       # https://github.com/slackapi/slack-github-action
       - name: "📢 Notify Slack"
