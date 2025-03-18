@@ -259,7 +259,8 @@ jobs:
             # if gh pr create --label "approved" --title "chore: bump image.tag ${NAME} to ${VERSION}" --body "${GH_BODY}"; then
               echo "Pull request created successfully."
               echo "PR URL: ${PR_URL}"
-              echo "# 🡢 Pull Request [${NAME} ${VERSION}](${PR_URL})" >> $GITHUB_STEP_SUMMARY
+              echo "# 🡢 Pull Request" >> $GITHUB_STEP_SUMMARY
+              echo "Image tag updated in ${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }} : [${NAME} ${VERSION}](${PR_URL})" >> $GITHUB_STEP_SUMMARY
               break
             fi
             echo "PR creation failed. Retrying in ${SLEEP_TIME} seconds... (Attempt ${i}/${MAX_RETRIES})"
