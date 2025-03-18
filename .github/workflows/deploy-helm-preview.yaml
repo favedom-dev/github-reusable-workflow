@@ -530,3 +530,5 @@ jobs:
 
           echo "gh pr comment ${{ github.event.number }} --body-file ${PR_BODY} --repo ${{ github.repository }}"
           gh pr comment ${{ github.event.number }} --body-file ${PR_BODY} --repo ${{ github.repository }}
+
+          cat ${PR_BODY} >> $GITHUB_STEP_SUMMARY
