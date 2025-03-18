@@ -198,6 +198,8 @@ jobs:
         env:
           NAMES: ${{ inputs.NAMES }}
         run: |
+          echo "## 🗑️ Delete PR ${{ steps.setup-variables.outputs.PR_NUM }} container(s)" >> $GITHUB_STEP_SUMMARY
+
           delete_images() {
             declare -a PR_TAG_LIST
             for tag in $(gcloud artifacts docker tags list ${CURRENT_DOCKER_LOCATION} | grep "${DOCKER_TAG_PREFIX}" | cut -f1 -d ' '); do
@@ -206,6 +208,7 @@ jobs:
               echo ""
               echo ">>>>>>>>>>>>>>"
               echo "START DELETING: ${CURRENT_CONTAINER}"
+              echo "- ${CURRENT_CONTAINER}" >> $GITHUB_STEP_SUMMARY
               gcloud artifacts docker images delete "${CURRENT_CONTAINER}" --delete-tags --quiet
               echo "DONE  DELETING: ${CURRENT_CONTAINER}"
               echo "<<<<<<<<<<<<<<"
@@ -252,10 +255,13 @@ jobs:
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
         run: |
+          echo "## 🗑️ Namespace: ${{ inputs.PREVIEW_NAMESPACE }}" >> $GITHUB_STEP_SUMMARY
           if [[ $(kubectl get ns | awk '{print $1}' | grep ^${PREVIEW_NAMESPACE}$) == ${PREVIEW_NAMESPACE} ]]; then
             kubectl delete namespace ${PREVIEW_NAMESPACE}
+            echo "kubectl delete namespace ${PREVIEW_NAMESPACE}" >> $GITHUB_STEP_SUMMARY
           else
             echo "SKIPPING: namespace \"${PREVIEW_NAMESPACE}\" does not exist"
+            echo "SKIPPING: namespace \"${PREVIEW_NAMESPACE}\" does not exist" >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: "🔩 Git config"
@@ -276,6 +282,7 @@ jobs:
         env:
           NAMES: ${{ inputs.NAMES }}
         run: |
+          echo "## 🗑️ Cleanup Trivy" >> $GITHUB_STEP_SUMMARY
           pwd
 
           declare -a ARR_APPS
@@ -302,9 +309,11 @@ jobs:
           echo "Executing: $FIND_CMD"
           MATCHED_FILES=$(eval "$FIND_CMD")
 
+
           if [ -n "$MATCHED_FILES" ]; then
             echo "Deleting files:"
             echo "${MATCHED_FILES}"
+            echo "${MATCHED_FILES}" >> $GITHUB_STEP_SUMMARY
             rm -f ${MATCHED_FILES}
             git status
 
@@ -318,4 +327,5 @@ jobs:
             done
           else
             echo "No matching files found. Skipping deletion."
+            echo "No matching files found. Skipping deletion." >> $GITHUB_STEP_SUMMARY
           fi
