@@ -136,6 +136,8 @@ jobs:
           PR_VERSION: ${{ steps.pr-version.outputs.version }}
         run: |
           echo "set-version    : ${{ steps.set-version.outputs.version }}"
+          echo "# Version ${{ steps.set-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           if [ ${{ env.PR_VERSION }} ]; then
             echo "set-version PR : ${{ steps.set-version.outputs.build-version }}"
+            echo "## PR Version ${{ steps.set-version.outputs.build-version }}" >> $GITHUB_STEP_SUMMARY
           fi
