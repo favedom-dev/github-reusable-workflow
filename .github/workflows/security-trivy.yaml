@@ -448,7 +448,7 @@ jobs:
             HIGH=$(jq '[.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity=="HIGH")] | length' "${TRIVY_JSON_FILE_PATH}" || echo 0)
 
             SUMMARY="${SUMMARY}\n🔍 *${ARCH}* → <${TRIVY_LINK}|Scan Results> | 🛑 Critical: ${CRITICAL} ⚠️ High: ${HIGH}"
-            echo "| 🔍 *${ARCH}* →  [Scan Results]{${TRIVY_LINK}} | 🛑 Critical: ${CRITICAL} | ⚠️ High: ${HIGH} |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🔍 *${ARCH}* →  [Scan Results](${TRIVY_LINK}) | 🛑 Critical: ${CRITICAL} | ⚠️ High: ${HIGH} |" >> $GITHUB_STEP_SUMMARY
           done
 
           echo "SUMMARY : ${SUMMARY}"
