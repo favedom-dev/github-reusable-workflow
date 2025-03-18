@@ -254,8 +254,12 @@ jobs:
 
           echo "Creating pull request..."
           for ((i=1; i<=MAX_RETRIES; i++)); do
-            if gh pr create --label "approved" --title "chore: bump image.tag ${NAME} to ${VERSION}" --body "${GH_BODY}"; then
+            PR_URL=$(gh pr create --label "approved" --title "chore: bump image.tag ${NAME} to ${VERSION}" --body "${GH_BODY}" 2>/dev/null)
+            if [ $? -eq 0 ]; then
+            # if gh pr create --label "approved" --title "chore: bump image.tag ${NAME} to ${VERSION}" --body "${GH_BODY}"; then
               echo "Pull request created successfully."
+              echo "PR URL: ${PR_URL}"
+              echo "${NAME} ${VERSION} [Pull Request](${PR_URL})" >> $GITHUB_STEP_SUMMARY
               break
             fi
             echo "PR creation failed. Retrying in ${SLEEP_TIME} seconds... (Attempt ${i}/${MAX_RETRIES})"

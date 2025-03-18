@@ -32,4 +32,5 @@ else
   echo "ℹ️ Not a pull request event, skipping comment."
 fi
 
-echo "${NAME} ${VERSION} Container : ${DOCKER_URL}" >> $GITHUB_STEP_SUMMARY
+# echo "${NAME} ${VERSION} Container : ${DOCKER_URL}" >> $GITHUB_STEP_SUMMARY
+echo "Container: [${NAME}:${VERSION}](${DOCKER_URL})" >> $GITHUB_STEP_SUMMARY
