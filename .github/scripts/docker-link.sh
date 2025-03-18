@@ -33,4 +33,4 @@ else
 fi
 
 # echo "${NAME} ${VERSION} Container : ${DOCKER_URL}" >> $GITHUB_STEP_SUMMARY
-echo "Container: [${NAME}:${VERSION}](${DOCKER_URL})" >> $GITHUB_STEP_SUMMARY
+echo "🐳 Container: [${NAME}:${VERSION}](${DOCKER_URL})" >> $GITHUB_STEP_SUMMARY

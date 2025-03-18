@@ -259,7 +259,7 @@ jobs:
             # if gh pr create --label "approved" --title "chore: bump image.tag ${NAME} to ${VERSION}" --body "${GH_BODY}"; then
               echo "Pull request created successfully."
               echo "PR URL: ${PR_URL}"
-              echo "${NAME} ${VERSION} [Pull Request](${PR_URL})" >> $GITHUB_STEP_SUMMARY
+              echo "🡢 ${NAME} ${VERSION} [Pull Request](${PR_URL})" >> $GITHUB_STEP_SUMMARY
               break
             fi
             echo "PR creation failed. Retrying in ${SLEEP_TIME} seconds... (Attempt ${i}/${MAX_RETRIES})"
