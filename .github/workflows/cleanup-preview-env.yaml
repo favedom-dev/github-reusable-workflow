@@ -327,5 +327,5 @@ jobs:
             done
           else
             echo "No matching files found. Skipping deletion."
-            echo "No matching files found. Skipping deletion." >> $GITHUB_STEP_SUMMARY
+            echo "SKIPPING: No matching files found" >> $GITHUB_STEP_SUMMARY
           fi
