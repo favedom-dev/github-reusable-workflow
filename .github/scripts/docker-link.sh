@@ -32,7 +32,7 @@ else
   echo "ℹ️ Not a pull request event, skipping comment."
 fi
 
-echo "# 🐳 Container: [${NAME}:${VERSION}](${DOCKER_URL})" >> $GITHUB_STEP_SUMMARY
+echo "## 🐳 Container: [${NAME}:${VERSION}](${DOCKER_URL})" >> $GITHUB_STEP_SUMMARY
 echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
 # TODO varaibles for the docker pull address
 echo "docker pull us-central1-docker.pkg.dev/favedom-dev/docker/${NAME}:${VERSION}" >> $GITHUB_STEP_SUMMARY
