@@ -517,11 +517,13 @@ jobs:
           echo "START: body message file"
           # START: body message file
           echo "## PR built and available in a preview environment **${{ inputs.NAME }}** pr ${{ github.event.number }}:" > ${PR_BODY}
-          echo "- 🔗 preview [${PREVIEW_URL}](${PREVIEW_URL})" >> ${PR_BODY}
+          echo "| Title | Info |" >> ${PR_BODY}
+          echo "| --- | --- |" >> ${PR_BODY}
+          echo "| 🔗 Preview | [${PREVIEW_URL}](${PREVIEW_URL}) |" >> ${PR_BODY}
           if [ ${#API_PATH} -gt 1 ]; then
-            echo "- 💓 healthcheck [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL})" >> ${PR_BODY}
+            echo "| 💓 Healthcheck | [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL}) |" >> ${PR_BODY}
           fi
-          echo "- ☸ preview namespace: \`${PREVIEW_NAMESPACE}\`" >> ${PR_BODY}
+          echo "| ☸ Preview Namespace | \`kubectl config set-context gke_development-375017_us-central1-a_fanfuzenil --namespace=${PREVIEW_NAMESPACE}\` |" >> ${PR_BODY}
           echo "===="
           echo "PR_BODY:"
           cat ${PR_BODY}
