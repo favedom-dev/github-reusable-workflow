@@ -137,7 +137,7 @@ jobs:
         run: |
           echo "set-version    : ${{ steps.set-version.outputs.version }}"
           echo "# Info" >> $GITHUB_STEP_SUMMARY
-          echo "| Title | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "| Name | Value |" >> $GITHUB_STEP_SUMMARY
           echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
           echo "| 🔖 Version | ${{ steps.set-version.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
           if [ ${{ env.PR_VERSION }} ]; then
