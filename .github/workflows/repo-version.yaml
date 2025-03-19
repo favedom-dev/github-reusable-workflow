@@ -137,10 +137,12 @@ jobs:
         run: |
           echo "set-version    : ${{ steps.set-version.outputs.version }}"
           echo "# Info" >> $GITHUB_STEP_SUMMARY
-          echo "🔖 Version : ${{ steps.set-version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "| Title | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "|🔖 Version | ${{ steps.set-version.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
           if [ ${{ env.PR_VERSION }} ]; then
             echo "set-version PR : ${{ steps.set-version.outputs.build-version }}"
-            echo "📦 PR Version ${{ steps.set-version.outputs.build-version }}" >> $GITHUB_STEP_SUMMARY
+            echo "| 📦 PR Version | ${{ steps.set-version.outputs.build-version }} |" >> $GITHUB_STEP_SUMMARY
           else
-            echo "🏷️ Tag : ${{ steps.set-version.outputs.tag }}"
+            echo "| 🏷️ Tag | ${{ steps.set-version.outputs.tag }} |"
           fi
