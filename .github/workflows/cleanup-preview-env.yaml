@@ -198,7 +198,7 @@ jobs:
         env:
           NAMES: ${{ inputs.NAMES }}
         run: |
-          echo "## 🗑️ Container(s) PR \`${{ steps.setup-variables.outputs.PR_NUM }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "## 🗑️ Container(s) PR: \`${NAMES} ${{ steps.setup-variables.outputs.PR_NUM }}\`" >> $GITHUB_STEP_SUMMARY
 
           delete_images() {
             declare -a PR_TAG_LIST
@@ -255,7 +255,7 @@ jobs:
         env:
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
         run: |
-          echo "## 🗑️ Namespace: \'${{ inputs.PREVIEW_NAMESPACE }}\'" >> $GITHUB_STEP_SUMMARY
+          echo "## 🗑️ Namespace: \`${{ inputs.PREVIEW_NAMESPACE }}\`" >> $GITHUB_STEP_SUMMARY
           if [[ $(kubectl get ns | awk '{print $1}' | grep ^${PREVIEW_NAMESPACE}$) == ${PREVIEW_NAMESPACE} ]]; then
             kubectl delete namespace ${PREVIEW_NAMESPACE}
             echo "kubectl delete namespace ${PREVIEW_NAMESPACE}" >> $GITHUB_STEP_SUMMARY
@@ -282,7 +282,7 @@ jobs:
         env:
           NAMES: ${{ inputs.NAMES }}
         run: |
-          echo "## 🗑️ Trivy: \`${{ inputs.TRIVY_REPO_NAME }}\{name}/PR/{{ steps.setup-variables.outputs.PR_VERSION }}*\`" >> $GITHUB_STEP_SUMMARY
+          echo "## 🗑️ Trivy: \`${{ inputs.TRIVY_REPO_NAME }}\${name}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*\`" >> $GITHUB_STEP_SUMMARY
           pwd
 
           declare -a ARR_APPS
