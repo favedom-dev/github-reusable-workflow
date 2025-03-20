@@ -280,9 +280,11 @@ jobs:
         # working-directory: ${{ steps.setup-variables.outputs.TRIVY_WORKING_DIR }}
         working-directory: ${{ inputs.TRIVY_REPO_NAME }}
         env:
+          NAME: ${{ inputs.NAME }}
           NAMES: ${{ inputs.NAMES }}
         run: |
-          echo "## 🗑️ Trivy: \`${{ inputs.TRIVY_REPO_NAME }}/${{ inputs.NAMES }}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*\`" >> $GITHUB_STEP_SUMMARY
+          name=${NAMES:-${NAME}}
+          echo "## 🗑️ Trivy: \`${{ inputs.TRIVY_REPO_NAME }}/${name}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*\`" >> $GITHUB_STEP_SUMMARY
           pwd
 
           declare -a ARR_APPS
