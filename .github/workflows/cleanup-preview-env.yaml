@@ -196,9 +196,11 @@ jobs:
 
       - name: "🗑️ Delete PR ${{ steps.setup-variables.outputs.PR_NUM }} container(s)"
         env:
+          NAME: ${{ inputs.NAME }}
           NAMES: ${{ inputs.NAMES }}
         run: |
-          echo "## 🗑️ Container(s) PR: \`${{ inputs.NAMES }} ${{ steps.setup-variables.outputs.PR_NUM }}\`" >> $GITHUB_STEP_SUMMARY
+          name=${NAMES:-${NAME}}
+          echo "## 🗑️ Container(s) PR: \`${name} ${{ steps.setup-variables.outputs.PR_NUM }}\`" >> $GITHUB_STEP_SUMMARY
 
           delete_images() {
             declare -a PR_TAG_LIST
