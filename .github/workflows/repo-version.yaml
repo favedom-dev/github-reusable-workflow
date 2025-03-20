@@ -136,7 +136,7 @@ jobs:
           PR_VERSION: ${{ steps.pr-version.outputs.version }}
         run: |
           echo "set-version    : ${{ steps.set-version.outputs.version }}"
-          echo "# Info" >> $GITHUB_STEP_SUMMARY
+          # echo "## Info" >> $GITHUB_STEP_SUMMARY
           echo "| Name | Value |" >> $GITHUB_STEP_SUMMARY
           echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
           echo "| 🔖 Version | \`${{ steps.set-version.outputs.version }}\` |" >> $GITHUB_STEP_SUMMARY

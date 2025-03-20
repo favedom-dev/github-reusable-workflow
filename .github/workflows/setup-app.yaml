@@ -159,7 +159,7 @@ jobs:
           echo "IS_FRONTEND         : ${{ steps.extra-vars.outputs.IS_FRONTEND }}"
           echo "IS_MONOREPO         : ${{ steps.extra-vars.outputs.IS_MONOREPO }}"
           #
-          echo "# App Values" >> $GITHUB_STEP_SUMMARY
+          echo "## App Values" >> $GITHUB_STEP_SUMMARY
           echo "| Property           | Value |" >> $GITHUB_STEP_SUMMARY
           echo "| ---                | --- |" >> $GITHUB_STEP_SUMMARY
           echo "|NAME                | \`${{ steps.set-name.outputs.NAME }}\` |" >> $GITHUB_STEP_SUMMARY
