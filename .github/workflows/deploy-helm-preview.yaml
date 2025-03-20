@@ -458,10 +458,42 @@ jobs:
           ARG_PREVIEW_GLOBALS_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_GLOBALS_VALUES }}
           ARG_PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_CHART_VALUES }}
           HELM_VALUES_ISTIO_HOST: ${{ steps.setup-variables.outputs.HELM_VALUES_ISTIO_HOST }}
+          HELM_USE_LOCAL_COMMON: ${{ inputs.HELM_USE_LOCAL_COMMON }}
         working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
         run: |
           echo "CHART_NAME             : ${CHART_NAME}"
           echo "HELM_DEBUG_FLAG        : ${HELM_DEBUG_FLAG}"
+
+          CHART_YAML_PATH=
+          COLOR_INFO='\033[1;33m'
+          NOCOLOR='\033[0m'
+
+          use_local_common() {
+            # CHART_YAML_PATH="${CHART_NAME}/Chart.yaml"
+            CHART_YAML_COMMON_ORIG_VERSION=$(chart="common" yq '(.dependencies[] | select (.name == strenv(chart))).version' "${CHART_YAML_PATH}")
+            CHART_YAML_COMMON_ORIG_REPO=$(chart="common" yq '(.dependencies[] | select (.name == strenv(chart))).repository' "${CHART_YAML_PATH}")
+
+            echo "CHART_YAML_COMMON_ORIG_VERSION : ${CHART_YAML_COMMON_ORIG_VERSION}"
+            echo "CHART_YAML_COMMON_ORIG_REPO    : ${CHART_YAML_COMMON_ORIG_REPO}"
+
+            NEWVER=$(yq '.version' common/Chart.yaml)
+            NEWREPO="file://../common"
+            update_chart
+          }
+
+          update_chart() {
+            chart="common" newver="${NEWVER}" yq '(.dependencies[] | select (.name == strenv(chart))).version = strenv(newver)' -i "${CHART_YAML_PATH}"
+            chart="common" newrepo="${NEWREPO}" yq '(.dependencies[] | select (.name == strenv(chart))).repository = strenv(newrepo)' -i "${CHART_YAML_PATH}"
+            echo ""
+            echo -e "${COLOR_INFO}DUMP ${CHART_YAML_PATH}${NOCOLOR}"
+            cat "${CHART_YAML_PATH}" | yq
+            echo ""
+          }
+
+          if [ -n "${HELM_USE_LOCAL_COMMON}" ]; then
+            use_local_common
+          fi
+
           _cmd=(helm upgrade \
           "${DRY_RUN}" \
           --install "${CHART_NAME}" \
