@@ -20,15 +20,12 @@ if [ -n "${DOCKER_DIGEST}" ]; then
 fi
 echo "${DOCKER_URL}"
 
+# TODO variables for the docker pull address
 PR_BODY=$(cat <<EOF
 | 🐳 | 🔗 |
 | --- | --- |
 | Container | [${NAME} ${VERSION}](${DOCKER_URL}) |
-EOF
-)
 
-# TODO variables for the docker pull address
-DOCKER_PULL=$(cat <<EOF
 \`\`\`bash
 docker pull us-central1-docker.pkg.dev/favedom-dev/docker/${NAME}:${VERSION}
 \`\`\`
@@ -48,4 +45,3 @@ else
 fi
 
 echo "${PR_BODY}" >> $GITHUB_STEP_SUMMARY
-echo "${DOCKER_PULL}" >> $GITHUB_STEP_SUMMARY
