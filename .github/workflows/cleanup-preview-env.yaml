@@ -198,7 +198,7 @@ jobs:
         env:
           NAMES: ${{ inputs.NAMES }}
         run: |
-          echo "## 🗑️ Container(s) PR: \`${NAMES} ${{ steps.setup-variables.outputs.PR_NUM }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "## 🗑️ Container(s) PR: \`${{ inputs.NAMES }} ${{ steps.setup-variables.outputs.PR_NUM }}\`" >> $GITHUB_STEP_SUMMARY
 
           delete_images() {
             declare -a PR_TAG_LIST
@@ -282,7 +282,7 @@ jobs:
         env:
           NAMES: ${{ inputs.NAMES }}
         run: |
-          echo "## 🗑️ Trivy: \`${{ inputs.TRIVY_REPO_NAME }}\${name}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*\`" >> $GITHUB_STEP_SUMMARY
+          echo "## 🗑️ Trivy: \`${{ inputs.TRIVY_REPO_NAME }}/${{ inputs.NAMES }}/PR/${{ steps.setup-variables.outputs.PR_VERSION }}*\`" >> $GITHUB_STEP_SUMMARY
           pwd
 
           declare -a ARR_APPS
