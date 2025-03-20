@@ -472,15 +472,13 @@ jobs:
 
           use_local_common() {
             echo "---"
-            pwd
+            ls -la ./common/templates
             echo "==="
             echo "---"
-            echo "CHART_YAML_PATH : ${CHART_YAML_PATH}"
+            echo "./common/templates/_ksvc-fe.tpl:"
+            cat ./common/templates/_ksvc-fe.tpl
             echo "==="
-            echo "---"
-            ls -la "${CHART_YAML_PATH}"
-            echo "==="
-            # CHART_YAML_PATH="${CHART_NAME}/Chart.yaml"
+
             CHART_YAML_COMMON_ORIG_VERSION=$(chart="common" yq '(.dependencies[] | select (.name == strenv(chart))).version' "${CHART_YAML_PATH}")
             CHART_YAML_COMMON_ORIG_REPO=$(chart="common" yq '(.dependencies[] | select (.name == strenv(chart))).repository' "${CHART_YAML_PATH}")
 
@@ -503,6 +501,8 @@ jobs:
 
           if [ -n "${HELM_USE_LOCAL_COMMON}" ]; then
             use_local_common
+            helm dependency update ./${CHART_NAME} "${HELM_DEBUG_FLAG}"
+            # helm dependency build ./${CHART_NAME} "${HELM_DEBUG_FLAG}"
           fi
 
           _cmd=(helm upgrade \
