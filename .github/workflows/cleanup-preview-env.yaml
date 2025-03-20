@@ -200,7 +200,7 @@ jobs:
           NAMES: ${{ inputs.NAMES }}
         run: |
           name=${NAMES:-${NAME}}
-          echo "## 🗑️ Container(s) PR: \`${name} ${{ steps.setup-variables.outputs.PR_NUM }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "## 🗑️ Container(s) PR: \`${DOCKER_TAG_PREFIX}\`" >> $GITHUB_STEP_SUMMARY
 
           delete_images() {
             declare -a PR_TAG_LIST
