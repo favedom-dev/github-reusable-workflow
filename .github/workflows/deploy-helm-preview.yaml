@@ -497,6 +497,7 @@ jobs:
 
           if [ -n "${HELM_USE_LOCAL_COMMON}" ]; then
             use_local_common
+            echo "Running: helm dependency update ./${CHART_NAME} ${HELM_DEBUG_FLAG}"
             helm dependency update ./${CHART_NAME} "${HELM_DEBUG_FLAG}"
             # helm dependency build ./${CHART_NAME} "${HELM_DEBUG_FLAG}"
           fi
