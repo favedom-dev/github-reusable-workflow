@@ -224,4 +224,4 @@ jobs:
       - name: "TENANT: ${{ steps.tenant.outputs.TENANT }}"
         run: |
           echo "TENANT : ${{ steps.tenant.outputs.TENANT }}"
-          echo "## TENANT : ${{ steps.tenant.outputs.TENANT }}" >> $GITHUB_STEP_SUMMARY
+          echo "## TENANT : \`${{ steps.tenant.outputs.TENANT }}\`" >> $GITHUB_STEP_SUMMARY
