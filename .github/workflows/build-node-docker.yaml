@@ -21,6 +21,7 @@ on:  # yamllint disable-line rule:truthy
         default: 'v2'
         required: false
         type: string
+        description: "Used typically for testing new non-merged helm changes"
 
       VAR_DOCKER_SCRIPT_NAME:
         default: 'var-docker.sh'

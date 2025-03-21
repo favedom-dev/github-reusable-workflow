@@ -61,10 +61,12 @@ on:  # yamllint disable-line rule:truthy
         default: 'master'
         required: false
         type: string
+        description: "Repo {{HELM_CHARTS_GIT_REPO}} branch to use.  Used typically for testing new non-merged helm changes"
 
       HELM_USE_LOCAL_COMMON:
         required: false
         type: string
+        description: "Use the local common chart from the repo {{HELM_CHARTS_GIT_REPO}}.  Used typically for testing new non-merged helm changes"
 
       GH_USER_EMAIL:
         default: 'github@powervz.com'
