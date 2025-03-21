@@ -20,6 +20,18 @@ if [ -n "${DOCKER_DIGEST}" ]; then
 fi
 echo "${DOCKER_URL}"
 
+# TODO variables for the docker pull address
+PR_BODY=$(cat <<EOF
+| 🐳 | 🔗 |
+| --- | --- |
+| Container | [${NAME} ${VERSION}](${DOCKER_URL}) |
+
+\`\`\`bash
+docker pull us-central1-docker.pkg.dev/favedom-dev/docker/${NAME}:${VERSION}
+\`\`\`
+EOF
+)
+
 if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
   # Extract PR number from GitHub event payload
   PR_NUMBER=$(jq --raw-output .number "${GITHUB_EVENT_PATH}")  # TODO PR_NUMBER=${GITHUB_EVENT_NUMBER}
@@ -27,13 +39,9 @@ if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
 
   gh pr comment ${PR_NUMBER} \
   --repo "${GITHUB_REPOSITORY}" \
-  --body "🐳 Container: [${NAME} ${VERSION}](${DOCKER_URL})"
+  --body "${PR_BODY}"
 else
   echo "ℹ️ Not a pull request event, skipping comment."
 fi
 
-echo "## 🐳 Container: [${NAME}:${VERSION}](${DOCKER_URL})" >> $GITHUB_STEP_SUMMARY
-echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-# TODO varaibles for the docker pull address
-echo "docker pull us-central1-docker.pkg.dev/favedom-dev/docker/${NAME}:${VERSION}" >> $GITHUB_STEP_SUMMARY
-echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+echo "${PR_BODY}" >> $GITHUB_STEP_SUMMARY
