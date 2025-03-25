@@ -121,7 +121,7 @@ jobs:
           FILES_TO_DOWNLOAD: |
             [
               { "subdirectory": ".github/scripts", "filename": "${{ inputs.VAR_DOCKER_SCRIPT_NAME }}" },
-              { "subdirectory": ".github/scripts", "filename": "${DOCKER_LINK_SCRIPT_NAME}" }
+              { "subdirectory": ".github/scripts", "filename": "${{ env.DOCKER_LINK_SCRIPT_NAME }}" }
             ]
       # - name: "⬇️ Get reusable files"
       #   id: get-reusable-files
