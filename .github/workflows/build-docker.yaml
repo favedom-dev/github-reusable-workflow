@@ -106,7 +106,8 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       DOCKER_BUILDKIT: 1
-      DOCKER_LINK_SCRIPT_NAME: docker-link.sh
+      # DOCKER_LINK_SCRIPT_NAME: docker-link.sh
+      ARTIFACT_LINK_SCRIPT_NAME: artifact-link.sh
       NAME: ${{ inputs.NAME }}
       VERSION: ${{ inputs.VERSION }}
     steps:
@@ -117,12 +118,14 @@ jobs:
         uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@FAN-6340
         id: get-reusable-files
         with:
-          FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
+          # FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
+          # TODO update to v2
+          FILE_GIT_BRANCH: FAN-6340
           FILE_DOWNLOAD_BASE_URL: ${{ inputs.FILE_DOWNLOAD_BASE_URL }}
           FILES_TO_DOWNLOAD: |
             [
               { "subdirectory": ".github/scripts", "filename": "${{ inputs.VAR_DOCKER_SCRIPT_NAME }}" },
-              { "subdirectory": ".github/scripts", "filename": "${{ env.DOCKER_LINK_SCRIPT_NAME }}" }
+              { "subdirectory": ".github/scripts", "filename": "${{ env.ARTIFACT_LINK_SCRIPT_NAME }}" }
             ]
 
       - name: "🏷️ Set up variables"
@@ -198,11 +201,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "🔗 Link to Container"
-        if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
+        # if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          DOCKER_DIGEST: ${{ steps.docker-build.outputs.digest }}
-          DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
+          ARTIFACT_DIGEST: ${{ steps.docker-build.outputs.digest }}
+          # ARTIFACT_TYPE: docker
+          ARTIFACT_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
+          # DOCKER_DIGEST: ${{ steps.docker-build.outputs.digest }}
+          # DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
           NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}

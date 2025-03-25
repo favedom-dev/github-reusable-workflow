@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 export GH_TOKEN="${GH_TOKEN}"
+ARTIFACT_TYPE=${ARTIFACT_TYPE:-docker}
 
 echo "-----------------------------------------------------"
 echo "NAME               : ${NAME}"
@@ -16,8 +17,8 @@ echo "GITHUB_REPOSITORY  : ${GITHUB_REPOSITORY}"
 echo "====================================================="
 
 # Handle Docker-specific digest if provided
-if [ "${ARTIFACT_TYPE}" = "docker" ] && [ -n "${DOCKER_DIGEST}" ]; then
-  ARTIFACT_URL="${ARTIFACT_URL%%\?*}/${DOCKER_DIGEST}?${ARTIFACT_URL#*\?}"
+if [ "${ARTIFACT_TYPE}" = "docker" ] && [ -n "${ARTIFACT_DIGEST}" ]; then
+  ARTIFACT_URL="${ARTIFACT_URL%%\?*}/${ARTIFACT_DIGEST}?${ARTIFACT_URL#*\?}"
 fi
 echo "${ARTIFACT_URL}"
 
@@ -28,6 +29,7 @@ case "${ARTIFACT_TYPE}" in
     CODE="bash"
     GET_CMD="docker pull us-central1-docker.pkg.dev/favedom-dev/docker/${NAME}:${VERSION}"
     ;;
+
   "jar")
     TABLE_ROWS="| 📦 JAR Lib | [${NAME} ${VERSION}](${ARTIFACT_URL}) |"
     CODE="xml"
@@ -40,6 +42,7 @@ case "${ARTIFACT_TYPE}" in
 EOF
     )
     ;;
+
   *)
     echo "❌ Unsupported ARTIFACT_TYPE: ${ARTIFACT_TYPE}"
     exit 1
