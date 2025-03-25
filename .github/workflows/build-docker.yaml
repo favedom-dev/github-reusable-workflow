@@ -215,7 +215,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "🔗 Link to Container"
-        if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
+        # if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           DOCKER_DIGEST: ${{ steps.docker-build.outputs.digest }}
