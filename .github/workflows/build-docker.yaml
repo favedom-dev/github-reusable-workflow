@@ -112,8 +112,8 @@ jobs:
     steps:
 
       - name: "⬇️ Get Reusable Files"
-        # uses: ./.github/workflows/get-reusable-files.yaml
-        uses: favedom-dev/github-reusable-workflow/.github/workflows/get-reusable-files.yaml@FAN-6340
+        uses: ./.github/workflows/get-reusable-files.yaml
+        # uses: favedom-dev/github-reusable-workflow/.github/workflows/get-reusable-files.yaml@FAN-6340
         id: get-reusable-files
         with:
           FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
