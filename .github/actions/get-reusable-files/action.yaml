@@ -1,0 +1,37 @@
+name: "Get Reusable Files"
+description: "Downloads reusable files from a specified URL and branch"
+
+inputs:
+  FILE_GIT_BRANCH:
+    description: "Git branch to fetch files from"
+    required: true
+  FILE_DOWNLOAD_BASE_URL:
+    description: "Base URL for file downloads"
+    required: true
+  FILES_TO_DOWNLOAD:
+    description: "JSON array of objects with subdirectory and filename"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    # - name: Install jq
+    #   run: sudo apt-get update && sudo apt-get install -y jq
+    #   shell: bash
+    - name: "⬇️ Get reusable files"
+      run: |
+        get_file() {
+          FILE_URL=${FILE_DOWNLOAD_BASE_URL}/${FILE_GIT_BRANCH}/${FILE_SUBDIR}/${FILE_NAME}
+          echo "Getting ${FILE_NAME} from ${FILE_URL}"
+          curl -o ../${FILE_NAME} ${FILE_URL}
+          chmod 777 ../${FILE_NAME}
+        }
+        FILE_GIT_BRANCH="${{ inputs.FILE_GIT_BRANCH }}"
+        FILE_DOWNLOAD_BASE_URL="${{ inputs.FILE_DOWNLOAD_BASE_URL }}"
+
+        echo '${{ inputs.FILES_TO_DOWNLOAD }}' | jq -r '.[] | [.subdirectory, .filename] | join(" ")' | while read -r subdir file; do
+          FILE_SUBDIR=$subdir
+          FILE_NAME=$file
+          get_file
+        done
+      shell: bash
