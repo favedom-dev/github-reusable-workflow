@@ -214,5 +214,4 @@ jobs:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: |-
-          ../${ARTIFACT_LINK_SCRIPT_NAME}
+        run: ../${ARTIFACT_LINK_SCRIPT_NAME}
