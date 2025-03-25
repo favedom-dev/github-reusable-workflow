@@ -1,0 +1,38 @@
+name: Get Reusable Files
+
+on:
+  workflow_call:
+    inputs:
+      FILE_GIT_BRANCH:
+        required: true
+        type: string
+      FILE_DOWNLOAD_BASE_URL:
+        required: true
+        type: string
+      FILES_TO_DOWNLOAD:
+        required: true
+        type: string  # JSON string of files with subdirectories
+
+jobs:
+  get-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "⬇️ Get reusable files"
+        id: get-reusable-files
+        run: |
+          get_file() {
+            FILE_URL=${FILE_DOWNLOAD_BASE_URL}/${FILE_GIT_BRANCH}/${FILE_SUBDIR}/${FILE_NAME}
+            echo "Getting ${FILE_NAME} from ${FILE_URL}"
+            curl -o ../${FILE_NAME} ${FILE_URL}
+            chmod 777 ../${FILE_NAME}
+          }
+          FILE_GIT_BRANCH=${{ inputs.FILE_GIT_BRANCH }}
+          FILE_DOWNLOAD_BASE_URL=${{ inputs.FILE_DOWNLOAD_BASE_URL }}
+
+          # Parse JSON input and download files
+          echo '${{ inputs.FILES_TO_DOWNLOAD }}' | jq -r '.[] | [.subdirectory, .filename] | join(" ")' | while read -r subdir file; do
+            FILE_SUBDIR=$subdir
+            FILE_NAME=$file
+            get_file
+          done
+        shell: bash

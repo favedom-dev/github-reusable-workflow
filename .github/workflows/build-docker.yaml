@@ -111,24 +111,35 @@ jobs:
       VERSION: ${{ inputs.VERSION }}
     steps:
 
-      - name: "⬇️ Get reusable files"
+      - name: "⬇️ Get Reusable Files"
+        uses: ./.github/workflows/get-reusable-files.yaml
         id: get-reusable-files
-        run: |
-          get_file() {
-            FILE_URL=${FILE_DOWNLOAD_BASE_URL}/${FILE_GIT_BRANCH}/${FILE_SUBDIR}/${FILE_NAME}
-            echo "Getting ${FILE_NAME} from ${FILE_URL}"
-            curl -o ../${FILE_NAME} ${FILE_URL}
-            chmod 777 ../${FILE_NAME}
-          }
-          FILE_GIT_BRANCH=${{ inputs.FILE_GIT_BRANCH }}
-          FILE_DOWNLOAD_BASE_URL=${{ inputs.FILE_DOWNLOAD_BASE_URL }}
-          FILE_SUBDIR=.github/scripts
+        with:
+          FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
+          FILE_DOWNLOAD_BASE_URL: ${{ inputs.FILE_DOWNLOAD_BASE_URL }}
+          FILES_TO_DOWNLOAD: |
+            [
+              { "subdirectory": ".github/scripts", "filename": "${{ inputs.VAR_DOCKER_SCRIPT_NAME }}" },
+              { "subdirectory": ".github/scripts", "filename": "${DOCKER_LINK_SCRIPT_NAME}" }
+            ]
+      # - name: "⬇️ Get reusable files"
+      #   id: get-reusable-files
+      #   run: |
+      #     get_file() {
+      #       FILE_URL=${FILE_DOWNLOAD_BASE_URL}/${FILE_GIT_BRANCH}/${FILE_SUBDIR}/${FILE_NAME}
+      #       echo "Getting ${FILE_NAME} from ${FILE_URL}"
+      #       curl -o ../${FILE_NAME} ${FILE_URL}
+      #       chmod 777 ../${FILE_NAME}
+      #     }
+      #     FILE_GIT_BRANCH=${{ inputs.FILE_GIT_BRANCH }}
+      #     FILE_DOWNLOAD_BASE_URL=${{ inputs.FILE_DOWNLOAD_BASE_URL }}
+      #     FILE_SUBDIR=.github/scripts
 
-          FILE_NAME=${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
-          get_file
+      #     FILE_NAME=${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
+      #     get_file
 
-          FILE_NAME=${DOCKER_LINK_SCRIPT_NAME}
-          get_file
+      #     FILE_NAME=${DOCKER_LINK_SCRIPT_NAME}
+      #     get_file
 
       - name: "🏷️ Set up variables"
         id: setup-variables
