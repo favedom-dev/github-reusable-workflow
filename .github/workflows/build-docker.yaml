@@ -215,4 +215,4 @@ jobs:
           GITHUB_EVENT_PATH: ${{ github.event_path }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |-
-          ../${DOCKER_LINK_SCRIPT_NAME}
+          ../${ARTIFACT_LINK_SCRIPT_NAME}
