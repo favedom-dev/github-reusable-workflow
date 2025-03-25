@@ -106,7 +106,6 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       DOCKER_BUILDKIT: 1
-      # DOCKER_LINK_SCRIPT_NAME: docker-link.sh
       ARTIFACT_LINK_SCRIPT_NAME: artifact-link.sh
       NAME: ${{ inputs.NAME }}
       VERSION: ${{ inputs.VERSION }}
@@ -207,8 +206,6 @@ jobs:
           ARTIFACT_DIGEST: ${{ steps.docker-build.outputs.digest }}
           # ARTIFACT_TYPE: docker
           ARTIFACT_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
-          # DOCKER_DIGEST: ${{ steps.docker-build.outputs.digest }}
-          # DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
           NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
