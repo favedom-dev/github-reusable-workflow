@@ -67,25 +67,6 @@ jobs:
       #     run-number: ${{ github.run_number }}
       #     pr-number: ${{ github.event.pull_request.number }}
 
-
-      # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run
-      - name: "📝 Set PR Version"
-        id: pr-version
-        if: github.event_name == 'pull_request'
-        run: |
-          pr_number="${{ github.event.number }}"
-          pr_run_number="${{ github.run_number }}"
-          pr_run_attempt="${{ github.run_attempt }}"
-          build_version="${{ github.event.number }}.${{ github.run_number }}.${{ github.run_attempt }}"
-
-          echo "PR Number        (github.event.number) : ${{ github.event.number }}"
-          echo "PR Run Number    (github.run_number)   : ${{ github.run_number }}"
-          echo "PR Run Attempt   (github.run_attempt)  : ${{ github.run_attempt }}"
-          echo "PR Build Version                       : ${build_version}"
-          echo "build-version=${build_version}"  >> $GITHUB_OUTPUT
-          # echo "build-version=${{ github.event.number }}.${{ github.run_number }}.${{ github.run_attempt }}"  >> $GITHUB_OUTPUT
-          echo "version=0.0.0-SNAPSHOT-PR-${{ github.event.number }}-${{ github.run_number }}-${{ github.run_attempt }}"  >> $GITHUB_OUTPUT
-
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
         if: github.event_name != 'pull_request'
@@ -108,60 +89,44 @@ jobs:
               { "subdirectory": "scripts", "filename": "${{ inputs.INCREMENT_SCRIPT_NAME }}" }
             ]
 
-      # - name: "☁️ Get ${{ inputs.INCREMENT_SCRIPT_NAME }}"
-      #   if: github.event_name != 'pull_request'
-      #   run: |
-      #     # wget ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${{ inputs.SCRIPT_GIT_BRANCH }}/scripts/${{ inputs.INCREMENT_SCRIPT_NAME }}
-      #     curl -o ${{ inputs.INCREMENT_SCRIPT_NAME }} ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${{ inputs.SCRIPT_GIT_BRANCH }}/scripts/${{ inputs.INCREMENT_SCRIPT_NAME }}
-      #     chmod 777 ./${{ inputs.INCREMENT_SCRIPT_NAME }}
+      - name: "📝 Set PR Version"
+        # TODO update to v2
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-pr@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-pr@FAN-6340
+        id: pr-version
+        with:
+          event-name: ${{ github.event_name }}
+          pr-number: ${{ github.event.number }}
+          run-number: ${{ github.run_number }}
+          run-attempt: ${{ github.run_attempt }}
 
       - name: "☑ Release version"
+        # TODO update to v2
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-release@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-release@FAN-6340
         id: version
-        if: github.event_name != 'pull_request'
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          export GH_TOKEN=${{ secrets.GH_TOKEN }}
-          export GITHUB_TOKEN=${{ secrets.GH_TOKEN }}
-          ./${{ inputs.INCREMENT_SCRIPT_NAME }} ${{ inputs.MONOREPO_APP }}
-          VERSION=$(cat VERSION)
-          TAG=$(cat TAG)
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+        with:
+          event-name: ${{ github.event_name }}
+          increment-script-name: ${{ inputs.INCREMENT_SCRIPT_NAME }}
+          monorepo-app: ${{ inputs.MONOREPO_APP }}
+          gh-token: ${{ secrets.GH_TOKEN }}
 
       - name: "📝 Set version"
+        # TODO update to v2
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/set-version@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version@FAN-6340
         id: set-version
-        env:
-          PR_VERSION: ${{ steps.pr-version.outputs.version }}
-        run: |
-          if [ ${{ env.PR_VERSION }} ]; then
-            echo "PR: version   : ${{ steps.pr-version.outputs.version }}"
-            echo "PR: build-version: ${{ steps.pr-version.outputs.build-version }}"
-            echo "version=${{ steps.pr-version.outputs.version }}" >> $GITHUB_OUTPUT
-            echo "build-version=${{ steps.pr-version.outputs.build-version }}" >> $GITHUB_OUTPUT
-          else
-            echo "RELEASE: version: ${{ steps.version.outputs.version }}"
-            echo "version=${{ steps.version.outputs.version }}" >> $GITHUB_OUTPUT
-            # TODO: add logic for iOS and Android
-            echo "build-version=0.0.0" >> $GITHUB_OUTPUT
-          fi
-          # echo "${{ steps.version.outputs.version }}"
+        with:
+          pr-version: ${{ steps.pr-version.outputs.version }}
+          pr-build-version: ${{ steps.pr-version.outputs.build-version }}
+          release-version: ${{ steps.version.outputs.version }}
 
-      - name: "👀 Display version: ${{ steps.set-version.outputs.version }}"
-        env:
-          PR_VERSION: ${{ steps.pr-version.outputs.version }}
-        run: |
-          echo "🔖 version            : ${{ steps.set-version.outputs.version }}"
-
-          echo "| Name | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔖 Version | \`${{ steps.set-version.outputs.version }}\` |" >> $GITHUB_STEP_SUMMARY
-
-          if [ ${{ env.PR_VERSION }} ]; then
-            echo "📦 Build Version (PR) : ${{ steps.set-version.outputs.build-version }}"
-            echo "| 📦 PR Version | \`${{ steps.set-version.outputs.build-version }}\` |" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "🏷️ Tag                : ${{ steps.set-version.outputs.tag }}"
-            echo "| 🏷️ Tag | \`${{ steps.set-version.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
-          fi
+      - name: "👀 Display version"
+        # TODO update to v2
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-display@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-display@FAN-6340
+        with:
+          version: ${{ steps.set-version.outputs.version }}
+          build-version: ${{ steps.set-version.outputs.build-version }}
+          tag: ${{ steps.version.outputs.tag }}
+          pr-version: ${{ steps.pr-version.outputs.version }}
