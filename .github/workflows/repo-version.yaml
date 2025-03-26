@@ -78,7 +78,7 @@ jobs:
         # uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
         uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@FAN-6340
         id: get-reusable-files
-        # if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request'
         with:
           # FILE_GIT_BRANCH: ${{ inputs.SCRIPT_GIT_BRANCH }}
           # TODO update to v2
@@ -94,6 +94,7 @@ jobs:
         # uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-pr@v2
         uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-pr@FAN-6340
         id: pr-version
+        if: github.event_name == 'pull_request'
         with:
           event-name: ${{ github.event_name }}
           pr-number: ${{ github.event.number }}
@@ -105,6 +106,7 @@ jobs:
         # uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-release@v2
         uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-release@FAN-6340
         id: version
+        if: github.event_name != 'pull_request'
         with:
           event-name: ${{ github.event_name }}
           increment-script-name: ${{ inputs.INCREMENT_SCRIPT_NAME }}
