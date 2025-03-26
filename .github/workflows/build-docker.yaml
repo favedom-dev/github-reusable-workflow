@@ -138,8 +138,7 @@ jobs:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           NAME: ${{ inputs.NAME }}
           PROJECT_ID: ${{ inputs.PROJECT_ID }}
-        run: |
-          ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
+        run: ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
 
       - name: "🧰 Set up gh cli"
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
