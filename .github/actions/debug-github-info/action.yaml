@@ -1,0 +1,35 @@
+name: "GitHub Info"
+description: "Displays GitHub context information for debugging"
+
+inputs:
+  github-context:
+    description: "JSON string of the GitHub context"
+    required: true
+  event-name:
+    description: "Name of the GitHub event (e.g., push, pull_request)"
+    required: true
+  run-attempt:
+    description: "Current attempt number of the workflow run"
+    required: true
+  run-number:
+    description: "Run number of the workflow"
+    required: true
+  pr-number:
+    description: "Pull request number (if applicable)"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Display GitHub Info"
+      env:
+        GITHUB_CONTEXT: ${{ inputs.github-context }}
+      run: |
+        echo "PR number          : ${{ inputs.pr-number }}"
+        echo "github.event_name  : ${{ inputs.event-name }}"
+        echo "github.run_attempt : ${{ inputs.run-attempt }}"
+        echo "github.run_number  : ${{ inputs.run-number }}"
+        echo "--------------------------------------"
+        echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
+      shell: bash
