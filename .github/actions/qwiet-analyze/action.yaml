@@ -1,0 +1,32 @@
+name: "Qwiet Analyze"
+description: "Runs Qwiet CLI analysis with NextGen Static Analysis"
+
+inputs:
+  shiftleft-access-token:
+    description: "ShiftLeft access token for authentication (used for conditional execution)"
+    required: true
+  name:
+    description: "Application name for the analysis"
+    required: true
+  vcs-prefix-correction:
+    description: "VCS prefix correction for the analysis"
+    required: true
+  scan-jar:
+    description: "Path to the JAR file to scan"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Run Qwiet Analyze"
+      if: ${{ inputs.shiftleft-access-token != '' }}
+      env:
+        SHIFTLEFT_ACCESS_TOKEN: ${{ inputs.shiftleft-access-token }}
+      run: |
+        $HOME/sl analyze \
+          --app "${{ inputs.name }}" \
+          --java \
+          --vcs-prefix-correction "*=${{ inputs.vcs-prefix-correction }}" \
+          --cpg \
+          "${{ inputs.scan-jar }}"
+      shell: bash

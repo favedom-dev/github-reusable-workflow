@@ -1,0 +1,18 @@
+name: "Download Qwiet CLI"
+description: "Downloads the Qwiet CLI binary and makes it executable"
+
+inputs:
+  shiftleft-access-token:
+    description: "ShiftLeft access token for authentication (used for conditional execution)"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Download Qwiet CLI"
+      if: ${{ inputs.shiftleft-access-token != '' }}
+      env:
+        SHIFTLEFT_ACCESS_TOKEN: ${{ inputs.shiftleft-access-token }}
+      run: |
+        curl https://cdn.shiftleft.io/download/sl > $HOME/sl && chmod a+rx $HOME/sl
+      shell: bash
