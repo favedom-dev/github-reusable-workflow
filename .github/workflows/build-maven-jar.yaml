@@ -137,7 +137,9 @@ jobs:
         uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@FAN-6340
         id: get-reusable-files
         with:
-          FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
+          # TODO update to v2
+          # FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
+          FILE_GIT_BRANCH: FAN-6340
           FILE_DOWNLOAD_BASE_URL: ${{ inputs.FILE_DOWNLOAD_BASE_URL }}
           FILES_TO_DOWNLOAD: |
             [
