@@ -1,0 +1,32 @@
+name: "# Set Docker Tags"
+description: "Sets up Docker tags based on version and event type"
+
+inputs:
+  VERSION:
+    description: "The version to tag the Docker image with"
+    required: true
+  DOCKER_LOCATION:
+    description: "The base Docker registry location (e.g., us-central1-docker.pkg.dev/project/registry/name)"
+    required: true
+  GITHUB_EVENT_NAME:
+    description: "The GitHub event name (e.g., pull_request, push)"
+    required: true
+
+outputs:
+  tags:
+    description: "Comma-separated list of Docker tags"
+    value: ${{ steps.set-tags.outputs.tags }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Set Docker Tags"
+      id: set-tags
+      run: |
+        DOCKER_TAGS="${{ inputs.DOCKER_LOCATION }}:${{ inputs.VERSION }}"
+        if [ "${{ inputs.GITHUB_EVENT_NAME }}" != "pull_request" ]; then
+          DOCKER_TAGS="$DOCKER_TAGS,${{ inputs.DOCKER_LOCATION }}:latest"
+        fi
+        echo "DOCKER_TAGS: $DOCKER_TAGS"
+        echo "tags=$DOCKER_TAGS" >> $GITHUB_OUTPUT
+      shell: bash

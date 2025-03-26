@@ -173,7 +173,8 @@ jobs:
     env:
       # GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       # DOCKER_BUILDKIT: 1
-      DOCKER_LINK_SCRIPT_NAME: docker-link.sh
+      # DOCKER_LINK_SCRIPT_NAME: docker-link.sh
+      ARTIFACT_LINK_SCRIPT_NAME: artifact-link.sh
       MVN_SETTINGS_FILE: settings.xml
     steps:
 
@@ -191,30 +192,22 @@ jobs:
           echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
 
       - name: "⬇️ Get reusable files"
+        # TODO update to v2
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@FAN-6340
         id: get-reusable-files
-        run: |
-          get_file() {
-            FILE_URL=${FILE_DOWNLOAD_BASE_URL}/${FILE_GIT_BRANCH}/${FILE_SUBDIR}/${FILE_NAME}
-            echo "Getting ${FILE_NAME} from ${FILE_URL}"
-            curl -o ../${FILE_NAME} ${FILE_URL}
-            chmod 777 ../${FILE_NAME}
-          }
-          FILE_GIT_BRANCH=${{ inputs.FILE_GIT_BRANCH }}
-          FILE_DOWNLOAD_BASE_URL=${{ inputs.FILE_DOWNLOAD_BASE_URL }}
-          FILE_SUBDIR=.github/scripts
-
-          FILE_NAME=${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
-          get_file
-
-          FILE_NAME=${DOCKER_LINK_SCRIPT_NAME}
-          get_file
-
-          FILE_NAME=mvn-settings.xml.sh
-          get_file
-
-          FILE_SUBDIR=.m2
-          FILE_NAME=${MVN_SETTINGS_FILE}
-          get_file
+        with:
+          # FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
+          # TODO update to v2
+          FILE_GIT_BRANCH: FAN-6340
+          FILE_DOWNLOAD_BASE_URL: ${{ inputs.FILE_DOWNLOAD_BASE_URL }}
+          FILES_TO_DOWNLOAD: |
+            [
+              { "subdirectory": ".github/scripts", "filename": "${{ inputs.VAR_DOCKER_SCRIPT_NAME }}" },
+              { "subdirectory": ".github/scripts", "filename": "${{ env.ARTIFACT_LINK_SCRIPT_NAME }}" },
+              { "subdirectory": ".github/scripts", "filename": "mvn-settings.xml.sh" },
+              { "subdirectory": ".m2", "filename": "${MVN_SETTINGS_FILE}" }
+            ]
 
       - name: "🏷️ Set up variables"
         id: setup-variables
@@ -341,17 +334,29 @@ jobs:
           ${{ inputs.SCAN_JAR }}
 
       - name: "# Set up Docker tags"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-docker-tags@FAN-6340
         id: docker-tags
-        working-directory: ${{ inputs.APP_WORKING_DIR }}
-        env:
+        with:
+          VERSION: ${{ inputs.VERSION }}
           DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
-        run: |-
-          DOCKER_TAGS=${{ env.DOCKER_LOCATION }}:${{ inputs.VERSION }}
-          if [ "${{ github.event_name }}" != "pull_request" ]; then
-            DOCKER_TAGS=${DOCKER_TAGS},${{ env.DOCKER_LOCATION }}:latest
-          fi
-          echo "DOCKER_TAGS: ${DOCKER_TAGS}"
-          echo "tags=${DOCKER_TAGS}" >> $GITHUB_OUTPUT
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+
+      - name: "🕸️ DEBUG: docker-tags"
+        run: |
+          echo "Tags: ${{ steps.docker-tags.outputs.tags }}"
+
+      # - name: "# Set up Docker tags"
+      #   id: docker-tags
+      #   working-directory: ${{ inputs.APP_WORKING_DIR }}
+      #   env:
+      #     DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
+      #   run: |-
+      #     DOCKER_TAGS=${{ env.DOCKER_LOCATION }}:${{ inputs.VERSION }}
+      #     if [ "${{ github.event_name }}" != "pull_request" ]; then
+      #       DOCKER_TAGS=${DOCKER_TAGS},${{ env.DOCKER_LOCATION }}:latest
+      #     fi
+      #     echo "DOCKER_TAGS: ${DOCKER_TAGS}"
+      #     echo "tags=${DOCKER_TAGS}" >> $GITHUB_OUTPUT
 
       - name: "🐳 Docker: build, tag, and push"
         uses: docker/build-push-action@v6
@@ -368,11 +373,12 @@ jobs:
         if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          DOCKER_DIGEST: ${{ steps.docker-build.outputs.digest }}
-          DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
+          ARTIFACT_DIGEST: ${{ steps.docker-build.outputs.digest }}
+          # ARTIFACT_TYPE: docker
+          ARTIFACT_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
           NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: ../${DOCKER_LINK_SCRIPT_NAME}
+        run: ../${ARTIFACT_LINK_SCRIPT_NAME}
