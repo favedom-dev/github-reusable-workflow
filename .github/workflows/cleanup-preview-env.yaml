@@ -269,9 +269,7 @@ jobs:
           fi
 
       - name: "🔩 Git config"
-        # TODO update to v2
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@FAN-6340
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2
         with:
           GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
           GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
