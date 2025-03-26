@@ -178,16 +178,14 @@ jobs:
       MVN_SETTINGS_FILE: settings.xml
     steps:
 
-      - name: "📄 GITHUB INFO"
-        # TODO update to v2
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@FAN-6340
-        with:
-          github-context: ${{ toJSON(github) }}
-          event-name: ${{ github.event_name }}
-          run-attempt: ${{ github.run_attempt }}
-          run-number: ${{ github.run_number }}
-          pr-number: ${{ github.event.pull_request.number }}
+      # - name: "📄 GITHUB INFO"
+      #   uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2
+      #   with:
+      #     github-context: ${{ toJSON(github) }}
+      #     event-name: ${{ github.event_name }}
+      #     run-attempt: ${{ github.run_attempt }}
+      #     run-number: ${{ github.run_number }}
+      #     pr-number: ${{ github.event.pull_request.number }}
 
       - name: "⬇️ Get reusable files"
         # TODO update to v2
