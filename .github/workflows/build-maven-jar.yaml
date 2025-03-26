@@ -229,7 +229,7 @@ jobs:
         # run: ../${ARTIFACT_LINK_SCRIPT_NAME}
         run: |
           pwd
-          ls -la
+          ls -la ..
           ../${ARTIFACT_LINK_SCRIPT_NAME}
 
       - name: "⬇️ Download Qwiet CLI"
