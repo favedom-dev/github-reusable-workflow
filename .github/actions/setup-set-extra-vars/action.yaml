@@ -1,0 +1,35 @@
+name: "Set Extra Vars"
+description: "Sets IS_FRONTEND and IS_MONOREPO variables"
+
+inputs:
+  is-frontend:
+    description: "Whether the project is a frontend"
+    required: true
+  is-monorepo:
+    description: "Whether the project is a monorepo"
+    required: true
+
+outputs:
+  IS_FRONTEND:
+    description: "Value of IS_FRONTEND"
+    value: ${{ steps.set-extra-vars.outputs.IS_FRONTEND }}
+  IS_MONOREPO:
+    description: "Value of IS_MONOREPO"
+    value: ${{ steps.set-extra-vars.outputs.IS_MONOREPO }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Set Extra Vars"
+      id: set-extra-vars
+      env:
+        IS_FRONTEND: ${{ inputs.is-frontend }}
+        IS_MONOREPO: ${{ inputs.is-monorepo }}
+      run: |
+        echo "IS_FRONTEND: ${IS_FRONTEND}"
+        echo "IS_FRONTEND=${IS_FRONTEND}" >> $GITHUB_ENV
+        echo "IS_FRONTEND=${IS_FRONTEND}" >> $GITHUB_OUTPUT
+        echo "IS_MONOREPO: ${IS_MONOREPO}"
+        echo "IS_MONOREPO=${IS_MONOREPO}" >> $GITHUB_ENV
+        echo "IS_MONOREPO=${IS_MONOREPO}" >> $GITHUB_OUTPUT
+      shell: bash

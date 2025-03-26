@@ -1,0 +1,33 @@
+name: "Set Name"
+description: "Sets the NAME variable based on repository name or override"
+
+inputs:
+  override-name:
+    description: "Optional override for the NAME variable"
+    required: false
+    default: ""
+  repo-name:
+    description: "Name of the repository (from github.event.repository.name)"
+    required: true
+
+outputs:
+  NAME:
+    description: "The determined NAME value"
+    value: ${{ steps.set-name.outputs.NAME }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Set Name"
+      id: set-name
+      env:
+        OVERRIDE_NAME: ${{ inputs.override-name }}
+      run: |
+        NAME="${{ inputs.repo-name }}"
+        echo "OVERRIDE_NAME: ${OVERRIDE_NAME}"
+        if [ -n "${OVERRIDE_NAME}" ]; then
+          NAME="${{ inputs.override-name }}"
+        fi
+        echo "NAME: ${NAME}"
+        echo "NAME=${NAME}" >> $GITHUB_OUTPUT
+      shell: bash

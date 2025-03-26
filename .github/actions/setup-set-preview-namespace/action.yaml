@@ -1,0 +1,51 @@
+name: "Set Preview Namespace"
+description: "Sets the PREVIEW_NAMESPACE variable based on conditions"
+
+inputs:
+  override-preview-namespace:
+    description: "Optional override for the preview namespace"
+    required: false
+    default: ""
+  use-repo-name-preview-namespace:
+    description: "Whether to use the repository name for the preview namespace"
+    required: true
+  repo-full-name:
+    description: "Full repository name (e.g., owner/repo)"
+    required: true
+  event-number:
+    description: "GitHub event number (e.g., PR number)"
+    required: true
+  name:
+    description: "NAME value from previous step (e.g., set-name output)"
+    required: true
+
+outputs:
+  PREVIEW_NAMESPACE:
+    description: "The determined PREVIEW_NAMESPACE value"
+    value: ${{ steps.set-preview-namespace.outputs.PREVIEW_NAMESPACE }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Set Preview Namespace"
+      id: set-preview-namespace
+      env:
+        OVERRIDE_PREVIEW_NAMESPACE: ${{ inputs.override-preview-namespace }}
+        GH_EVENT_NUMBER: ${{ inputs.event-number }}
+        USE_REPO_NAME_PREVIEW_NAMESPACE: ${{ inputs.use-repo-name-preview-namespace }}
+      run: |
+        echo "DEBUG: OVERRIDE_PREVIEW_NAMESPACE = ${OVERRIDE_PREVIEW_NAMESPACE}"
+        echo "DEBUG: GH_EVENT_NUMBER = ${GH_EVENT_NUMBER}"
+        if [ -n "${OVERRIDE_PREVIEW_NAMESPACE}" ]; then
+          PREVIEW_NAMESPACE="${{ inputs.override-preview-namespace }}"
+          echo "OVERRIDE: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
+        elif [ -n "${USE_REPO_NAME_PREVIEW_NAMESPACE}" ]; then
+          PREVIEW_NAMESPACE=pr-$(basename "${{ inputs.repo-full-name }}")-${{ inputs.event-number }}
+          echo "REPO NAME: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
+        else
+          PREVIEW_NAMESPACE=pr-${{ inputs.name }}-${{ inputs.event-number }}
+          echo "DEFAULT: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
+        fi
+        echo "PREVIEW_NAMESPACE: ${PREVIEW_NAMESPACE}"
+        echo "PREVIEW_NAMESPACE=${PREVIEW_NAMESPACE}" >> $GITHUB_OUTPUT
+      shell: bash
