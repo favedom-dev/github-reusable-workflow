@@ -1,0 +1,44 @@
+name: "Set Version"
+description: "Sets final version based on PR or release"
+
+inputs:
+  pr-version:
+    description: "Version from PR (if applicable)"
+    required: false
+    default: ""
+  pr-build-version:
+    description: "Build version from PR (if applicable)"
+    required: false
+    default: ""
+  release-version:
+    description: "Version from release (if applicable)"
+    required: false
+    default: ""
+
+outputs:
+  version:
+    description: "Final version"
+    value: ${{ steps.set-version.outputs.version }}
+  build-version:
+    description: "Final build version"
+    value: ${{ steps.set-version.outputs.build-version }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Set Version"
+      id: set-version
+      env:
+        PR_VERSION: ${{ inputs.pr-version }}
+      run: |
+        if [ -n "${PR_VERSION}" ]; then
+          echo "PR: version   : ${{ inputs.pr-version }}"
+          echo "PR: build-version: ${{ inputs.pr-build-version }}"
+          echo "version=${{ inputs.pr-version }}" >> $GITHUB_OUTPUT
+          echo "build-version=${{ inputs.pr-build-version }}" >> $GITHUB_OUTPUT
+        else
+          echo "RELEASE: version: ${{ inputs.release-version }}"
+          echo "version=${{ inputs.release-version }}" >> $GITHUB_OUTPUT
+          echo "build-version=0.0.0" >> $GITHUB_OUTPUT
+        fi
+      shell: bash

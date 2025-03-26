@@ -1,0 +1,41 @@
+name: "Display Version"
+description: "Displays version information in logs and summary"
+
+inputs:
+  version:
+    description: "Final version"
+    required: true
+  build-version:
+    description: "Final build version (PR only)"
+    required: false
+    default: ""
+  tag:
+    description: "Release tag (non-PR only)"
+    required: false
+    default: ""
+  pr-version:
+    description: "PR version (to determine PR vs release)"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Display Version"
+      env:
+        PR_VERSION: ${{ inputs.pr-version }}
+      run: |
+        echo "🔖 version            : ${{ inputs.version }}"
+
+        echo "| Name | Value |" >> $GITHUB_STEP_SUMMARY
+        echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+        echo "| 🔖 Version | \`${{ inputs.version }}\` |" >> $GITHUB_STEP_SUMMARY
+
+        if [ -n "${PR_VERSION}" ]; then
+          echo "📦 Build Version (PR) : ${{ inputs.build-version }}"
+          echo "| 📦 PR Version | \`${{ inputs.build-version }}\` |" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "🏷️ Tag                : ${{ inputs.tag }}"
+          echo "| 🏷️ Tag | \`${{ inputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
+        fi
+      shell: bash
