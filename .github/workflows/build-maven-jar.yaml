@@ -216,7 +216,7 @@ jobs:
           mvn -B ${{ inputs.MVN_ARGS }} ${MVN_ARG_ARTIFACT_REGISTRY}
 
       - name: "🔗 Link to Lib"
-        if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
+        # if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           ARTIFACT_TYPE: jar
