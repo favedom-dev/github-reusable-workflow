@@ -315,24 +315,21 @@ jobs:
           ${{ inputs.MVN_ARGS_EXTRA }}
 
       - name: "⬇️ Download Qwiet CLI"
-        if: ${{ env.SHIFTLEFT_ACCESS_TOKEN != '' }}
-        env:
-          SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
-        run: |
-          curl https://cdn.shiftleft.io/download/sl > $HOME/sl && chmod a+rx $HOME/sl
+        # TODO update to v2
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@FAN-6340
+        with:
+          shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
 
-      # https://docs.shiftleft.io/cli/reference/analyze
       - name: "🔍 Qwiet Analyze with NextGen Static Analysis"
-        if: ${{ env.SHIFTLEFT_ACCESS_TOKEN != '' }}
-        env:
-          SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
-        run: |
-          $HOME/sl analyze \
-          --app ${{ inputs.NAME }} \
-          --java \
-          --vcs-prefix-correction "*=${{ inputs.VCS_PREFIX_CORRECTION }}" \
-          --cpg \
-          ${{ inputs.SCAN_JAR }}
+        # TODO update to v2
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@FAN-6340
+        with:
+          shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+          name: ${{ inputs.NAME }}
+          vcs-prefix-correction: ${{ inputs.VCS_PREFIX_CORRECTION }}
+          scan-jar: ${{ inputs.SCAN_JAR }}
 
       - name: "# Set up Docker tags"
         # TODO update to v2
