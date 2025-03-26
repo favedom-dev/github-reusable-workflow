@@ -175,7 +175,7 @@ jobs:
     env:
       # GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       # DOCKER_BUILDKIT: 1
-      ARTIFACT_LINK_SCRIPT_NAME: docker-link.sh
+      ARTIFACT_LINK_SCRIPT_NAME: artifact-link.sh
     steps:
 
       - name: "⬇️ Get reusable files"
