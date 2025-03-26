@@ -175,6 +175,7 @@ jobs:
       # DOCKER_BUILDKIT: 1
       # DOCKER_LINK_SCRIPT_NAME: docker-link.sh
       ARTIFACT_LINK_SCRIPT_NAME: artifact-link.sh
+      MVN_SETTINGS_SCRIPT_NAME: mvn-settings.xml.sh
       MVN_SETTINGS_FILE: settings.xml
     steps:
 
@@ -205,8 +206,8 @@ jobs:
             [
               { "subdirectory": ".github/scripts", "filename": "${{ inputs.VAR_DOCKER_SCRIPT_NAME }}" },
               { "subdirectory": ".github/scripts", "filename": "${{ env.ARTIFACT_LINK_SCRIPT_NAME }}" },
-              { "subdirectory": ".github/scripts", "filename": "mvn-settings.xml.sh" },
-              { "subdirectory": ".m2", "filename": "${MVN_SETTINGS_FILE}" }
+              { "subdirectory": ".github/scripts", "filename": "${{ env.MVN_SETTINGS_SCRIPT_NAME }}" },
+              { "subdirectory": ".m2", "filename": "${{ env.MVN_SETTINGS_FILE }}" }
             ]
 
       - name: "🏷️ Set up variables"
