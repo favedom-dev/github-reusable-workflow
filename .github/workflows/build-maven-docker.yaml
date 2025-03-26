@@ -334,6 +334,8 @@ jobs:
           ${{ inputs.SCAN_JAR }}
 
       - name: "# Set up Docker tags"
+        # TODO update to v2
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/set-docker-tags@v2
         uses: favedom-dev/github-reusable-workflow/.github/actions/set-docker-tags@FAN-6340
         id: docker-tags
         with:
