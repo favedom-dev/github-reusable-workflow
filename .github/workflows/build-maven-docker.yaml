@@ -173,7 +173,6 @@ jobs:
     env:
       # GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       # DOCKER_BUILDKIT: 1
-      # DOCKER_LINK_SCRIPT_NAME: docker-link.sh
       ARTIFACT_LINK_SCRIPT_NAME: artifact-link.sh
       MVN_SETTINGS_SCRIPT_NAME: mvn-settings.xml.sh
       MVN_SETTINGS_FILE: settings.xml
