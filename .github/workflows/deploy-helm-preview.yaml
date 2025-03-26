@@ -241,6 +241,8 @@ jobs:
           version: '${{ inputs.YQ_VERSION }}'
 
       - name: "🔩 Git config"
+        # TODO update to v2
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2
         uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@FAN-6340
         with:
           GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
