@@ -205,7 +205,8 @@ jobs:
       - name: "🕸️ DEBUG: setup stackhawk"
         working-directory: ${{ inputs.STACKHAWK_DIRECTORY }}
         run: |
-          cat ./stackhawk.yml
+          # cat ./stackhawk.yml
+          yq ./stackhawk.yml
 
       - name: "😴 Set Stackhawk sleep"
         id: 'set-stackhawk-sleep'
