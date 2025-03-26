@@ -179,17 +179,15 @@ jobs:
     steps:
 
       - name: "📄 GITHUB INFO"
-        env:
-          GITHUB_CONTEXT: ${{ toJSON(github) }}
-        run: |-
-          echo "PR number          : ${{ github.event.pull_request.number }}"
-          echo "github.event_name  : ${{ github.event_name }}"
-          echo "github.run_attempt : ${{ github.run_attempt }}"
-          echo "github.run_number  : ${{ github.run_number }}"
-          # echo "GH_RUNS_ON         : ${{ github.event.inputs.GH_RUNS_ON }}"
-          echo "GH_RUNS_ON         : ${{ inputs.GH_RUNS_ON }}"
-          echo "--------------------------------------"
-          echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
+        # TODO update to v2
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@FAN-6340
+        with:
+          github-context: ${{ toJSON(github) }}
+          event-name: ${{ github.event_name }}
+          run-attempt: ${{ github.run_attempt }}
+          run-number: ${{ github.run_number }}
+          pr-number: ${{ github.event.pull_request.number }}
 
       - name: "⬇️ Get reusable files"
         # TODO update to v2
@@ -339,23 +337,6 @@ jobs:
           VERSION: ${{ inputs.VERSION }}
           DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
-
-      - name: "🕸️ DEBUG: docker-tags"
-        run: |
-          echo "Tags: ${{ steps.docker-tags.outputs.tags }}"
-
-      # - name: "# Set up Docker tags"
-      #   id: docker-tags
-      #   working-directory: ${{ inputs.APP_WORKING_DIR }}
-      #   env:
-      #     DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
-      #   run: |-
-      #     DOCKER_TAGS=${{ env.DOCKER_LOCATION }}:${{ inputs.VERSION }}
-      #     if [ "${{ github.event_name }}" != "pull_request" ]; then
-      #       DOCKER_TAGS=${DOCKER_TAGS},${{ env.DOCKER_LOCATION }}:latest
-      #     fi
-      #     echo "DOCKER_TAGS: ${DOCKER_TAGS}"
-      #     echo "tags=${DOCKER_TAGS}" >> $GITHUB_OUTPUT
 
       - name: "🐳 Docker: build, tag, and push"
         uses: docker/build-push-action@v6
