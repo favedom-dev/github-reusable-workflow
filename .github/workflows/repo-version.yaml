@@ -135,14 +135,15 @@ jobs:
         env:
           PR_VERSION: ${{ steps.pr-version.outputs.version }}
         run: |
-          echo "set-version    : ${{ steps.set-version.outputs.version }}"
-          # echo "## Info" >> $GITHUB_STEP_SUMMARY
+          echo "🔖 version            : ${{ steps.set-version.outputs.version }}"
+
           echo "| Name | Value |" >> $GITHUB_STEP_SUMMARY
           echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
           echo "| 🔖 Version | \`${{ steps.set-version.outputs.version }}\` |" >> $GITHUB_STEP_SUMMARY
           if [ ${{ env.PR_VERSION }} ]; then
-            echo "set-version PR : ${{ steps.set-version.outputs.build-version }}"
+            echo "📦 Build Version (PR) : ${{ steps.set-version.outputs.build-version }}"
             echo "| 📦 PR Version | \`${{ steps.set-version.outputs.build-version }}\` |" >> $GITHUB_STEP_SUMMARY
           else
-            echo "| 🏷️ Tag | \`${{ steps.set-version.outputs.tag }}\` |"
+            echo "🏷️ Tag                : ${{ steps.set-version.outputs.tag }}"
+            echo "| 🏷️ Tag | \`${{ steps.set-version.outputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
           fi
