@@ -76,13 +76,13 @@ jobs:
           pr_number="${{ github.event.number }}"
           pr_run_number="${{ github.run_number }}"
           pr_run_attempt="${{ github.run_attempt }}"
-          build-version="${{ github.event.number }}.${{ github.run_number }}.${{ github.run_attempt }}"
+          build_version="${{ github.event.number }}.${{ github.run_number }}.${{ github.run_attempt }}"
 
           echo "PR Number        (github.event.number) : ${{ github.event.number }}"
           echo "PR Run Number    (github.run_number)   : ${{ github.run_number }}"
           echo "PR Run Attempt   (github.run_attempt)  : ${{ github.run_attempt }}"
-          echo "PR Build Version                       : ${build-version}"
-          echo "build-version=${build-version}"  >> $GITHUB_OUTPUT
+          echo "PR Build Version                       : ${build_version}"
+          echo "build-version=${build_version}"  >> $GITHUB_OUTPUT
           # echo "build-version=${{ github.event.number }}.${{ github.run_number }}.${{ github.run_attempt }}"  >> $GITHUB_OUTPUT
           echo "version=0.0.0-SNAPSHOT-PR-${{ github.event.number }}-${{ github.run_number }}-${{ github.run_attempt }}"  >> $GITHUB_OUTPUT
 
