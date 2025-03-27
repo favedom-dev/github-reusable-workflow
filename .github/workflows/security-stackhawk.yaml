@@ -199,7 +199,7 @@ jobs:
         id: get-reusable-files
         # if: github.event_name != 'pull_request'
         with:
-          FILE_GIT_BRANCH: ${{ inputs.SCRIPT_GIT_BRANCH }}
+          FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
           FILE_DOWNLOAD_BASE_URL: ${{ inputs.FILE_DOWNLOAD_BASE_URL }}
           FILES_TO_DOWNLOAD: |
             [
