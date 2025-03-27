@@ -220,13 +220,10 @@ jobs:
           KEYCLOAK_AUTH: https://identity.${{ inputs.BASE_DOMAIN }}/realms/${{ inputs.KEYCLOAK_REALM }}/protocol/openid-connect/token
         run: |
           if [ -f "${{ github.workspace }}/../${SCRIPT_NAME}" ]; then
-            mv ${{ github.workspace }}/../${SCRIPT_NAME} ./${SCRIPT_NAME}
-            echo "File exist: ${{ github.workspace }}/../${SCRIPT_NAME}"
+            cp ${{ github.workspace }}/../${SCRIPT_NAME} ./${SCRIPT_NAME}
           else
             echo "File does not exist: ${{ github.workspace }}/../${SCRIPT_NAME}"
           fi
-          echo "github.workspace :${{ github.workspace }}"
-          ls -la ${{ github.workspace }}/..
 
           chmod 777 ./${SCRIPT_NAME}
           ./${SCRIPT_NAME}
