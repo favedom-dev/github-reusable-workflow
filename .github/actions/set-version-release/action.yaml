@@ -36,6 +36,11 @@ runs:
       run: |
         export GH_TOKEN="${{ inputs.gh-token }}"
         export GITHUB_TOKEN="${{ inputs.gh-token }}"
+        if [ -f "../${{ inputs.increment-script-name }}" ]; then
+          mv ../${{ inputs.increment-script-name }} ./${{ inputs.increment-script-name }}
+        else
+          echo "File does not exist: ../${{ inputs.increment-script-name }}"
+        fi
         ./${{ inputs.increment-script-name }} "${{ inputs.monorepo-app }}"
         VERSION=$(cat VERSION)
         TAG=$(cat TAG)
