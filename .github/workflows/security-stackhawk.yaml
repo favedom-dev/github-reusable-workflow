@@ -219,11 +219,15 @@ jobs:
           TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
           KEYCLOAK_AUTH: https://identity.${{ inputs.BASE_DOMAIN }}/realms/${{ inputs.KEYCLOAK_REALM }}/protocol/openid-connect/token
         run: |
-          if [ -f "../${SCRIPT_NAME}" ]; then
-            mv ../${SCRIPT_NAME} ./${SCRIPT_NAME}
+          if [ -f "../../${SCRIPT_NAME}" ]; then
+            mv ../../${SCRIPT_NAME} ./${SCRIPT_NAME}
+            echo "File sexist: ../../${SCRIPT_NAME}"
+            ls -la ..
           else
-            echo "File does not exist: ../${SCRIPT_NAME}"
+            echo "File does not exist: ../../${SCRIPT_NAME}"
+            ls -la ..
           fi
+          echo "github.workspace :${{ github.workspace }}"
           chmod 777 ./${SCRIPT_NAME}
           ./${SCRIPT_NAME}
 
