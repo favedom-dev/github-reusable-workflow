@@ -58,28 +58,14 @@ jobs:
       build-version: ${{ steps.set-version.outputs.build-version }}
     steps:
 
-      # https://docs.github.com/en/actions/learn-github-actions/environment-variables
       # - name: "📄 GITHUB INFO"
-      #   env:
-      #     GITHUB_CONTEXT: ${{ toJSON(github) }}
-      #   run: |-
-      #     echo "PR number          : ${{ github.event.pull_request.number }}"
-      #     echo "github.event_name  : ${{ github.event_name }}"
-      #     echo "github.run_attempt : ${{ github.run_attempt }}"
-      #     echo "github.run_number  : ${{ github.run_number }}"
-      #     echo "--------------------------------------"
-      #     echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
-
-      # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#workflow_run
-      - name: "📝 Set PR Version"
-        id: pr-version
-        if: github.event_name == 'pull_request'
-        run: |
-          echo "PR Number      (github.event.number) : ${{ github.event.number }}"
-          echo "PR Run Number  (github.run_number)   : ${{ github.run_number }}"
-          echo "PR Run Attempt (github.run_attempt)  : ${{ github.run_attempt }}"
-          echo "build-version=${{ github.event.number }}.${{ github.run_number }}.${{ github.run_attempt }}"  >> $GITHUB_OUTPUT
-          echo "version=0.0.0-SNAPSHOT-PR-${{ github.event.number }}-${{ github.run_number }}-${{ github.run_attempt }}"  >> $GITHUB_OUTPUT
+      #   uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2
+      #   with:
+      #     github-context: ${{ toJSON(github) }}
+      #     event-name: ${{ github.event_name }}
+      #     run-attempt: ${{ github.run_attempt }}
+      #     run-number: ${{ github.run_number }}
+      #     pr-number: ${{ github.event.pull_request.number }}
 
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
@@ -87,62 +73,50 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: "☁️ Get ${{ inputs.INCREMENT_SCRIPT_NAME }}"
+      - name: "⬇️ Get reusable files"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
+        id: get-reusable-files
         if: github.event_name != 'pull_request'
-        run: |
-          # wget ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${{ inputs.SCRIPT_GIT_BRANCH }}/scripts/${{ inputs.INCREMENT_SCRIPT_NAME }}
-          curl -o ${{ inputs.INCREMENT_SCRIPT_NAME }} ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}/${{ inputs.SCRIPT_GIT_BRANCH }}/scripts/${{ inputs.INCREMENT_SCRIPT_NAME }}
-          chmod 777 ./${{ inputs.INCREMENT_SCRIPT_NAME }}
+        with:
+          FILE_GIT_BRANCH: ${{ inputs.SCRIPT_GIT_BRANCH }}
+          FILE_DOWNLOAD_BASE_URL: ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}
+          FILES_TO_DOWNLOAD: |
+            [
+              { "subdirectory": "scripts", "filename": "${{ inputs.INCREMENT_SCRIPT_NAME }}" }
+            ]
 
       - name: "☑ Release version"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-release@v2
         id: version
         if: github.event_name != 'pull_request'
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: |
-          export GH_TOKEN=${{ secrets.GH_TOKEN }}
-          export GITHUB_TOKEN=${{ secrets.GH_TOKEN }}
-          ./${{ inputs.INCREMENT_SCRIPT_NAME }} ${{ inputs.MONOREPO_APP }}
-          VERSION=$(cat VERSION)
-          TAG=$(cat TAG)
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+        with:
+          event-name: ${{ github.event_name }}
+          increment-script-name: ${{ inputs.INCREMENT_SCRIPT_NAME }}
+          monorepo-app: ${{ inputs.MONOREPO_APP }}
+          gh-token: ${{ secrets.GH_TOKEN }}
+
+      - name: "📝 Set PR Version"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-pr@v2
+        id: pr-version
+        if: github.event_name == 'pull_request'
+        with:
+          event-name: ${{ github.event_name }}
+          pr-number: ${{ github.event.number }}
+          run-number: ${{ github.run_number }}
+          run-attempt: ${{ github.run_attempt }}
 
       - name: "📝 Set version"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version@v2
         id: set-version
-        env:
-          PR_VERSION: ${{ steps.pr-version.outputs.version }}
-        run: |
-          # echo "PR_VERSION: ${{ env.PR_VERSION }}"
-          if [ ${{ env.PR_VERSION }} ]; then
-            echo "PR: VERSION   : ${{ steps.pr-version.outputs.version }}"
-            echo "PR: build-version: ${{ steps.pr-version.outputs.build-version }}"
-            echo "version=${{ steps.pr-version.outputs.version }}" >> $GITHUB_OUTPUT
-            echo "build-version=${{ steps.pr-version.outputs.build-version }}" >> $GITHUB_OUTPUT
-            # gh pr comment ${{ github.event.number }} --body "PR Build Version: ${{ steps.set-version.outputs.version }}"
-          else
-            # RELEASE_VERSION=$(gh release view -q ".name" --json name | sed 's/v//')
-            # echo "RELEASE VERSION: ${RELEASE_VERSION}"
-            echo "RELEASE VERSION: ${{ steps.version.outputs.version }}"
-            echo "version=${{ steps.version.outputs.version }}" >> $GITHUB_OUTPUT
-            # TODO: add logic for iOS and Android
-            echo "build-version=0.0.0" >> $GITHUB_OUTPUT
-          fi
-          # echo "${{ steps.version.outputs.version }}"
+        with:
+          pr-version: ${{ steps.pr-version.outputs.version }}
+          pr-build-version: ${{ steps.pr-version.outputs.build-version }}
+          release-version: ${{ steps.version.outputs.version }}
 
-      - name: "👀 Display version: ${{ steps.set-version.outputs.version }}"
-        env:
-          PR_VERSION: ${{ steps.pr-version.outputs.version }}
-        run: |
-          echo "set-version    : ${{ steps.set-version.outputs.version }}"
-          # echo "## Info" >> $GITHUB_STEP_SUMMARY
-          echo "| Name | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔖 Version | \`${{ steps.set-version.outputs.version }}\` |" >> $GITHUB_STEP_SUMMARY
-          if [ ${{ env.PR_VERSION }} ]; then
-            echo "set-version PR : ${{ steps.set-version.outputs.build-version }}"
-            echo "| 📦 PR Version | \`${{ steps.set-version.outputs.build-version }}\` |" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "| 🏷️ Tag | \`${{ steps.set-version.outputs.tag }}\` |"
-          fi
+      - name: "👀 Display version"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-display@v2
+        with:
+          version: ${{ steps.set-version.outputs.version }}
+          build-version: ${{ steps.set-version.outputs.build-version }}
+          tag: ${{ steps.version.outputs.tag }}
+          pr-version: ${{ steps.pr-version.outputs.version }}

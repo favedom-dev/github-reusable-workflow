@@ -76,79 +76,40 @@ jobs:
     steps:
 
       - name: "📝 Set Name"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-name@v2
         id: set-name
-        env:
-          OVERRIDE_NAME: ${{ inputs.OVERRIDE_NAME }}
-        run: |
-          NAME=${{ github.event.repository.name }}
-          echo "OVERRIDE_NAME: ${OVERRIDE_NAME}"
-          if [ -n "${OVERRIDE_NAME}" ]; then
-            NAME=${{ inputs.OVERRIDE_NAME }}
-          fi
-          echo "NAME: ${NAME}"
-          echo "NAME=${NAME}" >> $GITHUB_OUTPUT
+        with:
+          override-name: ${{ inputs.OVERRIDE_NAME }}
+          repo-name: ${{ github.event.repository.name }}
 
       - name: "📝 Set Extra Vars"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-extra-vars@v2
         id: extra-vars
-        env:
-          IS_FRONTEND: ${{ inputs.IS_FRONTEND }}
-          IS_MONOREPO: ${{ inputs.IS_MONOREPO }}
-        run: |
-          echo "IS_FRONTEND: ${IS_FRONTEND}"
-          echo "IS_FRONTEND=${IS_FRONTEND}" >> $GITHUB_ENV
-          echo "IS_FRONTEND=${IS_FRONTEND}" >> $GITHUB_OUTPUT
-          echo "IS_MONOREPO: ${IS_MONOREPO}"
-          echo "IS_MONOREPO=${IS_MONOREPO}" >> $GITHUB_ENV
-          echo "IS_MONOREPO=${IS_MONOREPO}" >> $GITHUB_OUTPUT
+        with:
+          is-frontend: ${{ inputs.IS_FRONTEND }}
+          is-monorepo: ${{ inputs.IS_MONOREPO }}
 
       - name: "📝 Set Preview Namespace name"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-preview-namespace@v2
         id: set-name-pr-namespace
-        env:
-          OVERRIDE_PREVIEW_NAMESPACE: ${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
-          GH_EVENT_NUMBER: ${{ github.event.number }}
-          USE_REPO_NAME_PREVIEW_NAMESPACE: ${{ inputs.USE_REPO_NAME_PREVIEW_NAMESPACE }}
-        run: |
-          echo "DEBUG: OVERRIDE_PREVIEW_NAMESPACE = ${OVERRIDE_PREVIEW_NAMESPACE}"
-          echo "DEBUG: GH_EVENT_NUMBER = ${GH_EVENT_NUMBER}"
-          if [ -n "${OVERRIDE_PREVIEW_NAMESPACE}" ]; then
-            PREVIEW_NAMESPACE=${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
-            echo "OVERRIDE: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
-          elif [ -n "${USE_REPO_NAME_PREVIEW_NAMESPACE}" ]; then
-          # elif { [ "${IS_MONOREPO}" = "true" ] && [ "${IS_FRONTEND}" = "true" ]; } || [ -n "${USE_REPO_NAME_PREVIEW_NAMESPACE}" ]; then
-            PREVIEW_NAMESPACE=pr-$(basename ${{ github.repository }})-${{ github.event.number }}
-            echo "REPO NAME: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
-          else
-            PREVIEW_NAMESPACE=pr-${{ steps.set-name.outputs.NAME }}-${{ github.event.number }}
-            echo "DEFAULT: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
-          fi
-          echo "PREVIEW_NAMESPACE: ${PREVIEW_NAMESPACE}"
-          echo "PREVIEW_NAMESPACE=${PREVIEW_NAMESPACE}" >> $GITHUB_OUTPUT
+        with:
+          override-preview-namespace: ${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
+          use-repo-name-preview-namespace: ${{ inputs.USE_REPO_NAME_PREVIEW_NAMESPACE }}
+          repo-full-name: ${{ github.repository }}
+          event-number: ${{ github.event.number }}
+          name: ${{ steps.set-name.outputs.NAME }}
 
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
 
       - name: "🦅 Stackhawk ready repo"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-stackhawk-ready-repo@v2
         id: stackhawk-ready-repo
-        env:
-          STACKHAWK_DIRECTORY: ${{ inputs.STACKHAWK_DIRECTORY }}
-          FILE: ${{ inputs.STACKHAWK_TMPL_YML }}
-          OVERRIDE_IS_STACKHAWK_READY: ${{ inputs.IS_STACKHAWK_READY }}
-        run: |
-          if [ "${OVERRIDE_IS_STACKHAWK_READY}" = true ]; then
-            if [ -f "${STACKHAWK_DIRECTORY}/${FILE}" ]; then
-              echo "${FILE} exists"
-              IS_STACKHAWK_READY=true
-            else
-              echo "${FILE} does not exists"
-              IS_STACKHAWK_READY=false
-            fi
-          else
-            IS_STACKHAWK_READY=${{ inputs.IS_STACKHAWK_READY }}
-            echo "OVERRIDE_IS_STACKHAWK_READY with ${{ inputs.IS_STACKHAWK_READY }}"
-          fi
-          echo "IS_STACKHAWK_READY: ${IS_STACKHAWK_READY}"
-          echo "IS_STACKHAWK_READY=${IS_STACKHAWK_READY}" >> $GITHUB_OUTPUT
-          echo "STACKHAWK_DIRECTORY=${STACKHAWK_DIRECTORY}" >> $GITHUB_OUTPUT
+        with:
+          stackhawk-directory: ${{ inputs.STACKHAWK_DIRECTORY }}
+          stackhawk-tmpl-yml: ${{ inputs.STACKHAWK_TMPL_YML }}
+          is-stackhawk-ready: ${{ inputs.IS_STACKHAWK_READY }}
+          override-is-stackhawk-ready: ${{ inputs.OVERRIDE_IS_STACKHAWK_READY }}
 
       - name: "👀 Display values: ${{ steps.set-name.outputs.NAME }} "
         run: |
@@ -160,12 +121,12 @@ jobs:
           echo "IS_MONOREPO         : ${{ steps.extra-vars.outputs.IS_MONOREPO }}"
           #
           # echo "## App Values" >> $GITHUB_STEP_SUMMARY
-          echo "| Property           | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "| ---                | --- |" >> $GITHUB_STEP_SUMMARY
-          echo "|NAME                | \`${{ steps.set-name.outputs.NAME }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "|PREVIEW_NAMESPACE   | \`${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "|IS_STACKHAWK_READY  | \`${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "|STACKHAWK_DIRECTORY | \`${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "|IS_FRONTEND         | \`${{ steps.extra-vars.outputs.IS_FRONTEND }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "|IS_MONOREPO         | \`${{ steps.extra-vars.outputs.IS_MONOREPO }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Property            | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "| ---                 | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| NAME                | \`${{ steps.set-name.outputs.NAME }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| PREVIEW_NAMESPACE   | \`${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| IS_STACKHAWK_READY  | \`${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| STACKHAWK_DIRECTORY | \`${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| IS_FRONTEND         | \`${{ steps.extra-vars.outputs.IS_FRONTEND }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| IS_MONOREPO         | \`${{ steps.extra-vars.outputs.IS_MONOREPO }}\` |" >> $GITHUB_STEP_SUMMARY
 

@@ -106,29 +106,22 @@ jobs:
     env:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       DOCKER_BUILDKIT: 1
-      DOCKER_LINK_SCRIPT_NAME: docker-link.sh
+      ARTIFACT_LINK_SCRIPT_NAME: artifact-link.sh
       NAME: ${{ inputs.NAME }}
       VERSION: ${{ inputs.VERSION }}
     steps:
 
-      - name: "⬇️ Get reusable files"
+      - name: "⬇️ Get Reusable Files"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
         id: get-reusable-files
-        run: |
-          get_file() {
-            FILE_URL=${FILE_DOWNLOAD_BASE_URL}/${FILE_GIT_BRANCH}/${FILE_SUBDIR}/${FILE_NAME}
-            echo "Getting ${FILE_NAME} from ${FILE_URL}"
-            curl -o ../${FILE_NAME} ${FILE_URL}
-            chmod 777 ../${FILE_NAME}
-          }
-          FILE_GIT_BRANCH=${{ inputs.FILE_GIT_BRANCH }}
-          FILE_DOWNLOAD_BASE_URL=${{ inputs.FILE_DOWNLOAD_BASE_URL }}
-          FILE_SUBDIR=.github/scripts
-
-          FILE_NAME=${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
-          get_file
-
-          FILE_NAME=${DOCKER_LINK_SCRIPT_NAME}
-          get_file
+        with:
+          FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
+          FILE_DOWNLOAD_BASE_URL: ${{ inputs.FILE_DOWNLOAD_BASE_URL }}
+          FILES_TO_DOWNLOAD: |
+            [
+              { "subdirectory": ".github/scripts", "filename": "${{ inputs.VAR_DOCKER_SCRIPT_NAME }}" },
+              { "subdirectory": ".github/scripts", "filename": "${{ env.ARTIFACT_LINK_SCRIPT_NAME }}" }
+            ]
 
       - name: "🏷️ Set up variables"
         id: setup-variables
@@ -141,8 +134,7 @@ jobs:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           NAME: ${{ inputs.NAME }}
           PROJECT_ID: ${{ inputs.PROJECT_ID }}
-        run: |
-          ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
+        run: ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
 
       - name: "🧰 Set up gh cli"
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
@@ -203,15 +195,15 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: "🔗 Link to Container"
-        if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
+        # if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          DOCKER_DIGEST: ${{ steps.docker-build.outputs.digest }}
-          DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
+          ARTIFACT_DIGEST: ${{ steps.docker-build.outputs.digest }}
+          # ARTIFACT_TYPE: docker
+          ARTIFACT_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
           NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: |-
-          ../${DOCKER_LINK_SCRIPT_NAME}
+        run: ../${ARTIFACT_LINK_SCRIPT_NAME}

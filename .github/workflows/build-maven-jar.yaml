@@ -126,28 +126,23 @@ jobs:
       id-token: 'write'
     runs-on: ${{ inputs.GH_RUNS_ON }}
     env:
+      ARTIFACT_LINK_SCRIPT_NAME: artifact-link.sh
+      MVN_SETTINGS_SCRIPT_NAME: mvn-settings.xml.sh
       MVN_SETTINGS_FILE: settings.xml
     steps:
 
       - name: "⬇️ Get reusable files"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
         id: get-reusable-files
-        run: |
-          get_file() {
-            FILE_URL=${FILE_DOWNLOAD_BASE_URL}/${FILE_GIT_BRANCH}/${FILE_SUBDIR}/${FILE_NAME}
-            echo "Getting ${FILE_NAME} from ${FILE_URL}"
-            curl -o ../${FILE_NAME} ${FILE_URL}
-            chmod 777 ../${FILE_NAME}
-          }
-          FILE_GIT_BRANCH=${{ inputs.FILE_GIT_BRANCH }}
-          FILE_DOWNLOAD_BASE_URL=${{ inputs.FILE_DOWNLOAD_BASE_URL }}
-          FILE_SUBDIR=.github/scripts
-
-          FILE_NAME=mvn-settings.xml.sh
-          get_file
-
-          FILE_SUBDIR=.m2
-          FILE_NAME=${MVN_SETTINGS_FILE}
-          get_file
+        with:
+          FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
+          FILE_DOWNLOAD_BASE_URL: ${{ inputs.FILE_DOWNLOAD_BASE_URL }}
+          FILES_TO_DOWNLOAD: |
+            [
+              { "subdirectory": ".github/scripts", "filename": "${{ env.ARTIFACT_LINK_SCRIPT_NAME }}" },
+              { "subdirectory": ".github/scripts", "filename": "${{ env.MVN_SETTINGS_SCRIPT_NAME }}" },
+              { "subdirectory": ".m2", "filename": "${{ env.MVN_SETTINGS_FILE }}" }
+            ]
 
       - name: "🏷️ Set up variables"
         id: setup-variables
@@ -219,32 +214,27 @@ jobs:
           mvn -B ${{ inputs.MVN_ARGS }} ${MVN_ARG_ARTIFACT_REGISTRY}
 
       - name: "🔗 Link to Lib"
+        # if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          GAR_URL: ${{ steps.setup-variables.outputs.GAR_URL }}
-        run: |-
-          echo "${GAR_URL}"
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            gh pr comment ${{ github.event.number }} \
-            --body "📦 JAR Lib: [${{ inputs.NAME }} ${{ inputs.VERSION }}](${GAR_URL})"
-          fi
+          ARTIFACT_TYPE: jar
+          ARTIFACT_URL: ${{ steps.setup-variables.outputs.GAR_URL }}
+          NAME: ${{ inputs.NAME }}
+          VERSION: ${{ inputs.VERSION }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: ../${ARTIFACT_LINK_SCRIPT_NAME}
 
       - name: "⬇️ Download Qwiet CLI"
-        if: ${{ env.SHIFTLEFT_ACCESS_TOKEN != '' }}
-        env:
-          SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
-        run: |
-          curl https://cdn.shiftleft.io/download/sl > $HOME/sl && chmod a+rx $HOME/sl
+        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2
+        with:
+          shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
 
-      # https://docs.shiftleft.io/cli/reference/analyze
       - name: "🔍 Qwiet Analyze with NextGen Static Analysis"
-        if: ${{ env.SHIFTLEFT_ACCESS_TOKEN != '' }}
-        env:
-          SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
-        run: |
-          $HOME/sl analyze \
-          --app ${{ inputs.NAME }} \
-          --java \
-          --vcs-prefix-correction "*=${{ inputs.VCS_PREFIX_CORRECTION }}" \
-          --cpg \
-          ${{ inputs.SCAN_JAR }}
+        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@v2
+        with:
+          shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+          name: ${{ inputs.NAME }}
+          vcs-prefix-correction: ${{ inputs.VCS_PREFIX_CORRECTION }}
+          scan-jar: ${{ inputs.SCAN_JAR }}

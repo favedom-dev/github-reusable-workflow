@@ -107,11 +107,15 @@ jobs:
       ARGOCD_APP_NAME: ${{ steps.tenant.outputs.ARGOCD_APP_NAME }}
 
     steps:
-      # - name: "DEBUG: GITHUB INFO"
-      #   env:
-      #     GITHUB_CONTEXT: ${{ toJSON(github) }}
-      #   run: |-
-      #     echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
+
+      # - name: "📄 GITHUB INFO"
+      #   uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2
+      #   with:
+      #     github-context: ${{ toJSON(github) }}
+      #     event-name: ${{ github.event_name }}
+      #     run-attempt: ${{ github.run_attempt }}
+      #     run-number: ${{ github.run_number }}
+      #     pr-number: ${{ github.event.pull_request.number }}
 
       - name: "☁️ Set tenant via PR label or input"
         id: tenant

@@ -173,48 +173,33 @@ jobs:
     env:
       # GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       # DOCKER_BUILDKIT: 1
-      DOCKER_LINK_SCRIPT_NAME: docker-link.sh
+      ARTIFACT_LINK_SCRIPT_NAME: artifact-link.sh
+      MVN_SETTINGS_SCRIPT_NAME: mvn-settings.xml.sh
       MVN_SETTINGS_FILE: settings.xml
     steps:
 
-      - name: "📄 GITHUB INFO"
-        env:
-          GITHUB_CONTEXT: ${{ toJSON(github) }}
-        run: |-
-          echo "PR number          : ${{ github.event.pull_request.number }}"
-          echo "github.event_name  : ${{ github.event_name }}"
-          echo "github.run_attempt : ${{ github.run_attempt }}"
-          echo "github.run_number  : ${{ github.run_number }}"
-          # echo "GH_RUNS_ON         : ${{ github.event.inputs.GH_RUNS_ON }}"
-          echo "GH_RUNS_ON         : ${{ inputs.GH_RUNS_ON }}"
-          echo "--------------------------------------"
-          echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
+      # - name: "📄 GITHUB INFO"
+      #   uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2
+      #   with:
+      #     github-context: ${{ toJSON(github) }}
+      #     event-name: ${{ github.event_name }}
+      #     run-attempt: ${{ github.run_attempt }}
+      #     run-number: ${{ github.run_number }}
+      #     pr-number: ${{ github.event.pull_request.number }}
 
       - name: "⬇️ Get reusable files"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
         id: get-reusable-files
-        run: |
-          get_file() {
-            FILE_URL=${FILE_DOWNLOAD_BASE_URL}/${FILE_GIT_BRANCH}/${FILE_SUBDIR}/${FILE_NAME}
-            echo "Getting ${FILE_NAME} from ${FILE_URL}"
-            curl -o ../${FILE_NAME} ${FILE_URL}
-            chmod 777 ../${FILE_NAME}
-          }
-          FILE_GIT_BRANCH=${{ inputs.FILE_GIT_BRANCH }}
-          FILE_DOWNLOAD_BASE_URL=${{ inputs.FILE_DOWNLOAD_BASE_URL }}
-          FILE_SUBDIR=.github/scripts
-
-          FILE_NAME=${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
-          get_file
-
-          FILE_NAME=${DOCKER_LINK_SCRIPT_NAME}
-          get_file
-
-          FILE_NAME=mvn-settings.xml.sh
-          get_file
-
-          FILE_SUBDIR=.m2
-          FILE_NAME=${MVN_SETTINGS_FILE}
-          get_file
+        with:
+          FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
+          FILE_DOWNLOAD_BASE_URL: ${{ inputs.FILE_DOWNLOAD_BASE_URL }}
+          FILES_TO_DOWNLOAD: |
+            [
+              { "subdirectory": ".github/scripts", "filename": "${{ inputs.VAR_DOCKER_SCRIPT_NAME }}" },
+              { "subdirectory": ".github/scripts", "filename": "${{ env.ARTIFACT_LINK_SCRIPT_NAME }}" },
+              { "subdirectory": ".github/scripts", "filename": "${{ env.MVN_SETTINGS_SCRIPT_NAME }}" },
+              { "subdirectory": ".m2", "filename": "${{ env.MVN_SETTINGS_FILE }}" }
+            ]
 
       - name: "🏷️ Set up variables"
         id: setup-variables
@@ -321,37 +306,25 @@ jobs:
           ${{ inputs.MVN_ARGS_EXTRA }}
 
       - name: "⬇️ Download Qwiet CLI"
-        if: ${{ env.SHIFTLEFT_ACCESS_TOKEN != '' }}
-        env:
-          SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
-        run: |
-          curl https://cdn.shiftleft.io/download/sl > $HOME/sl && chmod a+rx $HOME/sl
+        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2
+        with:
+          shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
 
-      # https://docs.shiftleft.io/cli/reference/analyze
       - name: "🔍 Qwiet Analyze with NextGen Static Analysis"
-        if: ${{ env.SHIFTLEFT_ACCESS_TOKEN != '' }}
-        env:
-          SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
-        run: |
-          $HOME/sl analyze \
-          --app ${{ inputs.NAME }} \
-          --java \
-          --vcs-prefix-correction "*=${{ inputs.VCS_PREFIX_CORRECTION }}" \
-          --cpg \
-          ${{ inputs.SCAN_JAR }}
+        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@v2
+        with:
+          shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+          name: ${{ inputs.NAME }}
+          vcs-prefix-correction: ${{ inputs.VCS_PREFIX_CORRECTION }}
+          scan-jar: ${{ inputs.SCAN_JAR }}
 
       - name: "# Set up Docker tags"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-docker-tags@v2
         id: docker-tags
-        working-directory: ${{ inputs.APP_WORKING_DIR }}
-        env:
+        with:
+          VERSION: ${{ inputs.VERSION }}
           DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
-        run: |-
-          DOCKER_TAGS=${{ env.DOCKER_LOCATION }}:${{ inputs.VERSION }}
-          if [ "${{ github.event_name }}" != "pull_request" ]; then
-            DOCKER_TAGS=${DOCKER_TAGS},${{ env.DOCKER_LOCATION }}:latest
-          fi
-          echo "DOCKER_TAGS: ${DOCKER_TAGS}"
-          echo "tags=${DOCKER_TAGS}" >> $GITHUB_OUTPUT
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
 
       - name: "🐳 Docker: build, tag, and push"
         uses: docker/build-push-action@v6
@@ -368,11 +341,12 @@ jobs:
         if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          DOCKER_DIGEST: ${{ steps.docker-build.outputs.digest }}
-          DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
+          ARTIFACT_DIGEST: ${{ steps.docker-build.outputs.digest }}
+          # ARTIFACT_TYPE: docker
+          ARTIFACT_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
           NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: ../${DOCKER_LINK_SCRIPT_NAME}
+        run: ../${ARTIFACT_LINK_SCRIPT_NAME}

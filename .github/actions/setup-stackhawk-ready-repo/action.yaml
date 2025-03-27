@@ -1,0 +1,51 @@
+name: "Stackhawk Ready Repo"
+description: "Determines if the repo is Stackhawk-ready"
+
+inputs:
+  stackhawk-directory:
+    description: "Directory containing Stackhawk files"
+    required: true
+  stackhawk-tmpl-yml:
+    description: "Name of the Stackhawk template YAML file"
+    required: true
+  is-stackhawk-ready:
+    description: "Default value for IS_STACKHAWK_READY"
+    required: true
+  override-is-stackhawk-ready:
+    description: "Override flag to check Stackhawk readiness"
+    required: true
+
+outputs:
+  IS_STACKHAWK_READY:
+    description: "Whether the repo is Stackhawk-ready"
+    value: ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}
+  STACKHAWK_DIRECTORY:
+    description: "The Stackhawk directory"
+    value: ${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Check Stackhawk Readiness"
+      id: stackhawk-ready-repo
+      env:
+        STACKHAWK_DIRECTORY: ${{ inputs.stackhawk-directory }}
+        FILE: ${{ inputs.stackhawk-tmpl-yml }}
+        OVERRIDE_IS_STACKHAWK_READY: ${{ inputs.override-is-stackhawk-ready }}
+      run: |
+        if [ "${OVERRIDE_IS_STACKHAWK_READY}" = true ]; then
+          if [ -f "${STACKHAWK_DIRECTORY}/${FILE}" ]; then
+            echo "${FILE} exists"
+            IS_STACKHAWK_READY=true
+          else
+            echo "${FILE} does not exists"
+            IS_STACKHAWK_READY=false
+          fi
+        else
+          IS_STACKHAWK_READY="${{ inputs.is-stackhawk-ready }}"
+          echo "OVERRIDE_IS_STACKHAWK_READY with ${{ inputs.is-stackhawk-ready }}"
+        fi
+        echo "IS_STACKHAWK_READY: ${IS_STACKHAWK_READY}"
+        echo "IS_STACKHAWK_READY=${IS_STACKHAWK_READY}" >> $GITHUB_OUTPUT
+        echo "STACKHAWK_DIRECTORY=${STACKHAWK_DIRECTORY}" >> $GITHUB_OUTPUT
+      shell: bash

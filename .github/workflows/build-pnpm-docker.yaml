@@ -121,27 +121,20 @@ jobs:
     env:
       # GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       # DOCKER_BUILDKIT: 1
-      DOCKER_LINK_SCRIPT_NAME: docker-link.sh
+      ARTIFACT_LINK_SCRIPT_NAME: artifact-link.sh
     steps:
 
       - name: "⬇️ Get reusable files"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
         id: get-reusable-files
-        run: |
-          get_file() {
-            FILE_URL=${FILE_DOWNLOAD_BASE_URL}/${FILE_GIT_BRANCH}/${FILE_SUBDIR}/${FILE_NAME}
-            echo "Getting ${FILE_NAME} from ${FILE_URL}"
-            curl -o ../${FILE_NAME} ${FILE_URL}
-            chmod 777 ../${FILE_NAME}
-          }
-          FILE_GIT_BRANCH=${{ inputs.FILE_GIT_BRANCH }}
-          FILE_DOWNLOAD_BASE_URL=${{ inputs.FILE_DOWNLOAD_BASE_URL }}
-          FILE_SUBDIR=.github/scripts
-
-          FILE_NAME=${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
-          get_file
-
-          FILE_NAME=${DOCKER_LINK_SCRIPT_NAME}
-          get_file
+        with:
+          FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
+          FILE_DOWNLOAD_BASE_URL: ${{ inputs.FILE_DOWNLOAD_BASE_URL }}
+          FILES_TO_DOWNLOAD: |
+            [
+              { "subdirectory": ".github/scripts", "filename": "${{ inputs.VAR_DOCKER_SCRIPT_NAME }}" },
+              { "subdirectory": ".github/scripts", "filename": "${{ env.ARTIFACT_LINK_SCRIPT_NAME }}" }
+            ]
 
       - name: "🏷️ Set up variables"
         id: setup-variables
@@ -154,8 +147,7 @@ jobs:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           NAME: ${{ inputs.NAME }}
           PROJECT_ID: ${{ inputs.PROJECT_ID }}
-        run: |
-          ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
+        run: ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
 
       - name: "🧰 Set up gh cli"
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
@@ -205,17 +197,12 @@ jobs:
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev' # Google Artifact Registry
 
       - name: "# Set up Docker tags"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-docker-tags@v2
         id: docker-tags
-        env:
+        with:
+          VERSION: ${{ inputs.VERSION }}
           DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
-        run: |-
-          DOCKER_TAGS=${{ env.DOCKER_LOCATION }}:${{ inputs.VERSION }}
-          if [ "${{ github.event_name }}" != "pull_request" ]; then
-            DOCKER_TAGS=$DOCKER_TAGS,${{ env.DOCKER_LOCATION }}:latest
-            echo "2 DOCKER_TAGS: $DOCKER_TAGS"
-          fi
-          echo "3 DOCKER_TAGS: $DOCKER_TAGS"
-          echo "::set-output name=tags::$DOCKER_TAGS"
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
 
       - name: "🐳 Docker: build, tag, and push"
         uses: docker/build-push-action@v6
@@ -238,5 +225,4 @@ jobs:
           GITHUB_EVENT_NAME: ${{ github.event_name }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: |-
-          ../${DOCKER_LINK_SCRIPT_NAME}
+        run: ../${ARTIFACT_LINK_SCRIPT_NAME}

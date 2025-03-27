@@ -1,0 +1,44 @@
+name: "Release Version"
+description: "Determines release version and tag for non-PR events"
+
+inputs:
+  event-name:
+    description: "GitHub event name (e.g., push)"
+    required: true
+  increment-script-name:
+    description: "Name of the script to increment the version"
+    required: true
+  monorepo-app:
+    description: "Monorepo application name (if applicable)"
+    required: false
+    default: ""
+  gh-token:
+    description: "GitHub token for authentication"
+    required: true
+
+outputs:
+  version:
+    description: "Release version"
+    value: ${{ steps.release-version.outputs.version }}
+  tag:
+    description: "Release tag"
+    value: ${{ steps.release-version.outputs.tag }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Set Release Version"
+      id: release-version
+      if: ${{ inputs.event-name != 'pull_request' }}
+      env:
+        GH_TOKEN: ${{ inputs.gh-token }}
+        GITHUB_TOKEN: ${{ inputs.gh-token }}
+      run: |
+        export GH_TOKEN="${{ inputs.gh-token }}"
+        export GITHUB_TOKEN="${{ inputs.gh-token }}"
+        ./${{ inputs.increment-script-name }} "${{ inputs.monorepo-app }}"
+        VERSION=$(cat VERSION)
+        TAG=$(cat TAG)
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+        echo "tag=${TAG}" >> $GITHUB_OUTPUT
+      shell: bash

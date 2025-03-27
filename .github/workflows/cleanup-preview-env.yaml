@@ -68,6 +68,12 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      GH_USER_EMAIL:
+        # default: 'github@powervz.com'
+        default: ''
+        required: false
+        type: string
+
       TRIVY_REPO_NAME:
         default: 'trivy-scans'
         required: false
@@ -107,16 +113,13 @@ jobs:
     steps:
 
       # - name: "📄 GITHUB INFO"
-      #   env:
-      #     GITHUB_CONTEXT: ${{ toJSON(github) }}
-      #   run: |-
-      #     echo "PR number                         : ${{ github.event.pull_request.number }}"
-      #     echo "github.event_name                 : ${{ github.event_name }}"
-      #     echo "github.run_attempt                : ${{ github.run_attempt }}"
-      #     echo "github.run_number                 : ${{ github.run_number }}"
-      #     echo "github.event.pull_request.merged  : ${{ github.event.pull_request.merged }}"
-      #     echo "==================================:=============================="
-      #     echo "GITHUB_CONTEXT: ${GITHUB_CONTEXT}"
+      #   uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2
+      #   with:
+      #     github-context: ${{ toJSON(github) }}
+      #     event-name: ${{ github.event_name }}
+      #     run-attempt: ${{ github.run_attempt }}
+      #     run-number: ${{ github.run_number }}
+      #     pr-number: ${{ github.event.pull_request.number }}
 
       - name: "🏷️ Set up variables"
         id: setup-variables
@@ -158,7 +161,6 @@ jobs:
           echo "TRIVY_WORKING_DIR : ${TRIVY_WORKING_DIR}"
           echo "TRIVY_WORKING_DIR=${TRIVY_WORKING_DIR}" >> $GITHUB_ENV
           echo "TRIVY_WORKING_DIR=${TRIVY_WORKING_DIR}" >> $GITHUB_OUTPUT
-
 
           echo "----------------------"
           echo "GAR                  : ${GAR}"
@@ -267,9 +269,10 @@ jobs:
           fi
 
       - name: "🔩 Git config"
-        run: |
-          git config --global user.email ""
-          git config --global user.name "${{ inputs.GH_USER_NAME }}"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2
+        with:
+          GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
+          GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
 
       - name: "☁️ Checkout repository ${{ steps.setup-variables.outputs.TRIVY_REPO_FULLNAME }}"
         uses: actions/checkout@v4

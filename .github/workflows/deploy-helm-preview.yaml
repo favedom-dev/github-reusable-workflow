@@ -69,7 +69,8 @@ on:  # yamllint disable-line rule:truthy
         description: "Use the local common chart from the repo {{HELM_CHARTS_GIT_REPO}}.  Used typically for testing new non-merged helm changes"
 
       GH_USER_EMAIL:
-        default: 'github@powervz.com'
+        # default: 'github@powervz.com'
+        default: ''
         required: false
         type: string
 
@@ -240,9 +241,10 @@ jobs:
           version: '${{ inputs.YQ_VERSION }}'
 
       - name: "🔩 Git config"
-        run: |
-          git config --global user.email ""
-          git config --global user.name "${{ inputs.GH_USER_NAME }}"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2
+        with:
+          GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
+          GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
 
       - name: "☁️ Checkout helm repository: ${{ inputs.HELM_CHARTS_GIT_REPO }} branch: ${{ inputs.HELM_CHARTS_GIT_BRANCH }}"
         uses: actions/checkout@v4
@@ -556,7 +558,6 @@ jobs:
 
           echo "START: body message file"
           # START: body message file
-          # echo "## PR built and available in a preview environment **${{ inputs.NAME }}** pr ${{ github.event.number }}:" > ${PR_BODY}
           echo "| Name | Info |" >> ${PR_BODY}
           echo "| --- | --- |" >> ${PR_BODY}
           echo "| 🔗 Preview | [${PREVIEW_URL}](${PREVIEW_URL}) |" >> ${PR_BODY}
