@@ -439,7 +439,8 @@ jobs:
 
           SUMMARY=""
           echo "# Trivy scans:" >> $GITHUB_STEP_SUMMARY
-          echo "| 🏛️ | 🛑 | ⚠️ |" >> $GITHUB_STEP_SUMMARY
+          # echo "| 🏛️ | 🛑 | ⚠️ |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🏛️ | 🔍  | 🛑 | ⚠️ |" >> $GITHUB_STEP_SUMMARY
           echo "| --- | --- | --- |" >> $GITHUB_STEP_SUMMARY
           for ARCH in $(echo "$MATRIX_ARCH" | jq -r '.arch[]'); do
             TRIVY_MD_FILE="${{ needs.trivy-setup.outputs.TRIVY_BASE_FILE }}-${ARCH//\//-}.md"
@@ -458,7 +459,8 @@ jobs:
             HIGH=$(jq '[.Results[] | select(.Vulnerabilities != null) | .Vulnerabilities[] | select(.Severity=="HIGH")] | length' "${TRIVY_JSON_FILE_PATH}" || echo 0)
 
             SUMMARY="${SUMMARY}\n🔍 *${ARCH}* → <${TRIVY_LINK}|Scan Results> | 🛑 Critical: ${CRITICAL} ⚠️ High: ${HIGH}"
-            echo "| 🔍 *${ARCH}* →  [Scan Results](${TRIVY_LINK}) | 🛑 Critical: ${CRITICAL} | ⚠️ High: ${HIGH} |" >> $GITHUB_STEP_SUMMARY
+            # echo "| 🔍 *${ARCH}* → [Scan Results](${TRIVY_LINK}) | 🛑 Critical: ${CRITICAL} | ⚠️ High: ${HIGH} |" >> $GITHUB_STEP_SUMMARY
+            echo "| 🏛️ *${ARCH}* | 🔍 [Scan Results](${TRIVY_LINK}) | 🛑 Critical: ${CRITICAL} | ⚠️ High: ${HIGH} |" >> $GITHUB_STEP_SUMMARY
           done
 
           echo "SUMMARY : ${SUMMARY}"
