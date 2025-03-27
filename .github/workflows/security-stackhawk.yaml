@@ -228,6 +228,7 @@ jobs:
             ls -la ..
           fi
           echo "github.workspace :${{ github.workspace }}"
+          ls -la ${{ github.workspace }}
           chmod 777 ./${SCRIPT_NAME}
           ./${SCRIPT_NAME}
 
