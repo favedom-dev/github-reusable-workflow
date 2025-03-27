@@ -76,27 +76,21 @@ jobs:
     steps:
 
       - name: "📝 Set Name"
-        # TODO update to v2
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-name@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-name@FAN-6340
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-name@v2
         id: set-name
         with:
           override-name: ${{ inputs.OVERRIDE_NAME }}
           repo-name: ${{ github.event.repository.name }}
 
       - name: "📝 Set Extra Vars"
-        # TODO update to v2
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-extra-vars@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-extra-vars@FAN-6340
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-extra-vars@v2
         id: extra-vars
         with:
           is-frontend: ${{ inputs.IS_FRONTEND }}
           is-monorepo: ${{ inputs.IS_MONOREPO }}
 
       - name: "📝 Set Preview Namespace name"
-        # TODO update to v2
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-preview-namespace@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-preview-namespace@FAN-6340
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-preview-namespace@v2
         id: set-name-pr-namespace
         with:
           override-preview-namespace: ${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
@@ -109,9 +103,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "🦅 Stackhawk ready repo"
-        # TODO update to v2
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/setup-stackhawk-ready-repo@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-stackhawk-ready-repo@FAN-6340
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-stackhawk-ready-repo@v2
         id: stackhawk-ready-repo
         with:
           stackhawk-directory: ${{ inputs.STACKHAWK_DIRECTORY }}

@@ -195,15 +195,11 @@ jobs:
           echo "APP_HOST=${APP_HOST}" >> $GITHUB_OUTPUT
 
       - name: "⬇️ Get reusable files"
-        # TODO update to v2
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@FAN-6340
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
         id: get-reusable-files
         # if: github.event_name != 'pull_request'
         with:
-          # FILE_GIT_BRANCH: ${{ inputs.SCRIPT_GIT_BRANCH }}
-          # TODO update to v2
-          FILE_GIT_BRANCH: master
+          FILE_GIT_BRANCH: ${{ inputs.SCRIPT_GIT_BRANCH }}
           FILE_DOWNLOAD_BASE_URL: ${{ inputs.FILE_DOWNLOAD_BASE_URL }}
           FILES_TO_DOWNLOAD: |
             [

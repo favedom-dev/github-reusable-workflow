@@ -74,15 +74,11 @@ jobs:
           fetch-depth: 0
 
       - name: "⬇️ Get reusable files"
-        # TODO update to v2
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@FAN-6340
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
         id: get-reusable-files
         if: github.event_name != 'pull_request'
         with:
-          # FILE_GIT_BRANCH: ${{ inputs.SCRIPT_GIT_BRANCH }}
-          # TODO update to v2
-          FILE_GIT_BRANCH: FAN-6340
+          FILE_GIT_BRANCH: ${{ inputs.SCRIPT_GIT_BRANCH }}
           FILE_DOWNLOAD_BASE_URL: ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}
           FILES_TO_DOWNLOAD: |
             [
@@ -90,9 +86,7 @@ jobs:
             ]
 
       - name: "☑ Release version"
-        # TODO update to v2
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-release@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-release@FAN-6340
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-release@v2
         id: version
         if: github.event_name != 'pull_request'
         with:
@@ -102,9 +96,7 @@ jobs:
           gh-token: ${{ secrets.GH_TOKEN }}
 
       - name: "📝 Set PR Version"
-        # TODO update to v2
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-pr@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-pr@FAN-6340
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-pr@v2
         id: pr-version
         if: github.event_name == 'pull_request'
         with:
@@ -114,9 +106,7 @@ jobs:
           run-attempt: ${{ github.run_attempt }}
 
       - name: "📝 Set version"
-        # TODO update to v2
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/set-version@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version@FAN-6340
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version@v2
         id: set-version
         with:
           pr-version: ${{ steps.pr-version.outputs.version }}
@@ -124,9 +114,7 @@ jobs:
           release-version: ${{ steps.version.outputs.version }}
 
       - name: "👀 Display version"
-        # TODO update to v2
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-display@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-display@FAN-6340
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-display@v2
         with:
           version: ${{ steps.set-version.outputs.version }}
           build-version: ${{ steps.set-version.outputs.build-version }}

@@ -132,14 +132,10 @@ jobs:
     steps:
 
       - name: "⬇️ Get reusable files"
-        # TODO update to v2
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@FAN-6340
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
         id: get-reusable-files
         with:
-          # TODO update to v2
-          # FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
-          FILE_GIT_BRANCH: FAN-6340
+          FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
           FILE_DOWNLOAD_BASE_URL: ${{ inputs.FILE_DOWNLOAD_BASE_URL }}
           FILES_TO_DOWNLOAD: |
             [
@@ -231,16 +227,12 @@ jobs:
         run: ../${ARTIFACT_LINK_SCRIPT_NAME}
 
       - name: "⬇️ Download Qwiet CLI"
-        # TODO update to v2
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@FAN-6340
+        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2
         with:
           shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
 
       - name: "🔍 Qwiet Analyze with NextGen Static Analysis"
-        # TODO update to v2
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@FAN-6340
+        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@v2
         with:
           shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
           name: ${{ inputs.NAME }}
