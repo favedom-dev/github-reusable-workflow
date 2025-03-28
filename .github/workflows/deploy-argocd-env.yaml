@@ -194,88 +194,100 @@ jobs:
           cat ./${{ inputs.YAML_FILE }}
 
       - name: "🡢 Create environment PR in repo: ${{ inputs.ENV_REPO_NAME }}"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2
         if: github.ref == 'refs/heads/master'
-        working-directory: ${{ inputs.ENV_REPO_PATH }}
-        env:
-          NAME: ${{ inputs.NAME }}
-          VERSION: ${{ inputs.VERSION }}
-          BRANCH_NAME: gha_${{ inputs.NAME }}_${{ inputs.VERSION }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          MONOREPO_APP: ${{ inputs.MONOREPO_APP }}
-          DO_PR_MERGE: ${{ inputs.DO_PR_MERGE }}
-        run: |
-          # set -e  # Exit immediately if any command fails
-          MAX_RETRIES=5
-          SLEEP_TIME=10
+        with:
+          env-repo-name: ${{ inputs.ENV_REPO_NAME }}
+          env-repo-path: ${{ inputs.ENV_REPO_PATH }}
+          name: ${{ inputs.NAME }}
+          version: ${{ inputs.VERSION }}
+          do-pr-merge: ${{ inputs.DO_PR_MERGE }}
+          is-helm-chart: 'false'
+          monorepo-app: ${{ inputs.MONOREPO_APP }}
+          gh-token: ${{ secrets.GH_TOKEN }}
+      # - name: "🡢 Create environment PR in repo: ${{ inputs.ENV_REPO_NAME }}"
+      #   if: github.ref == 'refs/heads/master'
+      #   working-directory: ${{ inputs.ENV_REPO_PATH }}
+      #   env:
+      #     NAME: ${{ inputs.NAME }}
+      #     VERSION: ${{ inputs.VERSION }}
+      #     BRANCH_NAME: gha_${{ inputs.NAME }}_${{ inputs.VERSION }}
+      #     GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      #     MONOREPO_APP: ${{ inputs.MONOREPO_APP }}
+      #     DO_PR_MERGE: ${{ inputs.DO_PR_MERGE }}
+      #   run: |
+      #     # set -e  # Exit immediately if any command fails
+      #     MAX_RETRIES=5
+      #     SLEEP_TIME=10
 
-          echo "Checking if branch '${BRANCH_NAME}' already exists..."
-          if git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then
-            echo "Branch '${BRANCH_NAME}' exists. Checking it out..."
-            git checkout "${BRANCH_NAME}"
+      #     echo "Checking if branch '${BRANCH_NAME}' already exists..."
+      #     if git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then
+      #       echo "Branch '${BRANCH_NAME}' exists. Checking it out..."
+      #       git checkout "${BRANCH_NAME}"
 
-            echo "Rebasing '${BRANCH_NAME}' onto '${MAIN_BRANCH}'..."
-            git fetch origin "${MAIN_BRANCH}"
-            git rebase origin/"${MAIN_BRANCH}" || {
-              echo "Rebase conflict detected. Aborting rebase..."
-              git rebase --abort
-              echo "Skipping rebase. Continuing with existing branch..."
-            }
-          else
-            echo "Creating new branch '${BRANCH_NAME}'..."
-            git checkout -b "${BRANCH_NAME}"
-          fi
+      #       echo "Rebasing '${BRANCH_NAME}' onto '${MAIN_BRANCH}'..."
+      #       git fetch origin "${MAIN_BRANCH}"
+      #       git rebase origin/"${MAIN_BRANCH}" || {
+      #         echo "Rebase conflict detected. Aborting rebase..."
+      #         git rebase --abort
+      #         echo "Skipping rebase. Continuing with existing branch..."
+      #       }
+      #     else
+      #       echo "Creating new branch '${BRANCH_NAME}'..."
+      #       git checkout -b "${BRANCH_NAME}"
+      #     fi
 
-          echo "Staging and committing changes..."
-          git add .
-          if git diff --staged --quiet; then
-            echo "No changes to commit. Exiting..."
-            exit 0
-          fi
+      #     echo "Staging and committing changes..."
+      #     git add .
+      #     if git diff --staged --quiet; then
+      #       echo "No changes to commit. Exiting..."
+      #       exit 0
+      #     fi
 
-          echo "git commit -a -m \"${NAME} ${VERSION}\""
-          git commit -a -m "${NAME} ${VERSION}"
+      #     echo "git commit -a -m \"${NAME} ${VERSION}\""
+      #     git commit -a -m "${NAME} ${VERSION}"
 
-          echo "Force pushing branch to remote..."
-          git push --force-with-lease origin "${BRANCH_NAME}"
+      #     echo "Force pushing branch to remote..."
+      #     git push --force-with-lease origin "${BRANCH_NAME}"
 
-          FULL_VERSION=v${VERSION}
-          if [ ${#MONOREPO_APP} -gt 0 ]; then
-            FULL_VERSION=${MONOREPO_APP}/${FULL_VERSION}
-          fi
+      #     FULL_VERSION=v${VERSION}
+      #     if [ ${#MONOREPO_APP} -gt 0 ]; then
+      #       FULL_VERSION=${MONOREPO_APP}/${FULL_VERSION}
+      #     fi
 
-          echo "Fetching release notes for ${FULL_VERSION}..."
-          gh release view ${FULL_VERSION} -R ${{ github.repository }} --json author,tagName,url,body --template \
-          'Version: [{{.tagName}}]({{.url}})
+      #     echo "Fetching release notes for ${FULL_VERSION}..."
+      #     gh release view ${FULL_VERSION} -R ${{ github.repository }} --json author,tagName,url,body --template \
+      #     'Version: [{{.tagName}}]({{.url}})
 
-          {{.body}}
-          ' >> ./GH_RELEASE_NOTES.txt
+      #     {{.body}}
+      #     ' >> ./GH_RELEASE_NOTES.txt
 
-          GH_BODY=$(cat ./GH_RELEASE_NOTES.txt)
-          # echo "GH_BODY : ${GH_BODY}"
+      #     GH_BODY=$(cat ./GH_RELEASE_NOTES.txt)
+      #     # echo "GH_BODY : ${GH_BODY}"
 
-          echo "Creating pull request..."
-          for ((i=1; i<=MAX_RETRIES; i++)); do
-            PR_URL=$(gh pr create --label "approved" --title "chore: bump image.tag ${NAME} to ${VERSION}" --body "${GH_BODY}" 2>/dev/null)
-            if [ $? -eq 0 ]; then
-            # if gh pr create --label "approved" --title "chore: bump image.tag ${NAME} to ${VERSION}" --body "${GH_BODY}"; then
-              echo "Pull request created successfully."
-              echo "PR URL: ${PR_URL}"
-              echo "# Pull Request" >> $GITHUB_STEP_SUMMARY
-              echo "🡢 Image tag updated in \`${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }}\` : [${NAME} ${VERSION}](${PR_URL})" >> $GITHUB_STEP_SUMMARY
-              break
-            fi
-            echo "PR creation failed. Retrying in ${SLEEP_TIME} seconds... (Attempt ${i}/${MAX_RETRIES})"
-            sleep $(( SLEEP_TIME * i ))  # Exponential backoff
-          done
+      #     echo "Creating pull request..."
+      #     for ((i=1; i<=MAX_RETRIES; i++)); do
+      #       PR_URL=$(gh pr create --label "approved" --title "chore: bump image.tag ${NAME} to ${VERSION}" --body "${GH_BODY}" 2>/dev/null)
+      #       if [ $? -eq 0 ]; then
+      #       # if gh pr create --label "approved" --title "chore: bump image.tag ${NAME} to ${VERSION}" --body "${GH_BODY}"; then
+      #         echo "Pull request created successfully."
+      #         echo "PR URL: ${PR_URL}"
+      #         echo "# Pull Request" >> $GITHUB_STEP_SUMMARY
+      #         echo "🡢 Image tag updated in \`${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }}\` : [${NAME} ${VERSION}](${PR_URL})" >> $GITHUB_STEP_SUMMARY
+      #         break
+      #       fi
+      #       echo "PR creation failed. Retrying in ${SLEEP_TIME} seconds... (Attempt ${i}/${MAX_RETRIES})"
+      #       sleep $(( SLEEP_TIME * i ))  # Exponential backoff
+      #     done
 
-          if [ "${DO_PR_MERGE}" = "true" ]; then
-            echo "Auto Squash & Merge PR..."
-            for ((i=1; i<=MAX_RETRIES; i++)); do
-              if gh pr merge "${BRANCH_NAME}" --auto --squash; then
-                echo "PR merged successfully."
-                break
-              fi
-              echo "PR merge failed. Retrying in ${SLEEP_TIME} seconds... (Attempt ${i}/${MAX_RETRIES})"
-              sleep $(( SLEEP_TIME * i ))  # Exponential backoff
-            done
-          fi
+      #     if [ "${DO_PR_MERGE}" = "true" ]; then
+      #       echo "Auto Squash & Merge PR..."
+      #       for ((i=1; i<=MAX_RETRIES; i++)); do
+      #         if gh pr merge "${BRANCH_NAME}" --auto --squash; then
+      #           echo "PR merged successfully."
+      #           break
+      #         fi
+      #         echo "PR merge failed. Retrying in ${SLEEP_TIME} seconds... (Attempt ${i}/${MAX_RETRIES})"
+      #         sleep $(( SLEEP_TIME * i ))  # Exponential backoff
+      #       done
+      #     fi
