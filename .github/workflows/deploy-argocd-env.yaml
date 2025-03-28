@@ -118,6 +118,17 @@ jobs:
       #     echo "VERSION_SCRIPT_NAME     : ${{ inputs.VERSION_SCRIPT_NAME }}"
       #     echo "YAML_FILE               : ${{ inputs.YAML_FILE }}"
 
+      - name: "⬇️ Get reusable files"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
+        id: get-reusable-files
+        with:
+          FILE_GIT_BRANCH: ${{ inputs.VERSION_SCRIPT_BRANCH }}
+          FILE_DOWNLOAD_BASE_URL: ${{ inputs.VERSION_SCRIPT_BASE_URL }}
+          FILES_TO_DOWNLOAD: |
+            [
+              { "subdirectory": "${{ inputs.VERSION_SCRIPT_DIR }}", "filename": "${{ inputs.VERSION_SCRIPT_NAME }}" }
+            ]
+
       - name: "🔩 Git config"
         uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2
         with:
@@ -178,13 +189,17 @@ jobs:
           # BASE_ELEMENT: ${{ inputs.BASE_ELEMENT }}
         run: |
           echo "Update values.yaml ${NAME}.image.tag"
-          wget -O ./${VERSION_SCRIPT_NAME} ${VERSION_SCRIPT_DIR_URL}/${VERSION_SCRIPT_NAME}
-          # curl -o ./${VERSION_SCRIPT_NAME} ${VERSION_SCRIPT_DIR_URL}/${VERSION_SCRIPT_NAME}
-          chmod 777 ./${VERSION_SCRIPT_NAME}
+          if [ -f "${{ github.workspace }}/../${VERSION_SCRIPT_NAME}" ]; then
+            cp ${{ github.workspace }}/../${VERSION_SCRIPT_NAME} ./${VERSION_SCRIPT_NAME}
+          else
+            echo "File does not exist: ${{ github.workspace }}/../${VERSION_SCRIPT_NAME}"
+          fi
+          # wget -O ./${VERSION_SCRIPT_NAME} ${VERSION_SCRIPT_DIR_URL}/${VERSION_SCRIPT_NAME}
+          # chmod 777 ./${VERSION_SCRIPT_NAME}
           ./${VERSION_SCRIPT_NAME} . "${NAME}" "${VERSION}"
           rm ./${VERSION_SCRIPT_NAME}
           echo ""
-          echo "NOTE: MAY NEED TO EXPAND THIS!!!"
+          echo "🛈 NOTE: MAY NEED TO EXPAND THIS!!!"
 
       - name: "👁️ Updated: ./${{ inputs.YAML_FILE }}"
         if: github.ref == 'refs/heads/master'
