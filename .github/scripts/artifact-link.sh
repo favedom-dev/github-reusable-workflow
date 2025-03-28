@@ -6,7 +6,7 @@ ARTIFACT_TYPE=${ARTIFACT_TYPE:-docker}
 echo "-----------------------------------------------------"
 echo "NAME               : ${NAME}"
 echo "VERSION            : ${VERSION}"
-# 'docker' or 'jar'
+# 'docker' or 'jar' or 'helm'
 echo "ARTIFACT_TYPE      : ${ARTIFACT_TYPE}"
 # Renamed from DOCKER_URL
 echo "ARTIFACT_URL       : ${ARTIFACT_URL}"
@@ -41,6 +41,12 @@ case "${ARTIFACT_TYPE}" in
   </dependency>
 EOF
     )
+    ;;
+
+  "helm")
+    TABLE_ROWS="| ☸ Helm Chart | [${NAME} ${VERSION}](${ARTIFACT_URL}) |"
+    CODE="xml"
+    GET_CMD="docker pull us-central1-docker.pkg.dev/favedom-dev/helm/${NAME}:${VERSION}"
     ;;
 
   *)
