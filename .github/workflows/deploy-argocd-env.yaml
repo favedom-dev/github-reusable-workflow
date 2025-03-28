@@ -200,10 +200,11 @@ jobs:
           else
             echo "File does not exist: ${{ github.workspace }}/../${{ inputs.VERSION_SCRIPT_NAME }}"
           fi
-          # wget -O ./${VERSION_SCRIPT_NAME} ${VERSION_SCRIPT_DIR_URL}/${VERSION_SCRIPT_NAME}
-          ls -la ./${VERSION_SCRIPT_NAME}
+          wget -O ./1-${VERSION_SCRIPT_NAME} ${VERSION_SCRIPT_DIR_URL}/${VERSION_SCRIPT_NAME}
+          ls -la ./
           chmod 777 ./${VERSION_SCRIPT_NAME}
           cat ./${VERSION_SCRIPT_NAME}
+          cat ./1-${VERSION_SCRIPT_NAME}
           ./${{ inputs.VERSION_SCRIPT_NAME }} "." "${{ inputs.NAME }}" "${{ inputs.VERSION }}"
           rm ./${{ inputs.VERSION_SCRIPT_NAME }}
           echo ""
