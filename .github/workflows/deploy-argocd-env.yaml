@@ -189,11 +189,11 @@ jobs:
           # BASE_ELEMENT: ${{ inputs.BASE_ELEMENT }}
         run: |
           echo "Update values.yaml ${NAME}.image.tag"
-          pwd
-          ls -la ${{ github.workspace }}/..
-          echo "--------------------"
-          ls -la
-          echo "===================="
+          # pwd
+          # ls -la ${{ github.workspace }}/..
+          # echo "--------------------"
+          # ls -la
+          # echo "===================="
           if [ -f "${{ github.workspace }}/../${{ inputs.VERSION_SCRIPT_NAME }}" ]; then
             cp ${{ github.workspace }}/../${{ inputs.VERSION_SCRIPT_NAME }} ./${{ inputs.VERSION_SCRIPT_NAME }}
             echo "Copied ${{ inputs.VERSION_SCRIPT_NAME }}"
@@ -201,8 +201,9 @@ jobs:
             echo "File does not exist: ${{ github.workspace }}/../${{ inputs.VERSION_SCRIPT_NAME }}"
           fi
           # wget -O ./${VERSION_SCRIPT_NAME} ${VERSION_SCRIPT_DIR_URL}/${VERSION_SCRIPT_NAME}
-          # chmod 777 ./${VERSION_SCRIPT_NAME}
-          ./${{ inputs.VERSION_SCRIPT_NAME }} . "${NAME}" "${VERSION}"
+          ls -la ./${VERSION_SCRIPT_NAME}
+          chmod 777 ./${VERSION_SCRIPT_NAME}
+          ./${{ inputs.VERSION_SCRIPT_NAME }} "." "${{ inputs.NAME }}" "${{ inputs.VERSION }}"
           rm ./${{ inputs.VERSION_SCRIPT_NAME }}
           echo ""
           echo "🛈 NOTE: MAY NEED TO EXPAND THIS!!!"
