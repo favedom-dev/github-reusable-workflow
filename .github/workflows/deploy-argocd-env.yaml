@@ -195,16 +195,19 @@ jobs:
           # ls -la
           # echo "===================="
           if [ -f "${{ github.workspace }}/../${{ inputs.VERSION_SCRIPT_NAME }}" ]; then
+            ls -la ${{ github.workspace }}/../${{ inputs.VERSION_SCRIPT_NAME }}
             cp ${{ github.workspace }}/../${{ inputs.VERSION_SCRIPT_NAME }} ./${{ inputs.VERSION_SCRIPT_NAME }}
+            cat ../${{ inputs.VERSION_SCRIPT_NAME }}
             echo "Copied ${{ inputs.VERSION_SCRIPT_NAME }}"
           else
             echo "File does not exist: ${{ github.workspace }}/../${{ inputs.VERSION_SCRIPT_NAME }}"
           fi
-          wget -O ./1-${VERSION_SCRIPT_NAME} ${VERSION_SCRIPT_DIR_URL}/${VERSION_SCRIPT_NAME}
+          wget -O ./1-${{ inputs.VERSION_SCRIPT_NAME }} ${VERSION_SCRIPT_DIR_URL}/${{ inputs.VERSION_SCRIPT_NAME }}
           ls -la ./
-          chmod 777 ./${VERSION_SCRIPT_NAME}
-          cat ./${VERSION_SCRIPT_NAME}
-          cat ./1-${VERSION_SCRIPT_NAME}
+          chmod 777 ./${{ inputs.VERSION_SCRIPT_NAME }}
+          cat ./${{ inputs.VERSION_SCRIPT_NAME }}
+          echo "--------------------"
+          cat ./1-${{ inputs.VERSION_SCRIPT_NAME }}
           ./${{ inputs.VERSION_SCRIPT_NAME }} "." "${{ inputs.NAME }}" "${{ inputs.VERSION }}"
           rm ./${{ inputs.VERSION_SCRIPT_NAME }}
           echo ""
