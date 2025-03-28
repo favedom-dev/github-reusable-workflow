@@ -190,7 +190,7 @@ jobs:
         run: |
           echo "Update values.yaml ${NAME}.image.tag"
           pwd
-          ls -la${{ github.workspace }}/..
+          ls -la ${{ github.workspace }}/..
           echo "--------------------"
           ls -la
           echo "===================="
