@@ -85,7 +85,13 @@ runs:
           exit 0
         fi
 
-        COMMIT_MSG="chore: ${IS_HELM_CHART == 'true' && 'helm chart' || 'bump image.tag'} ${NAME} ${VERSION}"
+        # Set commit message based on IS_HELM_CHART
+        if [ "${IS_HELM_CHART}" = "true" ]; then
+          COMMIT_MSG="chore: bump helm chart ${NAME} to ${VERSION}"
+        else
+          COMMIT_MSG="chore: bump image.tag ${NAME} to ${VERSION}"
+        fi
+        TITLE="${COMMIT_MSG}"
         echo "git commit -a -m \"${COMMIT_MSG}\""
         git commit -a -m "${COMMIT_MSG}"
 
@@ -109,7 +115,6 @@ runs:
         git clean -fd
 
         # Create PR with retry logic
-        TITLE="chore: ${IS_HELM_CHART == 'true' && 'bump helm chart' || 'bump image.tag'} ${NAME} to ${VERSION}"
         for ((i=1; i<=MAX_RETRIES; i++)); do
           PR_URL=$(gh pr create -R "${ENV_REPO_NAME}" --label "approved" --title "${TITLE}" --body "${GH_BODY}" 2>/dev/null)
           if [ $? -eq 0 ]; then
