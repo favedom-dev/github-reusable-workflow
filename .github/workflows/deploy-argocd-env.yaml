@@ -197,7 +197,7 @@ jobs:
           if [ -f "${{ github.workspace }}/../${{ inputs.VERSION_SCRIPT_NAME }}" ]; then
             ls -la ${{ github.workspace }}/../${{ inputs.VERSION_SCRIPT_NAME }}
             cp ${{ github.workspace }}/../${{ inputs.VERSION_SCRIPT_NAME }} ./${{ inputs.VERSION_SCRIPT_NAME }}
-            cat ../${{ inputs.VERSION_SCRIPT_NAME }}
+            cat ./${{ inputs.VERSION_SCRIPT_NAME }}
             echo "Copied ${{ inputs.VERSION_SCRIPT_NAME }}"
           else
             echo "File does not exist: ${{ github.workspace }}/../${{ inputs.VERSION_SCRIPT_NAME }}"
