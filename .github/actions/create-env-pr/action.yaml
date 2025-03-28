@@ -1,31 +1,45 @@
 # .github/actions/create-env-pr/action.yml
 name: 'Create Environment PR'
 description: 'Creates and optionally merges a PR in an environment repository'
+
 inputs:
+
   env-repo-name:
     description: 'Target environment repository name'
     required: true
+
   env-repo-path:
     description: 'Working directory path'
     required: true
+
   name:
     description: 'Name of the component/chart'
     required: true
+
   version:
     description: 'Version to use'
     required: true
+
   do-pr-merge:
     description: 'Whether to auto-merge the PR'
     default: 'false'
+
   is-helm-chart:
     description: 'Whether this is a Helm chart update'
     default: 'false'
+
   monorepo-app:
     description: 'Monorepo application name (if applicable)'
     default: ''
+
+  gh-token:
+    description: "GitHub token for authentication"
+    required: true
+
 runs:
   using: 'composite'
   steps:
+
     - name: 'Create Environment PR'
       shell: bash
       working-directory: ${{ inputs.env-repo-path }}
@@ -33,11 +47,12 @@ runs:
         NAME: ${{ inputs.name }}
         VERSION: ${{ inputs.version }}
         BRANCH_NAME: ${{ inputs.is-helm-chart == 'true' && format('gha/helm-chart/{0}_{1}', inputs.name, inputs.version) || format('gha_{0}_{1}', inputs.name, inputs.version) }}
-        GH_TOKEN: ${{ secrets.GH_TOKEN }}
         DO_PR_MERGE: ${{ inputs.do-pr-merge }}
         MONOREPO_APP: ${{ inputs.monorepo-app }}
         IS_HELM_CHART: ${{ inputs.is-helm-chart }}
         ENV_REPO_NAME: ${{ inputs.env-repo-name }}
+        GH_TOKEN: ${{ inputs.gh-token }}
+        GITHUB_TOKEN: ${{ inputs.gh-token }}
       run: |
         MAX_RETRIES=5
         SLEEP_TIME=10
