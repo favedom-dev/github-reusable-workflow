@@ -1,0 +1,121 @@
+# .github/actions/create-env-pr/action.yml
+name: 'Create Environment PR'
+description: 'Creates and optionally merges a PR in an environment repository'
+inputs:
+  env-repo-name:
+    description: 'Target environment repository name'
+    required: true
+  env-repo-path:
+    description: 'Working directory path'
+    required: true
+  name:
+    description: 'Name of the component/chart'
+    required: true
+  version:
+    description: 'Version to use'
+    required: true
+  do-pr-merge:
+    description: 'Whether to auto-merge the PR'
+    default: 'false'
+  is-helm-chart:
+    description: 'Whether this is a Helm chart update'
+    default: 'false'
+  monorepo-app:
+    description: 'Monorepo application name (if applicable)'
+    default: ''
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Create Environment PR'
+      shell: bash
+      working-directory: ${{ inputs.env-repo-path }}
+      env:
+        NAME: ${{ inputs.name }}
+        VERSION: ${{ inputs.version }}
+        BRANCH_NAME: ${{ inputs.is-helm-chart == 'true' && format('gha/helm-chart/{0}_{1}', inputs.name, inputs.version) || format('gha_{0}_{1}', inputs.name, inputs.version) }}
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        DO_PR_MERGE: ${{ inputs.do-pr-merge }}
+        MONOREPO_APP: ${{ inputs.monorepo-app }}
+        IS_HELM_CHART: ${{ inputs.is-helm-chart }}
+        ENV_REPO_NAME: ${{ inputs.env-repo-name }}
+      run: |
+        MAX_RETRIES=5
+        SLEEP_TIME=10
+        MAIN_BRANCH="main"
+
+        echo "NAME         : ${NAME}"
+        echo "VERSION      : ${VERSION}"
+        echo "MONOREPO_APP : ${MONOREPO_APP}"
+        echo "BRANCH_NAME  : ${BRANCH_NAME}"
+
+        # Check if branch exists and handle it
+        if git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then
+          echo "Branch '${BRANCH_NAME}' exists. Checking it out..."
+          git checkout "${BRANCH_NAME}"
+          git fetch origin "${MAIN_BRANCH}"
+          git rebase origin/"${MAIN_BRANCH}" || {
+            echo "Rebase conflict detected. Aborting rebase..."
+            git rebase --abort
+            echo "Skipping rebase. Continuing with existing branch..."
+          }
+        else
+          echo "Creating new branch '${BRANCH_NAME}'..."
+          git checkout -b "${BRANCH_NAME}"
+        fi
+
+        # Stage and commit changes
+        git add .
+        if git diff --staged --quiet; then
+          echo "No changes to commit. Exiting..."
+          exit 0
+        fi
+
+        COMMIT_MSG="chore: ${IS_HELM_CHART == 'true' && 'helm chart' || 'bump image.tag'} ${NAME} ${VERSION}"
+        echo "git commit -a -m \"${COMMIT_MSG}\""
+        git commit -a -m "${COMMIT_MSG}"
+
+        # Push changes
+        git push --force-with-lease origin "${BRANCH_NAME}"
+
+        # Generate release notes based on type
+        if [ "${IS_HELM_CHART}" = "true" ]; then
+          echo "Helm chart   : [${NAME}](${{ github.server_url }}/${GITHUB_REPOSITORY}/tree/master/charts/${NAME})" > ./GH_RELEASE_NOTES.txt
+          echo "Version      : [${VERSION}](${{ github.server_url }}/${GITHUB_REPOSITORY}/releases/tag/${NAME}%2Fv${VERSION})" >> ./GH_RELEASE_NOTES.txt
+          echo "Repo         : ${{ github.server_url }}/${GITHUB_REPOSITORY}" >> ./GH_RELEASE_NOTES.txt
+        else
+          FULL_VERSION=v${VERSION}
+          [ ${#MONOREPO_APP} -gt 0 ] && FULL_VERSION=${MONOREPO_APP}/${FULL_VERSION}
+          gh release view ${FULL_VERSION} -R ${{ github.repository }} --json author,tagName,url,body --template \
+          'Version: [{{.tagName}}]({{.url}})
+          {{.body}}' > ./GH_RELEASE_NOTES.txt
+        fi
+
+        GH_BODY=$(cat ./GH_RELEASE_NOTES.txt)
+        git clean -fd
+
+        # Create PR with retry logic
+        TITLE="chore: ${IS_HELM_CHART == 'true' && 'bump helm chart' || 'bump image.tag'} ${NAME} to ${VERSION}"
+        for ((i=1; i<=MAX_RETRIES; i++)); do
+          PR_URL=$(gh pr create -R "${ENV_REPO_NAME}" --label "approved" --title "${TITLE}" --body "${GH_BODY}" 2>/dev/null)
+          if [ $? -eq 0 ]; then
+            echo "Pull request created successfully at: ${PR_URL}"
+            echo "# Pull Request" >> $GITHUB_STEP_SUMMARY
+            echo "🡢 Updated in \`${ENV_REPO_NAME}\`: [${NAME} ${VERSION}](${PR_URL})" >> $GITHUB_STEP_SUMMARY
+            break
+          fi
+          echo "PR creation failed. Retrying in ${SLEEP_TIME} seconds... (Attempt ${i}/${MAX_RETRIES})"
+          sleep $(( SLEEP_TIME * i ))
+        done
+
+        # Auto-merge if enabled
+        if [ "${DO_PR_MERGE}" = "true" ]; then
+          echo "Auto Squash & Merge PR..."
+          for ((i=1; i<=MAX_RETRIES; i++)); do
+            if gh pr merge "${BRANCH_NAME}" -R "${ENV_REPO_NAME}" --auto --squash; then
+              echo "PR merged successfully."
+              break
+            fi
+            echo "PR merge failed. Retrying in ${SLEEP_TIME} seconds... (Attempt ${i}/${MAX_RETRIES})"
+            sleep $(( SLEEP_TIME * i ))
+          done
+        fi
