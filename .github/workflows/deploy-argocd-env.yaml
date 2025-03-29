@@ -50,7 +50,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       VERSION_SCRIPT_BASE_URL:
-        default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/'
+        default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
         required: false
         type: string
 
