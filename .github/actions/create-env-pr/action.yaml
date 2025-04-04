@@ -119,7 +119,7 @@ runs:
           PR_URL=$(gh pr create -R "${ENV_REPO_NAME}" --label "approved" --title "${TITLE}" --body "${GH_BODY}" 2>/dev/null)
           if [ $? -eq 0 ]; then
             echo "Pull request created successfully at: ${PR_URL}"
-            echo "# Pull Request" >> $GITHUB_STEP_SUMMARY
+            echo "## Pull Request" >> $GITHUB_STEP_SUMMARY
             echo "🡢 Updated in \`${ENV_REPO_NAME}\`: [${NAME} ${VERSION}](${PR_URL})" >> $GITHUB_STEP_SUMMARY
             break
           fi
