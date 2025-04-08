@@ -77,6 +77,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      JOBS_TIMEOUT:
+        default: 10
+        required: false
+        type: number
+
       GH_RUNS_ON:
         default: 'ubuntu-latest'
         required: false
@@ -98,7 +103,7 @@ on:  # yamllint disable-line rule:truthy
 jobs:
 
   docker:
-    timeout-minutes: 10
+    timeout-minutes: ${{ inputs.JOBS_TIMEOUT }}
     permissions:
       contents: 'read'
       id-token: 'write'

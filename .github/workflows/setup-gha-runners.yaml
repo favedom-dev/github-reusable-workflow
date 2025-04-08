@@ -72,4 +72,5 @@ jobs:
           fi
 
           echo "GH_RUNS_ON : ${GH_RUNS_ON}"
+          echo "## GH_RUNS_ON : ${GH_RUNS_ON}" >> $GITHUB_STEP_SUMMARY
           echo "GH_RUNS_ON=${GH_RUNS_ON}" >> $GITHUB_OUTPUT
