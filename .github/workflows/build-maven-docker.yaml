@@ -166,7 +166,6 @@ on:  # yamllint disable-line rule:truthy
       ARTIFACT_URL:
         description: "URL to artifact"
         value: ${{ jobs.maven-docker.outputs.ARTIFACT_URL }}
-        # value: ${{ jobs.repo-version.outputs.version }}
 
 jobs:
 
