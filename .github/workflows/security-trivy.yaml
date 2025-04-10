@@ -353,7 +353,7 @@ jobs:
           echo "- GHA run      : [${{ github.run_id }}](${GHA_RUN_URL})" >> ${MARKDOWN_FILE}
           echo "- GAR registry : [${{ inputs.NAME }}](${DOCKER_URL})" >> ${MARKDOWN_FILE}
           if [ -n "${ARTIFACT_URL}" ]; then
-            echo "- GAR version  : [${{ inputs.NAME }}](${{ inputs.ARTIFACT_URL }})" >> ${MARKDOWN_FILE}
+            echo "- GAR version  : [${{ inputs.NAME }}:${{ inputs.VERSION }}](${{ inputs.ARTIFACT_URL }})" >> ${MARKDOWN_FILE}
           fi
           echo "---" >> ${MARKDOWN_FILE}
 
