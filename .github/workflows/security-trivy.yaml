@@ -340,9 +340,11 @@ jobs:
           JSON_FILE: ${{ steps.setup-arch-variables.outputs.ARCH_OUTPUT_FILE }}.JSON
         run: |
           echo "# ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }}" > ${MARKDOWN_FILE}
-          echo "- GitHub repo: [${{ github.repository }}](${REPO_URL})" >> ${MARKDOWN_FILE}
-          echo "- GHA run: [${{ github.run_id }}](${GHA_RUN_URL})" >> ${MARKDOWN_FILE}
-          echo "- GAR registry: [${{ inputs.NAME }}](${DOCKER_URL})" >> ${MARKDOWN_FILE}
+          echo "- GitHub repo  : [${{ github.repository }}](${REPO_URL})" >> ${MARKDOWN_FILE}
+          echo "- GitHub tag   : [${{ github.repository }}](${REPO_URL})/releases/tag/v${{ inputs.VERSION }}" >> ${MARKDOWN_FILE}
+          echo "- GHA run      : [${{ github.run_id }}](${GHA_RUN_URL})" >> ${MARKDOWN_FILE}
+          echo "- GAR registry : [${{ inputs.NAME }}](${DOCKER_URL})" >> ${MARKDOWN_FILE}
+          # echo "- GAR label    : [${{ inputs.NAME }}](${ARTIFACT_URL})" >> ${MARKDOWN_FILE}
           echo "---" >> ${MARKDOWN_FILE}
 
           jq -r '
