@@ -168,6 +168,7 @@ on:  # yamllint disable-line rule:truthy
       ARTIFACT_URL:
         description: "Artifcat URL to specific tag"
         value: ${{ jobs.node-docker.outputs.ARTIFACT_URL }}
+
 jobs:
 
   node-docker:
@@ -343,6 +344,7 @@ jobs:
         id: artifact-url
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          ARTIFACT_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
           DOCKER_DIGEST: ${{ steps.docker-build.outputs.digest }}
           DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
           NAME: ${{ inputs.NAME }}
