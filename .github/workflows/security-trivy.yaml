@@ -344,7 +344,7 @@ jobs:
           echo "- GitHub tag   : [${{ github.repository }}](${REPO_URL})/releases/tag/v${{ inputs.VERSION }}" >> ${MARKDOWN_FILE}
           echo "- GHA run      : [${{ github.run_id }}](${GHA_RUN_URL})" >> ${MARKDOWN_FILE}
           echo "- GAR registry : [${{ inputs.NAME }}](${DOCKER_URL})" >> ${MARKDOWN_FILE}
-          # echo "- GAR label    : [${{ inputs.NAME }}](${ARTIFACT_URL})" >> ${MARKDOWN_FILE}
+          echo "- GAR version  : [${{ inputs.NAME }}](${ARTIFACT_URL})" >> ${MARKDOWN_FILE}
           echo "---" >> ${MARKDOWN_FILE}
 
           jq -r '
@@ -469,26 +469,26 @@ jobs:
           echo "SUMMARY=${SUMMARY}" >> $GITHUB_OUTPUT
 
       # https://github.com/slackapi/slack-github-action
-      - name: "📢 Notify Slack"
-        uses: slackapi/slack-github-action@v2.0.0
-        with:
-          errors: true
-          webhook: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
-          webhook-type: incoming-webhook
-          payload: |
-            text: "🚨 *Trivy Scan: ${{ inputs.NAME }} ${{ inputs.VERSION }} (${{ steps.setup-notification-variables.outputs.ARCH_LIST }})*"
-            blocks:
-              - type: "header"
-                text:
-                  type: "plain_text"
-                  text: "🚨 ${{ inputs.NAME }} | ${{ inputs.VERSION }} | (${{ steps.setup-notification-variables.outputs.ARCH_LIST }})"
-              - type: "section"
-                text:
-                  type: "mrkdwn"
-                  text: "🔗 Workflow Run: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.run_id }}>"
-              - type: "section"
-                text:
-                  type: "mrkdwn"
-                  text: "${{ steps.setup-notification-variables.outputs.SUMMARY }}"
-              - type: "divider"
+      # - name: "📢 Notify Slack"
+      #   uses: slackapi/slack-github-action@v2.0.0
+      #   with:
+      #     errors: true
+      #     webhook: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
+      #     webhook-type: incoming-webhook
+      #     payload: |
+      #       text: "🚨 *Trivy Scan: ${{ inputs.NAME }} ${{ inputs.VERSION }} (${{ steps.setup-notification-variables.outputs.ARCH_LIST }})*"
+      #       blocks:
+      #         - type: "header"
+      #           text:
+      #             type: "plain_text"
+      #             text: "🚨 ${{ inputs.NAME }} | ${{ inputs.VERSION }} | (${{ steps.setup-notification-variables.outputs.ARCH_LIST }})"
+      #         - type: "section"
+      #           text:
+      #             type: "mrkdwn"
+      #             text: "🔗 Workflow Run: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.run_id }}>"
+      #         - type: "section"
+      #           text:
+      #             type: "mrkdwn"
+      #             text: "${{ steps.setup-notification-variables.outputs.SUMMARY }}"
+      #         - type: "divider"
 
