@@ -21,6 +21,7 @@ if [ "${ARTIFACT_TYPE}" = "docker" ] && [ -n "${ARTIFACT_DIGEST}" ]; then
   ARTIFACT_URL="${ARTIFACT_URL%%\?*}/${ARTIFACT_DIGEST}?${ARTIFACT_URL#*\?}"
 fi
 echo "${ARTIFACT_URL}"
+echo "ARTIFACT_URL=${ARTIFACT_URL}" >> $GITHUB_OUTPUT
 
 # Customize PR body based on ARTIFACT_TYPE
 case "${ARTIFACT_TYPE}" in

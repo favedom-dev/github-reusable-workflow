@@ -162,6 +162,11 @@ on:  # yamllint disable-line rule:truthy
         description: "Shiftleft/Qwiet token"
         required: false
 
+    outputs:
+      ARTIFACT_URL:
+        description: "Artifcat URL to specific tag"
+        value: ${{ jobs.maven-docker.outputs.ARTIFACT_URL }}
+
 jobs:
 
   maven-docker:
@@ -176,6 +181,9 @@ jobs:
       ARTIFACT_LINK_SCRIPT_NAME: artifact-link.sh
       MVN_SETTINGS_SCRIPT_NAME: mvn-settings.xml.sh
       MVN_SETTINGS_FILE: settings.xml
+    outputs:
+      ARTIFACT_URL: ${{ steps.artifact-url.outputs.ARTIFACT_URL }}
+
     steps:
 
       # - name: "📄 GITHUB INFO"
@@ -339,6 +347,7 @@ jobs:
 
       - name: "🔗 Link to Container"
         if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
+        id: artifact-url
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           ARTIFACT_DIGEST: ${{ steps.docker-build.outputs.digest }}
