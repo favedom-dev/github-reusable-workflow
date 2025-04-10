@@ -164,7 +164,7 @@ on:  # yamllint disable-line rule:truthy
 
     outputs:
       ARTIFACT_URL:
-        description: "URL to artifact"
+        description: "Artifcat URL to specific tag"
         value: ${{ jobs.maven-docker.outputs.ARTIFACT_URL }}
 
 jobs:
