@@ -110,6 +110,11 @@ on:
         description: "Workload Identity Federation Service Account"
         required: true
 
+    outputs:
+      ARTIFACT_URL:
+        description: "Artifcat URL to specific tag"
+        value: ${{ jobs.pnpm-docker.outputs.ARTIFACT_URL }}
+
 jobs:
 
   pnpm-docker:
@@ -122,6 +127,9 @@ jobs:
       # GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       # DOCKER_BUILDKIT: 1
       ARTIFACT_LINK_SCRIPT_NAME: artifact-link.sh
+    outputs:
+      ARTIFACT_URL: ${{ steps.artifact-url.outputs.ARTIFACT_URL }}
+
     steps:
 
       - name: "⬇️ Get reusable files"
@@ -216,6 +224,7 @@ jobs:
 
       - name: "🔗 Link to Container"
         if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
+        id: artifact-url
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           DOCKER_DIGEST: ${{ steps.docker-build.outputs.digest }}
