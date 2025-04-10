@@ -13,6 +13,11 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
 
+      ARTIFACT_URL:
+        description: "Link to the specific version in GAR"
+        required: false
+        type: string
+
       RUN_PR:
         description: "Set to true to run Trivy on PRs"
         required: false
@@ -332,6 +337,7 @@ jobs:
 
       - name: "📄 Convert JSON to Markdown"
         env:
+          ARTIFACT_URL: ${{ inputs.ARTIFACT_URL }}
           DOCKER_URL: ${{ needs.trivy-setup.outputs.DOCKER_URL }}
           REPO_URL: ${{ needs.trivy-setup.outputs.REPO_URL }}
           GHA_RUN_URL: ${{ needs.trivy-setup.outputs.GHA_RUN_URL }}
@@ -341,10 +347,14 @@ jobs:
         run: |
           echo "# ${{ inputs.NAME }} ${{ inputs.VERSION }} ${{ matrix.arch }}" > ${MARKDOWN_FILE}
           echo "- GitHub repo  : [${{ github.repository }}](${REPO_URL})" >> ${MARKDOWN_FILE}
-          echo "- GitHub tag   : [${{ github.repository }}](${REPO_URL})/releases/tag/v${{ inputs.VERSION }}" >> ${MARKDOWN_FILE}
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "- GitHub tag   : [${{ github.repository }}](${REPO_URL}/releases/tag/v${{ inputs.VERSION }})" >> ${MARKDOWN_FILE}
+          fi
           echo "- GHA run      : [${{ github.run_id }}](${GHA_RUN_URL})" >> ${MARKDOWN_FILE}
           echo "- GAR registry : [${{ inputs.NAME }}](${DOCKER_URL})" >> ${MARKDOWN_FILE}
-          echo "- GAR version  : [${{ inputs.NAME }}](${ARTIFACT_URL})" >> ${MARKDOWN_FILE}
+          if [ -n "${ARTIFACT_URL}" ]; then
+            echo "- GAR version  : [${{ inputs.NAME }}](${{ inputs.ARTIFACT_URL }})" >> ${MARKDOWN_FILE}
+          fi
           echo "---" >> ${MARKDOWN_FILE}
 
           jq -r '

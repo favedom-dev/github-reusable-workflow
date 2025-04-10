@@ -163,9 +163,9 @@ on:  # yamllint disable-line rule:truthy
         required: false
 
     outputs:
-      artifact-url:
+      ARTIFACT_URL:
         description: "URL to artifact"
-        value: ${{ jobs.maven-docker.outputs.artifact-url }}
+        value: ${{ jobs.maven-docker.outputs.ARTIFACT_URL }}
         # value: ${{ jobs.repo-version.outputs.version }}
 
 jobs:
@@ -183,7 +183,7 @@ jobs:
       MVN_SETTINGS_SCRIPT_NAME: mvn-settings.xml.sh
       MVN_SETTINGS_FILE: settings.xml
     outputs:
-      artifact-url: ${{ steps.artifact-url.outputs.ARTIFACT_URL }}
+      ARTIFACT_URL: ${{ steps.artifact-url.outputs.ARTIFACT_URL }}
 
     steps:
 
