@@ -106,7 +106,7 @@ jobs:
           echo "PACKAGE_NAME=${PACKAGE_NAME}" >> $GITHUB_OUTPUT
           # ===
           # REPLACES GAR_URL
-          ARTIFACT_URL="https://console.cloud.google.com/artifacts/${{ inputs.ARTIFACT_REGISTRY }}/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.ARTIFACT_REGISTRY }}/${PACKAGE_NAME}?project=${{ inputs.PROJECT_ID }}/"
+          ARTIFACT_URL="https://console.cloud.google.com/artifacts/${{ inputs.ARTIFACT_REGISTRY }}/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.ARTIFACT_REPOSITORY }}/${PACKAGE_NAME}?project=${{ inputs.PROJECT_ID }}/"
           echo "ARTIFACT_URL=${ARTIFACT_URL}" >> $GITHUB_ENV
           echo "ARTIFACT_URL=${ARTIFACT_URL}" >> $GITHUB_OUTPUT
           # ===
