@@ -1,0 +1,171 @@
+name: PR Cleanup jar
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      NAME:
+        description: "Name of service"
+        required: false
+        type: string
+
+      NAMES:
+        description: "Name of services space separated (ex: admin-fe celeb-fe)"
+        required: false
+        type: string
+
+      PR_PREFIX:
+        default: '0.0.0-SNAPSHOT-PR-'
+        required: false
+        type: string
+
+      PROJECT_ID:
+        default: 'favedom-dev'
+        required: false
+        type: string
+
+      GAR_LOCATION:
+        default: 'us-central1'
+        required: false
+        type: string
+
+      ARTIFACT_REGISTRY:
+        default: 'maven'
+        required: false
+        type: string
+
+      ARTIFACT_REPOSITORY:
+        default: 'java'
+        required: false
+        type: string
+
+      JAR_PATH:
+        default: 'com.velocityz'
+        required: false
+        type: string
+
+      CREATE_CREDENTIALS_FILE:
+        default: true
+        required: false
+        type: boolean
+
+      EXPORT_ENVIRONMENT_VARIABLES:
+        default: true
+        required: false
+        type: boolean
+
+      LOCATION:
+        default: 'us-central1-a'
+        required: false
+        type: string
+
+      GH_RUNS_ON:
+        default: 'ubuntu-latest'
+        required: false
+        type: string
+
+    secrets:
+      WIF_PROVIDER:
+        description: "Workload Identity Federation Provider"
+        required: true
+
+      WIF_SERVICE_ACCOUNT:
+        description: "Workload Identity Federation Service Account"
+        required: true
+jobs:
+
+  preview-environment-cleanup:
+    timeout-minutes: 10
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    runs-on: ${{ inputs.GH_RUNS_ON }}
+    steps:
+
+      # - name: "📄 GITHUB INFO"
+      #   uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2
+      #   with:
+      #     github-context: ${{ toJSON(github) }}
+      #     event-name: ${{ github.event_name }}
+      #     run-attempt: ${{ github.run_attempt }}
+      #     run-number: ${{ github.run_number }}
+      #     pr-number: ${{ github.event.pull_request.number }}
+
+      - name: "🏷️ Set up variables"
+        id: setup-variables
+        run: |
+          PR_NUM=${{ github.event.pull_request.number }}
+          echo "PR_NUM=${PR_NUM}" >> $GITHUB_ENV
+          echo "PR_NUM=${PR_NUM}" >> $GITHUB_OUTPUT
+          # ===
+          PR_VERSION=${{ inputs.PR_PREFIX }}${PR_NUM}
+          echo "PR_VERSION=${PR_VERSION}" >> $GITHUB_ENV
+          echo "PR_VERSION=${PR_VERSION}" >> $GITHUB_OUTPUT
+          # ===
+          PACKAGE_NAME=${{ inputs.JAR_PATH }}:${{ inputs.NAME }}
+          echo "PACKAGE_NAME=${PACKAGE_NAME}" >> $GITHUB_ENV
+          echo "PACKAGE_NAME=${PACKAGE_NAME}" >> $GITHUB_OUTPUT
+          # ===
+          # REPLACES GAR_URL
+          ARTIFACT_URL="https://console.cloud.google.com/artifacts/${{ inputs.ARTIFACT_REGISTRY }}/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.ARTIFACT_REGISTRY }}/${PACKAGE_NAME}?project=${{ inputs.PROJECT_ID }}/"
+          echo "ARTIFACT_URL=${ARTIFACT_URL}" >> $GITHUB_ENV
+          echo "ARTIFACT_URL=${ARTIFACT_URL}" >> $GITHUB_OUTPUT
+          # ===
+          ARTIFACT_TAG_PREFIX="${PR_VERSION}-"
+          echo "ARTIFACT_TAG_PREFIX=${ARTIFACT_TAG_PREFIX}" >> $GITHUB_ENV
+          echo "ARTIFACT_TAG_PREFIX=${ARTIFACT_TAG_PREFIX}" >> $GITHUB_OUTPUT
+
+          echo "------------------------"
+          echo "PR_NUM                 : ${PR_NUM}"
+          echo "PR_VERSION             : ${PR_VERSION}"
+          echo "PACKAGE_NAME           : ${PACKAGE_NAME}"
+          echo "ARTIFACT_URL           : ${ARTIFACT_URL}"
+          echo "ARTIFACT_TAG_PREFIX    : ${ARTIFACT_TAG_PREFIX}"
+          echo "========================"
+
+      - name: "🔑 Google Auth Token"
+        id: auth-gcp-token
+        uses: 'google-github-actions/auth@v2'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
+          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+          create_credentials_file: ${{ inputs.CREATE_CREDENTIALS_FILE }}
+          export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
+
+      # https://github.com/google-github-actions/setup-gcloud
+      - name: '🔧 Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: "🗑️ Delete PR ${{ steps.setup-variables.outputs.PR_NUM }} Java lib(s)"
+        env:
+          NAME: ${{ inputs.NAME }}
+          NAMES: ${{ inputs.NAMES }}
+          PACKAGE_NAME: ${{ steps.setup-variables.outputs.PACKAGE_NAME }}
+        run: |
+          name=${NAMES:-${NAME}}
+          echo "## 🗑️ Java lib(s) PR: \`${ARTIFACT_TAG_PREFIX}\`" >> $GITHUB_STEP_SUMMARY
+          echo "PACKAGE_NAME : ${PACKAGE_NAME}"
+          echo "name         : ${name}"
+
+          delete_images() {
+            declare -a PR_VERSION_LIST
+            for version in $(gcloud artifacts versions list --package=${PACKAGE_NAME} --repository=${{ inputs.ARTIFACT_REPOSITORY }} --location=${{ inputs.GAR_LOCATION }} --project=${{ inputs.PROJECT_ID }} | grep "${ARTIFACT_TAG_PREFIX}" | cut -f1 -d ' '); do
+              CURRENT_ARTIFACT="${PACKAGE_NAME}:${version}"
+              PR_VERSION_LIST[${#PR_VERSION_LIST[@]}]="${version}"
+              echo ""
+              echo ">>>>>>>>>>>>>>"
+              echo "START DELETING: ${CURRENT_ARTIFACT}"
+              echo "- ${CURRENT_ARTIFACT}" >> $GITHUB_STEP_SUMMARY
+              gcloud artifacts versions delete ${version} --package=${PACKAGE_NAME} --repository=${{ inputs.ARTIFACT_REPOSITORY }} --location=${{ inputs.GAR_LOCATION }} --project=${{ inputs.PROJECT_ID }} --quiet
+              echo "DONE  DELETING: ${CURRENT_ARTIFACT}"
+              echo "<<<<<<<<<<<<<<"
+            done
+            echo ""
+            echo "Can verify PR Java libs \"${PR_VERSION}*\" deleted at URL:"
+            echo "${ARTIFACT_URL}"
+            echo "Java libs removed had versions:"
+            printf '%s\n' "${PR_VERSION_LIST[@]}"
+          }
+
+          # see cleanup-preview-env.yaml for an example of handling a mono-repo
+          delete_images
