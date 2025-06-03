@@ -525,7 +525,6 @@ jobs:
           --install "${CHART_NAME}" \
           --set global.preview=true \
           "${ARG_CHART_VALUES}" \
-          "${ARG_COMMON_VALUES}" \
           "${ARG_PREVIEW_GLOBALS_VALUES}" \
           "${ARG_PREVIEW_TENANT_VALUES}" \
           "${ARG_PREVIEW_CHART_VALUES}" \
