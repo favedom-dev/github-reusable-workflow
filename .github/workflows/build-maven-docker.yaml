@@ -139,23 +139,28 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
     secrets:
+
+      GCP_JSON_KEY:
+        required: true
+        # required: false
+
       GH_TOKEN:
         description: "GitHub token"
-        required: true
+        # required: true
+        required: false
 
       WIF_PROVIDER:
         description: "Workload Identity Federation Provider"
-        required: true
+        # required: true
+        required: false
 
       WIF_SERVICE_ACCOUNT:
         description: "Workload Identity Federation Service Account"
-        required: true
+        # required: true
+        required: false
 
       MVN_ARGS_SECRETS:
         description: "Maven args that contain secrets"
-        required: false
-
-      GCP_JSON_KEY:
         required: false
 
       SHIFTLEFT_ACCESS_TOKEN:
@@ -206,8 +211,22 @@ jobs:
               { "subdirectory": ".github/scripts", "filename": "${{ inputs.VAR_DOCKER_SCRIPT_NAME }}" },
               { "subdirectory": ".github/scripts", "filename": "${{ env.ARTIFACT_LINK_SCRIPT_NAME }}" },
               { "subdirectory": ".github/scripts", "filename": "${{ env.MVN_SETTINGS_SCRIPT_NAME }}" },
+              { "subdirectory": ".github/scripts", "filename": "fetch-secrets.sh" },
               { "subdirectory": ".m2", "filename": "${{ env.MVN_SETTINGS_FILE }}" }
             ]
+
+      - name: "🔐 Set up secrets"
+        id: setup-secrets
+        run: |
+          SECRETS="core_GH_TOKEN:GH_TOKEN
+          core_WIF_PROVIDER:WIF_PROVIDER
+          core_WIF_SERVICE_ACCOUNT:WIF_SERVICE_ACCOUNT
+          core_GCP_JSON_KEY:GCP_JSON_KEY
+          core_SHIFTLEFT_ACCESS_TOKEN:SHIFTLEFT_ACCESS_TOKEN"
+          echo "Getting secrets: ${SECRETS}"
+          echo "Setup /tmp/gcp-credentials.json"
+          echo "${GCP_JSON_KEY}" > /tmp/gcp-credentials.json
+          ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
 
       - name: "🏷️ Set up variables"
         id: setup-variables
