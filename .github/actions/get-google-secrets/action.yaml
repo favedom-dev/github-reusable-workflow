@@ -50,7 +50,9 @@ runs:
         if [ -n "$SECRETS_TO_FETCH" ]; then
           if [ -n "$combined_secrets" ]; then
             # If default secrets exist, append with a comma
-            combined_secrets="$combined_secrets,$SECRETS_TO_FETCH"
+            # combined_secrets="$combined_secrets,$SECRETS_TO_FETCH"
+            combined_secrets="${combined_secrets},"\
+            "${SECRETS_TO_FETCH}"
           else
             # If no default secrets, use secrets-to-fetch directly
             combined_secrets="$SECRETS_TO_FETCH"
