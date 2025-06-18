@@ -3,6 +3,7 @@ name: Maven and Docker
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
+
       NAME:
         description: "Name of service"
         required: true
@@ -12,10 +13,12 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
 
-      SECRETS_JSON:
-        required: false # true
+      secrets-to-fetch:
+        description: "Secrets to fetch from Google Secret Manager"
+        required: false
         type: string
-        description: "JSON with secrets"
+        default: |
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
 
       FILE_DOWNLOAD_BASE_URL:
         default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
@@ -174,6 +177,7 @@ on:  # yamllint disable-line rule:truthy
         required: false
 
     outputs:
+
       ARTIFACT_URL:
         description: "Artifcat URL to specific tag"
         value: ${{ jobs.maven-docker.outputs.ARTIFACT_URL }}
@@ -253,12 +257,20 @@ jobs:
           echo "===="
           echo "secrets.SECRETS_JSON ${{ secrets.SECRETS_JSON }}"
 
-      - name: "🧩 Parse Secrets"
-        id: parse-secrets
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/parse-secrets@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/parse-secrets@FAN-6956-secrets
+      # - name: "🧩 Parse Secrets"
+      #   id: parse-secrets
+      #   # uses: favedom-dev/github-reusable-workflow/.github/actions/parse-secrets@v2
+      #   uses: favedom-dev/github-reusable-workflow/.github/actions/parse-secrets@FAN-6956-secrets
+      #   with:
+      #     secrets-json: ${{ secrets.SECRETS_JSON }}
+
+      - name: "🔐 Get Secrets"
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@FAN-6956-secrets
         with:
-          secrets-json: ${{ secrets.SECRETS_JSON }}
+          wif-provider: ${{ secrets.WIF_PROVIDER }}
+          wif-service-account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          secrets-to-fetch: ${{ inputs.secrets-to-fetch }}
 
       - name: "🧰 Set up gh cli"
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1

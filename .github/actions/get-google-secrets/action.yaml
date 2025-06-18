@@ -1,0 +1,52 @@
+# .github/actions/auth-and-get-secrets/action.yml
+name: 'Google Auth and Get Secrets'
+description: 'Authenticate with Google Cloud and fetch secrets in one action'
+
+inputs:
+  wif-provider:
+    description: 'Workload Identity Federation Provider'
+    required: true
+  wif-service-account:
+    description: 'Workload Identity Federation Service Account'
+    required: true
+  secrets-to-fetch:
+    description: 'Secrets to fetch from Google Secret Manager (format: secret-name:projects/PROJECT_ID/secrets/SECRET_NAME)'
+    required: true
+  token-format:
+    description: 'Token format (access_token or id_token)'
+    required: false
+    default: 'access_token'
+  create-credentials-file:
+    description: 'Create credentials file'
+    required: false
+    default: 'true'
+
+outputs:
+  access-token:
+    description: 'Access token (if token-format is access_token)'
+    value: ${{ steps.auth.outputs.access-token }}
+  credentials-file-path:
+    description: 'Path to credentials file'
+    value: ${{ steps.auth.outputs.credentials-file-path }}
+  secrets-fetched:
+    description: 'List of secret names that were fetched'
+    value: ${{ steps.get-secrets.outputs.secrets-fetched }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: "🔑 Google Authentication"
+      id: auth
+      uses: favedom-dev/github-reusable-workflow/.github/actions/google-auth@v2
+      with:
+        wif-provider: ${{ inputs.wif-provider }}
+        wif-service-account: ${{ inputs.wif-service-account }}
+        token-format: ${{ inputs.token-format }}
+        create-credentials-file: ${{ inputs.create-credentials-file }}
+
+    - name: "🤫 Get Secrets"
+      id: get-secrets
+      uses: favedom-dev/github-reusable-workflow/.github/actions/get-secrets@v2
+      with:
+        secrets-to-fetch: ${{ inputs.secrets-to-fetch }}
+        export-to-environment: 'true'
