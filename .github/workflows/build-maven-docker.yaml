@@ -250,12 +250,12 @@ jobs:
           PROJECT_ID: ${{ inputs.PROJECT_ID }}
         run: ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
 
-      - name: "DEBUG secrets"
-        id: debug-secrets
-        run: |
-          echo "inputs.SECRETS_JSON ${{ inputs.SECRETS_JSON }}"
-          echo "===="
-          echo "secrets.SECRETS_JSON ${{ secrets.SECRETS_JSON }}"
+      # - name: "DEBUG secrets"
+      #   id: debug-secrets
+      #   run: |
+      #     echo "inputs.SECRETS_JSON ${{ inputs.SECRETS_JSON }}"
+      #     echo "===="
+      #     echo "secrets.SECRETS_JSON ${{ secrets.SECRETS_JSON }}"
 
       # - name: "🧩 Parse Secrets"
       #   id: parse-secrets
