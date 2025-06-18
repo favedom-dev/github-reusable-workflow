@@ -11,6 +11,9 @@ inputs:
   secrets-to-fetch:
     description: 'Secrets to fetch from Google Secret Manager (format: secret-name:projects/PROJECT_ID/secrets/SECRET_NAME)'
     required: true
+  default-secrets-to-fetch:
+    description: 'Secrets to fetch from Google Secret Manager (format: secret-name:projects/PROJECT_ID/secrets/SECRET_NAME)'
+    required: true
 
 outputs:
   access-token:
@@ -26,6 +29,45 @@ outputs:
 runs:
   using: 'composite'
   steps:
+    - name: "Define secrets to fetch"
+      id: define-secrets
+      shell: bash
+      env:
+        DEFAULT_SECRETS_TO_FETCH: '${{ inputs.default-secrets-to-fetch }}'
+        SECRETS_TO_FETCH: '${{ inputs.secrets-to-fetch }}'
+      run: |
+        echo "DEFAULT_SECRETS_TO_FETCH : ${DEFAULT_SECRETS_TO_FETCH}"
+        echo "SECRETS_TO_FETCH         : ${SECRETS_TO_FETCH}"
+        # Initialize an empty secrets list
+        combined_secrets=""
+
+        # Check if default-secrets-to-fetch is non-empty
+        if [ -n "$DEFAULT_SECRETS_TO_FETCH" ]; then
+          combined_secrets="$DEFAULT_SECRETS_TO_FETCH"
+        fi
+
+        # Check if secrets-to-fetch is non-empty and append if needed
+        if [ -n "$SECRETS_TO_FETCH" ]; then
+          if [ -n "$combined_secrets" ]; then
+            # If default secrets exist, append with a comma
+            combined_secrets="$combined_secrets,$SECRETS_TO_FETCH"
+          else
+            # If no default secrets, use secrets-to-fetch directly
+            combined_secrets="$SECRETS_TO_FETCH"
+          fi
+        fi
+
+        # If combined_secrets is still empty, set a default or handle as needed
+        if [ -z "$combined_secrets" ]; then
+          echo "No secrets provided to fetch."
+          combined_secrets=""
+        fi
+
+        echo "combined_secrets : ${combined_secrets}"
+        # Set the output for use in the get-secrets step
+        echo "combined-secrets=$combined_secrets" >> $GITHUB_OUTPUT
+
+
     - name: "🔑 Google Auth Token"
       id: auth-gcp-token
       uses: 'google-github-actions/auth@v2'
@@ -38,5 +80,5 @@ runs:
       id: get-secrets
       uses: 'google-github-actions/get-secretmanager-secrets@v2'
       with:
-        secrets: ${{ inputs.secrets-to-fetch }}
+        secrets: ${{ steps.define-secrets.outputs.combined-secrets }}
         export-to-environment: 'true'

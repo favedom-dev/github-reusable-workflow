@@ -17,6 +17,13 @@ on:  # yamllint disable-line rule:truthy
         description: "Secrets to fetch from Google Secret Manager"
         required: false
         type: string
+        # default: |
+        #   GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
+
+      default-secrets-to-fetch:
+        description: "Default secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
         default: |
           GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
 
@@ -271,6 +278,7 @@ jobs:
           WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
           WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
           secrets-to-fetch: ${{ inputs.secrets-to-fetch }}
+          default-secrets-to-fetch:
 
       - name: "🧰 Set up gh cli"
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
