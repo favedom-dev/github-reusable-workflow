@@ -38,28 +38,28 @@ runs:
       run: |
         echo "DEFAULT_SECRETS_TO_FETCH : ${DEFAULT_SECRETS_TO_FETCH}"
         echo "SECRETS_TO_FETCH         : ${SECRETS_TO_FETCH}"
+
         # Initialize an empty secrets list
         combined_secrets=""
 
-        # Check if default-secrets-to-fetch is non-empty
-        if [ -n "$DEFAULT_SECRETS_TO_FETCH" ]; then
-          combined_secrets="$DEFAULT_SECRETS_TO_FETCH"
+        # Normalize secrets: remove newlines and trailing commas
+        normalized_default_secrets=$(echo "$DEFAULT_SECRETS_TO_FETCH" | tr -d '\n' | sed 's/,$//')
+        normalized_secrets_to_fetch=$(echo "$SECRETS_TO_FETCH" | tr -d '\n' | sed 's/,$//')
+
+        # Combine secrets
+        if [ -n "$normalized_default_secrets" ]; then
+          combined_secrets="$normalized_default_secrets"
         fi
 
-        # Check if secrets-to-fetch is non-empty and append if needed
-        if [ -n "$SECRETS_TO_FETCH" ]; then
+        if [ -n "$normalized_secrets_to_fetch" ]; then
           if [ -n "$combined_secrets" ]; then
-            # If default secrets exist, append with a comma
-            # combined_secrets="$combined_secrets,$SECRETS_TO_FETCH"
-            combined_secrets="${combined_secrets},"\
-            "${SECRETS_TO_FETCH}"
+            combined_secrets="$combined_secrets,$normalized_secrets_to_fetch"
           else
-            # If no default secrets, use secrets-to-fetch directly
-            combined_secrets="$SECRETS_TO_FETCH"
+            combined_secrets="$normalized_secrets_to_fetch"
           fi
         fi
 
-        # If combined_secrets is still empty, set a default or handle as needed
+        # If no secrets are provided, log a message
         if [ -z "$combined_secrets" ]; then
           echo "No secrets provided to fetch."
           combined_secrets=""
