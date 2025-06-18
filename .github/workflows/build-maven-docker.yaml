@@ -145,6 +145,10 @@ on:  # yamllint disable-line rule:truthy
 
     secrets:
 
+      SECRETS_JSON:
+        description: "secrets JSON"
+        required: false
+
       WIF_PROVIDER:
         description: "Workload Identity Federation Provider"
         required: true
@@ -242,12 +246,19 @@ jobs:
           PROJECT_ID: ${{ inputs.PROJECT_ID }}
         run: ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
 
+      - name: "DEBUG secrets"
+        id: debug-secrets
+        run: |
+          echo "inputs.SECRETS_JSON ${{ inputs.SECRETS_JSON }}"
+          echo "===="
+          echo "secrets.SECRETS_JSON ${{ secrets.SECRETS_JSON }}"
+
       - name: "🧩 Parse Secrets"
         id: parse-secrets
         # uses: favedom-dev/github-reusable-workflow/.github/actions/parse-secrets@v2
         uses: favedom-dev/github-reusable-workflow/.github/actions/parse-secrets@FAN-6956-secrets
         with:
-          secrets-json: ${{ inputs.SECRETS_JSON }}
+          secrets-json: ${{ secrets.SECRETS_JSON }}
 
       - name: "🧰 Set up gh cli"
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
