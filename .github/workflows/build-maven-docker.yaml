@@ -268,8 +268,8 @@ jobs:
         # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
         uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@FAN-6956-secrets
         with:
-          wif-provider: ${{ secrets.WIF_PROVIDER }}
-          wif-service-account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
           secrets-to-fetch: ${{ inputs.secrets-to-fetch }}
 
       - name: "🧰 Set up gh cli"
