@@ -36,7 +36,7 @@ runs:
   steps:
     - name: "🔑 Google Authentication"
       id: auth
-      uses: favedom-dev/github-reusable-workflow/.github/actions/google-auth@v2
+      uses: 'google-github-actions/auth@v2'
       with:
         wif-provider: ${{ inputs.wif-provider }}
         wif-service-account: ${{ inputs.wif-service-account }}
