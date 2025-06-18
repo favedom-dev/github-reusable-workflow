@@ -17,8 +17,6 @@ on:  # yamllint disable-line rule:truthy
         description: "Secrets to fetch from Google Secret Manager"
         required: false
         type: string
-        # default: |
-        #   GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
 
       default-secrets-to-fetch:
         description: "Default secrets to fetch from Google Secret Manager"
@@ -280,6 +278,39 @@ jobs:
           secrets-to-fetch: ${{ inputs.secrets-to-fetch }}
           default-secrets-to-fetch: ${{ inputs.default-secrets-to-fetch }}
 
+      - name: "Setup MVN_ARGS_SECRETS"
+        id: setup-mvn-args-secrets
+        env:
+          SECRETS_TO_FETCH: '${{ inputs.secrets-to-fetch }}'
+        run: |
+          MVN_ARGS_SECRETS=
+          echo "inputs.secrets-to-fetch : ${{ inputs.secrets-to-fetch }}"
+          if [ -n "${SECRETS_TO_FETCH}" ]; then
+            IFS=',' read -ra SECRETS <<< "${{ inputs.secrets-to-fetch }}"
+            for secret in "${SECRETS[@]}"; do
+              secret_name=$(echo "$secret" | cut -d':' -f1)
+              echo "secret_name  : ${secret_name}"
+
+              if [[ "$var" == MVN_ARGS-* ]]; then
+                # Variable starts with MVN_ARGS-
+                echo "Variable starts with MVN_ARGS-"
+                mvn_arg_key="${var#MVN_ARGS-}"
+
+                if [[ -z "$MVN_ARGS_SECRETS" ]]; then
+                  # MVN_ARGS_SECRETS is empty or unset
+                  MVN_ARGS_SECRETS="-D${mvn_arg_key}=${!mvn_arg_key}"
+                else
+                  # MVN_ARGS_SECRETS has a value
+                  MVN_ARGS_SECRETS="${MVN_ARGS_SECRETS} -D${mvn_arg_key}=${!mvn_arg_key}"
+                fi
+              else
+                echo "Variable does NOT start with MVN_ARGS-"
+              fi
+            done
+          fi
+          echo "MVN_ARGS_SECRETS : ${MVN_ARGS_SECRETS}"
+          echo "MVN_ARGS_SECRETS=${MVN_ARGS_SECRETS}" >> $GITHUB_OUTPUT
+
       - name: "🧰 Set up gh cli"
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
         if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
@@ -371,9 +402,10 @@ jobs:
           echo "MVN_ARGS        : ${{ inputs.MVN_ARGS }}"
           echo "MVN_ENV_VARS    : ${{ inputs.MVN_ENV_VARS }}"
           echo "MVN_ARGS_EXTRA  : ${{ inputs.MVN_ARGS_EXTRA }}"
-          echo "MVN_ARGS_SECRETS: ${{ secrets.MVN_ARGS_SECRETS }}"
+          # echo "MVN_ARGS_SECRETS: ${{ secrets.MVN_ARGS_SECRETS }}"
+          echo "MVN_ARGS_SECRETS: ${{ steps.setup-mvn-args-secrets.outputs.MVN_ARGS_SECRETS }}"
           mvn -B \
-          ${{ secrets.MVN_ARGS_SECRETS }} \
+          ${{ steps.setup-mvn-args-secrets.outputs.MVN_ARGS_SECRETS }} \
           ${{ inputs.MVN_ENV_VARS }} \
           ${{ inputs.MVN_ARGS }} \
           ${{ inputs.MVN_ARGS_EXTRA }}
