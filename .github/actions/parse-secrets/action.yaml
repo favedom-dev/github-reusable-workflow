@@ -1,0 +1,54 @@
+name: 'Parse Secrets from JSON'
+description: 'Dynamically parses a JSON string of secrets and sets them as masked outputs for downstream use'
+inputs:
+  secrets-json:
+    description: 'JSON string containing secrets (e.g., {"SECRET_ONE":"value1","SECRET_TWO":"value2"})'
+    required: true
+
+outputs:
+  secrets:
+    description: 'JSON object containing parsed secrets'
+    value: ${{ steps.parse-secrets.outputs.secrets }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: "🧩 Parse and Mask Secrets"
+      id: parse-secrets
+      shell: bash
+      env:
+        SECRETS_JSON: ${{ inputs.secrets-json }}
+      run: |
+        # Validate JSON input
+        if ! echo "$SECRETS_JSON" | jq -e . >/dev/null 2>&1; then
+          echo "Error: Invalid JSON input" >&2
+          exit 1
+        fi
+
+        # Initialize output JSON
+        output_json=$(jq -n '{}')
+
+        # Get all keys from JSON
+        keys=$(echo "$SECRETS_JSON" | jq -r 'keys[]')
+        for key in $keys; do
+          # Extract value for the key
+          value=$(echo "$SECRETS_JSON" | jq -r --arg k "$key" '.[$k]')
+          # echo "value : ${value}"
+
+          # Mask the value to prevent logging
+          echo "Mask value..."
+          echo "::add-mask::$value"
+
+          # Add to output JSON
+          output_json=$(echo "$output_json" | jq --arg k "$key" --arg v "$value" '.[$k] = $v')
+
+          # Set individual output for the key (lowercase for naming convention)
+          output_key=$(echo "$key" | tr '[:upper:]' '[:lower:]')
+          echo "output_key : ${output_key}"
+          echo "${output_key}=$value" >> "$GITHUB_OUTPUT"
+        done
+
+        # Set the full JSON as an output
+        echo "secrets=$output_json" >> "$GITHUB_OUTPUT"
+        echo "output_json :"
+        echo "${output_json}" | jq .
