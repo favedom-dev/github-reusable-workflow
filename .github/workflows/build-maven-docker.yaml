@@ -278,8 +278,8 @@ jobs:
           secrets-to-fetch: ${{ inputs.secrets-to-fetch }}
           default-secrets-to-fetch: ${{ inputs.default-secrets-to-fetch }}
 
-      - name: "Setup MVN_ARGS_SECRETS"
-        id: setup-mvn-args-secrets
+      - name: "⚙️ Set MVN_ARGS_SECRETS"
+        id: set-mvn-args-secrets
         env:
           SECRETS_TO_FETCH: '${{ inputs.secrets-to-fetch }}'
         run: |
@@ -403,9 +403,9 @@ jobs:
           echo "MVN_ENV_VARS    : ${{ inputs.MVN_ENV_VARS }}"
           echo "MVN_ARGS_EXTRA  : ${{ inputs.MVN_ARGS_EXTRA }}"
           # echo "MVN_ARGS_SECRETS: ${{ secrets.MVN_ARGS_SECRETS }}"
-          echo "MVN_ARGS_SECRETS: ${{ steps.setup-mvn-args-secrets.outputs.MVN_ARGS_SECRETS }}"
+          echo "MVN_ARGS_SECRETS: ${{ steps.set-mvn-args-secrets.outputs.MVN_ARGS_SECRETS }}"
           mvn -B \
-          ${{ steps.setup-mvn-args-secrets.outputs.MVN_ARGS_SECRETS }} \
+          ${{ steps.set-mvn-args-secrets.outputs.MVN_ARGS_SECRETS }} \
           ${{ inputs.MVN_ENV_VARS }} \
           ${{ inputs.MVN_ARGS }} \
           ${{ inputs.MVN_ARGS_EXTRA }}
