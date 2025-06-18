@@ -34,14 +34,13 @@ outputs:
 runs:
   using: 'composite'
   steps:
-    - name: "🔑 Google Authentication"
-      id: auth
+    - name: "🔑 Google Auth Token"
+      id: auth-gcp-token
       uses: 'google-github-actions/auth@v2'
       with:
-        wif-provider: ${{ inputs.wif-provider }}
-        wif-service-account: ${{ inputs.wif-service-account }}
-        token-format: ${{ inputs.token-format }}
-        create-credentials-file: ${{ inputs.create-credentials-file }}
+        token_format: 'access_token'
+        workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
+        service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
     - name: "🤫 Get Secrets"
       id: get-secrets
