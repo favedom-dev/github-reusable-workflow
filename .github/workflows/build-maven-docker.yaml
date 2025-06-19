@@ -189,22 +189,6 @@ on:  # yamllint disable-line rule:truthy
 
 jobs:
 
-  setup:
-    # permissions:
-    #   contents: 'read'
-    #   id-token: 'write'
-    # runs-on: ${{ inputs.GH_RUNS_ON }}
-
-    # steps:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-app.yaml@v2
-
-  version:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@FAN-6956-secrets
-    # needs: [runner]
-    # with:
-      # GH_RUNS_ON: ${{ needs.runner.outputs.GH_RUNS_ON }}
-    secrets: inherit
-
   maven-docker:
     timeout-minutes: 15
     permissions:
