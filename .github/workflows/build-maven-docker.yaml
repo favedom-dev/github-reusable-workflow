@@ -215,6 +215,9 @@ jobs:
       #     run-number: ${{ github.run_number }}
       #     pr-number: ${{ github.event.pull_request.number }}
 
+      - name: "☁️ Checkout repository"
+        uses: actions/checkout@v4
+
       - name: "⬇️ Get reusable files"
         uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
         id: get-reusable-files
@@ -229,19 +232,6 @@ jobs:
               { "subdirectory": ".m2", "filename": "${{ env.MVN_SETTINGS_FILE }}" }
             ]
 
-      # - name: "🔐 Set up secrets"
-      #   id: setup-secrets
-      #   run: |
-      #     SECRETS="core_GH_TOKEN:GH_TOKEN
-      #     core_WIF_PROVIDER:WIF_PROVIDER
-      #     core_WIF_SERVICE_ACCOUNT:WIF_SERVICE_ACCOUNT
-      #     core_GCP_JSON_KEY:GCP_JSON_KEY
-      #     core_SHIFTLEFT_ACCESS_TOKEN:SHIFTLEFT_ACCESS_TOKEN"
-      #     echo "Getting secrets: ${SECRETS}"
-      #     echo "Setup /tmp/gcp-credentials.json"
-      #     echo "${GCP_JSON_KEY}" > /tmp/gcp-credentials.json
-      #     ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
-
       - name: "🏷️ Set up variables"
         id: setup-variables
         env:
@@ -254,20 +244,6 @@ jobs:
           NAME: ${{ inputs.NAME }}
           PROJECT_ID: ${{ inputs.PROJECT_ID }}
         run: ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
-
-      # - name: "DEBUG secrets"
-      #   id: debug-secrets
-      #   run: |
-      #     echo "inputs.SECRETS_JSON ${{ inputs.SECRETS_JSON }}"
-      #     echo "===="
-      #     echo "secrets.SECRETS_JSON ${{ secrets.SECRETS_JSON }}"
-
-      # - name: "🧩 Parse Secrets"
-      #   id: parse-secrets
-      #   # uses: favedom-dev/github-reusable-workflow/.github/actions/parse-secrets@v2
-      #   uses: favedom-dev/github-reusable-workflow/.github/actions/parse-secrets@FAN-6956-secrets
-      #   with:
-      #     secrets-json: ${{ secrets.SECRETS_JSON }}
 
       - name: "🔐 Get Secrets"
         # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
@@ -285,8 +261,6 @@ jobs:
         run: |
           MVN_ARGS_SECRETS=""
           echo "inputs.secrets-to-fetch : $SECRETS_TO_FETCH"
-          # debug
-          env | sort | grep '^MVN_ARGS__'
 
           if [ -n "${SECRETS_TO_FETCH}" ]; then
             # Remove possible newlines and extra whitespace
@@ -303,11 +277,9 @@ jobs:
               if [[ "${secret_key}" == MVN_ARGS__* ]]; then
                 mvn_arg_key="${secret_key#MVN_ARGS__}"
                 echo "mvn_arg_key  : ${mvn_arg_key}"
-                echo "1 here"
-                echo "!secret_key : ${!secret_key}"
-                echo "2 here"
+
                 mvn_arg_value=$(echo "${!secret_key}")
-                echo "mvn_arg_value: ${mvn_arg_value}"
+                # echo "mvn_arg_value: ${mvn_arg_value}"
 
                 if [[ -z "$MVN_ARGS_SECRETS" ]]; then
                   MVN_ARGS_SECRETS="-D${mvn_arg_key}=${mvn_arg_value}"
@@ -323,7 +295,6 @@ jobs:
           echo "MVN_ARGS_SECRETS : ${MVN_ARGS_SECRETS}"
           echo "MVN_ARGS_SECRETS=${MVN_ARGS_SECRETS}" >> $GITHUB_OUTPUT
 
-
       - name: "🧰 Set up gh cli"
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
         if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
@@ -336,9 +307,6 @@ jobs:
         with:
           platforms: ${{ inputs.PLATFORMS }}
 
-      - name: "☁️ Checkout repository"
-        uses: actions/checkout@v4
-
       - name: "🔑 Google Auth Token"
         id: auth-gcp-token
         uses: 'google-github-actions/auth@v2'
@@ -348,13 +316,6 @@ jobs:
           service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
           create_credentials_file: ${{ inputs.CREATE_CREDENTIALS_FILE }}
           export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
-
-      # - name: "🔐 Set up secrets"
-      #   id: 'secrets'
-      #   uses: 'google-github-actions/get-secretmanager-secrets@v2'
-      #   with:
-      #     secrets: |-
-      #       GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
 
       - name: "🗝️ Google Auth JSON Key"
         id: auth-gcp-key
