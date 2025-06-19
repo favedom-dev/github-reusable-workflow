@@ -49,6 +49,17 @@ outputs:
 runs:
   using: 'composite'
   steps:
+
+    - name: 'Debug Inputs'
+      shell: bash
+      run: |
+        echo "WIF_PROVIDER: ${{ inputs.WIF_PROVIDER }}"
+        echo "WIF_SERVICE_ACCOUNT: ${{ inputs.WIF_SERVICE_ACCOUNT }}"
+        echo "CREATE_CREDENTIALS_FILE: ${{ inputs.CREATE_CREDENTIALS_FILE }}"
+        echo "EXPORT_ENVIRONMENT_VARIABLES: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}"
+        echo "secrets-to-fetch: ${{ inputs.secrets-to-fetch }}"
+        echo "default-secrets-to-fetch: ${{ inputs.default-secrets-to-fetch }}"
+
     - name: "Define secrets to fetch"
       id: define-secrets
       shell: bash
@@ -100,9 +111,24 @@ runs:
         export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
         cleanup_credentials: ${{ inputs.CLEANUP_CREDENTIALS }}
 
+    - name: 'Debug Auth Outputs'
+      shell: bash
+      run: |
+        echo "Access Token: ${{ steps.auth-gcp-token.outputs.access_token }}"
+        echo "Credentials File Path: ${{ steps.auth-gcp-token.outputs.credentials_file_path }}"
+        if [ -z "${{ steps.auth-gcp-token.outputs.access_token }}" ]; then
+          echo "Error: Access token is empty"
+          exit 1
+        fi
+
     - name: "🤫 Get Secrets"
       id: get-secrets
       uses: 'google-github-actions/get-secretmanager-secrets@v2'
       with:
         secrets: ${{ steps.define-secrets.outputs.combined-secrets }}
         export_to_environment: 'true'
+
+    - name: 'Debug Secrets Outputs'
+      shell: bash
+      run: |
+        echo "Secrets Fetched: ${{ steps.get-secrets.outputs.secrets-fetched }}"

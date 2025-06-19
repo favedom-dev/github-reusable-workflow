@@ -332,6 +332,8 @@ jobs:
       - name: "Debug Access Token"
         run: |
           echo "Access Token: ${{ steps.get-secrets.outputs.access-token }}"
+          echo "Credentials File Path: ${{ steps.get-secrets.outputs.credentials-file-path }}"
+          echo "Secrets Fetched: ${{ steps.get-secrets.outputs.secrets-fetched }}"
 
       - name: "🔑 Docker Auth: GAR"
         if: ${{ !env.ACT }}
