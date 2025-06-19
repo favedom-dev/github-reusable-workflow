@@ -153,10 +153,6 @@ on:  # yamllint disable-line rule:truthy
 
     secrets:
 
-      # SECRETS_JSON:
-      #   description: "secrets JSON"
-      #   required: false
-
       WIF_PROVIDER:
         description: "Workload Identity Federation Provider"
         required: true
@@ -165,16 +161,7 @@ on:  # yamllint disable-line rule:truthy
         description: "Workload Identity Federation Service Account"
         required: true
 
-      # GH_TOKEN:
-      #   description: "GitHub token"
-      #   # required: true
-      #   required: false
-
       # GCP_JSON_KEY:
-      #   required: false
-
-      # MVN_ARGS_SECRETS:
-      #   description: "Maven args that contain secrets"
       #   required: false
 
       # SHIFTLEFT_ACCESS_TOKEN:
