@@ -303,11 +303,13 @@ jobs:
               if [[ "$secret_key" == MVN_ARGS-* ]]; then
                 mvn_arg_key="${secret_key#MVN_ARGS-}"
                 echo "mvn_arg_key  : ${mvn_arg_key}"
+                mvn_arg_value=$(echo ${!secret_key})
+                echo "mvn_arg_value: ${mvn_arg_value}"
 
                 if [[ -z "$MVN_ARGS_SECRETS" ]]; then
-                  MVN_ARGS_SECRETS="-D${mvn_arg_key}=$(echo ${!secret_key})"
+                  MVN_ARGS_SECRETS="-D${mvn_arg_key}=${mvn_arg_value}"
                 else
-                  MVN_ARGS_SECRETS="${MVN_ARGS_SECRETS} -D${mvn_arg_key}=$(echo ${!secret_key})"
+                  MVN_ARGS_SECRETS="${MVN_ARGS_SECRETS} -D${mvn_arg_key}=${mvn_arg_value}"
                 fi
               else
                 echo "Variable does NOT start with MVN_ARGS-"
