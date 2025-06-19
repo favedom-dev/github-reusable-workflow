@@ -285,6 +285,8 @@ jobs:
         run: |
           MVN_ARGS_SECRETS=""
           echo "inputs.secrets-to-fetch : $SECRETS_TO_FETCH"
+          # debug
+          env | sort
 
           if [ -n "${SECRETS_TO_FETCH}" ]; then
             # Remove possible newlines and extra whitespace
@@ -315,8 +317,7 @@ jobs:
 
           echo "MVN_ARGS_SECRETS : ${MVN_ARGS_SECRETS}"
           echo "MVN_ARGS_SECRETS=${MVN_ARGS_SECRETS}" >> $GITHUB_OUTPUT
-          # debug
-          env | sort
+
 
       - name: "🧰 Set up gh cli"
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
