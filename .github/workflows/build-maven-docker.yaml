@@ -286,7 +286,7 @@ jobs:
           MVN_ARGS_SECRETS=""
           echo "inputs.secrets-to-fetch : $SECRETS_TO_FETCH"
           # debug
-          env | sort | grep '^MVN_ARGS-'
+          env | sort | grep '^MVN_ARGS__'
 
           if [ -n "${SECRETS_TO_FETCH}" ]; then
             # Remove possible newlines and extra whitespace
@@ -300,8 +300,8 @@ jobs:
               echo "secret_key   : ${secret_key}"
               echo "secret_value : ${secret_value}"
 
-              if [[ "$secret_key" == MVN_ARGS-* ]]; then
-                mvn_arg_key="${secret_key#MVN_ARGS-}"
+              if [[ "${secret_key}" == MVN_ARGS__* ]]; then
+                mvn_arg_key="${secret_key#MVN_ARGS__}"
                 echo "mvn_arg_key  : ${mvn_arg_key}"
                 echo "1 here"
                 echo "!secret_key : ${!secret_key}"
@@ -315,7 +315,7 @@ jobs:
                   MVN_ARGS_SECRETS="${MVN_ARGS_SECRETS} -D${mvn_arg_key}=${mvn_arg_value}"
                 fi
               else
-                echo "Variable does NOT start with MVN_ARGS-"
+                echo "Variable does NOT start with MVN_ARGS__"
               fi
             done
           fi
