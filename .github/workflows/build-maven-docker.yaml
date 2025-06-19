@@ -307,15 +307,15 @@ jobs:
         with:
           platforms: ${{ inputs.PLATFORMS }}
 
-      - name: "🔑 Google Auth Token"
-        id: auth-gcp-token
-        uses: 'google-github-actions/auth@v2'
-        with:
-          token_format: 'access_token'
-          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
-          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-          create_credentials_file: ${{ inputs.CREATE_CREDENTIALS_FILE }}
-          export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
+      # - name: "🔑 Google Auth Token"
+      #   id: auth-gcp-token
+      #   uses: 'google-github-actions/auth@v2'
+      #   with:
+      #     token_format: 'access_token'
+      #     workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
+      #     service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
+      #     create_credentials_file: ${{ inputs.CREATE_CREDENTIALS_FILE }}
+      #     export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
 
       - name: "🗝️ Google Auth JSON Key"
         id: auth-gcp-key
