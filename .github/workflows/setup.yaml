@@ -1,0 +1,124 @@
+name: Setup
+
+on:
+  workflow_call:
+
+    inputs:
+      # Inputs from setup-app.yaml
+      OVERRIDE_NAME:
+        required: false
+        type: string
+      OVERRIDE_PREVIEW_NAMESPACE:
+        required: false
+        type: string
+      USE_REPO_NAME_PREVIEW_NAMESPACE:
+        default: false
+        required: false
+        type: boolean
+      IS_STACKHAWK_READY:
+        default: true
+        required: false
+        type: boolean
+      STACKHAWK_DIRECTORY:
+        default: 'stackhawk'
+        required: false
+        type: string
+      STACKHAWK_TMPL_YML:
+        default: 'stackhawk-tmpl.yml'
+        required: false
+        type: string
+      IS_FRONTEND:
+        default: false
+        required: false
+        type: boolean
+      IS_MONOREPO:
+        default: false
+        required: false
+        type: boolean
+      # Inputs from repo-version.yaml
+      MONOREPO_APP:
+        default: ''
+        required: false
+        type: string
+      INCREMENT_SCRIPT_NAME:
+        default: 'auto_increment_version.sh'
+        required: false
+        type: string
+      SCRIPT_GIT_BRANCH:
+        default: 'master'
+        required: false
+        type: string
+      SCRIPTS_DOWNLOAD_BASE_URL:
+        default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
+        required: false
+        type: string
+      # Common input
+      GH_RUNS_ON:
+        default: 'ubuntu-latest'
+        required: false
+        type: string
+    secrets:
+      WIF_PROVIDER:
+        description: "Workload Identity Federation Provider"
+        required: true
+      WIF_SERVICE_ACCOUNT:
+        description: "Workload Identity Federation Service Account"
+        required: true
+
+    outputs:
+      # Outputs from setup-app.yaml
+      NAME:
+        description: "App/Service name"
+        value: ${{ jobs.setup.outputs.NAME }}
+      PREVIEW_NAMESPACE:
+        description: "Preview namespace"
+        value: ${{ jobs.setup.outputs.PREVIEW_NAMESPACE }}
+      IS_STACKHAWK_READY:
+        description: "Is Stackhawk ready"
+        value: ${{ jobs.setup.outputs.IS_STACKHAWK_READY }}
+      STACKHAWK_DIRECTORY:
+        description: "Stackhawk directory"
+        value: ${{ jobs.setup.outputs.STACKHAWK_DIRECTORY }}
+      IS_FRONTEND:
+        description: "Is frontend"
+        value: ${{ jobs.setup.outputs.IS_FRONTEND }}
+      IS_MONOREPO:
+        description: "Is monorepo"
+        value: ${{ jobs.setup.outputs.IS_MONOREPO }}
+      # Outputs from repo-version.yaml
+      version:
+        description: "Repo Version"
+        value: ${{ jobs.version.outputs.version }}
+      tag:
+        description: "Repo Tag"
+        value: ${{ jobs.version.outputs.tag }}
+      build-version:
+        description: "Build Version"
+        value: ${{ jobs.version.outputs.build-version }}
+
+jobs:
+  setup:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-app.yaml@v2
+    with:
+      OVERRIDE_NAME: ${{ inputs.OVERRIDE_NAME }}
+      OVERRIDE_PREVIEW_NAMESPACE: ${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
+      USE_REPO_NAME_PREVIEW_NAMESPACE: ${{ inputs.USE_REPO_NAME_PREVIEW_NAMESPACE }}
+      IS_STACKHAWK_READY: ${{ inputs.IS_STACKHAWK_READY }}
+      STACKHAWK_DIRECTORY: ${{ inputs.STACKHAWK_DIRECTORY }}
+      STACKHAWK_TMPL_YML: ${{ inputs.STACKHAWK_TMPL_YML }}
+      IS_FRONTEND: ${{ inputs.IS_FRONTEND }}
+      IS_MONOREPO: ${{ inputs.IS_MONOREPO }}
+      GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
+    secrets: inherit
+
+  version:
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@FAN-6956-secrets
+    with:
+      MONOREPO_APP: ${{ inputs.MONOREPO_APP }}
+      INCREMENT_SCRIPT_NAME: ${{ inputs.INCREMENT_SCRIPT_NAME }}
+      SCRIPT_GIT_BRANCH: ${{ inputs.SCRIPT_GIT_BRANCH }}
+      SCRIPTS_DOWNLOAD_BASE_URL: ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}
+      GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
+    secrets:
+      WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+      WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
