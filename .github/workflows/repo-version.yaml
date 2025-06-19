@@ -28,9 +28,9 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
-    secrets:
-      GH_TOKEN:
-        required: true
+    # secrets:
+    #   GH_TOKEN:
+    #     required: true
 
     outputs:
       version:
@@ -72,6 +72,16 @@ jobs:
         if: github.event_name != 'pull_request'
         with:
           fetch-depth: 0
+
+      - name: "🔐 Get Secrets"
+        # TODO
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@FAN-6956-secrets
+        id: get-secrets
+        with:
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          SECRETS_TO_FETCH: "GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD"
 
       - name: "⬇️ Get reusable files"
         uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
