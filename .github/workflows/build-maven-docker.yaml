@@ -285,11 +285,13 @@ jobs:
         run: |
           MVN_ARGS_SECRETS=""
           echo "inputs.secrets-to-fetch : ${{ inputs.secrets-to-fetch }}"
+
           if [ -n "${SECRETS_TO_FETCH}" ]; then
-            # IFS=',' read -ra SECRETS <<< "${{ inputs.secrets-to-fetch }}"
+
             IFS=',' read -ra SECRETS <<< "${SECRETS_TO_FETCH}"
             for secret in "${SECRETS[@]}"; do
-              secret_name=$(echo "$secret" | cut -d':' -f1)
+
+              secret_name=$(echo "${secret}" | cut -d':' -f1)
               echo "secret_name  : ${secret_name}"
 
               if [[ "$var" == MVN_ARGS-* ]]; then
