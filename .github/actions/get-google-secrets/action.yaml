@@ -36,11 +36,11 @@ inputs:
 outputs:
   access-token:
     description: 'Access token (if token-format is access_token)'
-    value: ${{ steps.auth.outputs.access-token }}
+    value: ${{ steps.auth-gcp-token.outputs.access-token }}
 
   credentials-file-path:
     description: 'Path to credentials file'
-    value: ${{ steps.auth.outputs.credentials-file-path }}
+    value: ${{ steps.auth-gcp-token.outputs.credentials-file-path }}
 
   secrets-fetched:
     description: 'List of secret names that were fetched'
