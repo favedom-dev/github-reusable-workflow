@@ -25,11 +25,11 @@ inputs:
     default: 'false'
     required: false
 
-  secrets-to-fetch:
+  SECRETS_TO_FETCH:
     description: 'Secrets to fetch from Google Secret Manager (format: secret-name:projects/PROJECT_ID/secrets/SECRET_NAME)'
     required: true
 
-  default-secrets-to-fetch:
+  DEFAULT_SECRETS_TO_FETCH:
     description: 'Secrets to fetch from Google Secret Manager (format: secret-name:projects/PROJECT_ID/secrets/SECRET_NAME)'
     required: true
 
@@ -44,7 +44,7 @@ outputs:
 
   secrets-fetched:
     description: 'List of secret names that were fetched'
-    value: ${{ steps.get-secrets.outputs.secrets-fetched }}
+    value: ${{ steps.fetch-secrets.outputs.secrets-fetched }}
 
 runs:
   using: 'composite'
@@ -57,15 +57,15 @@ runs:
         echo "WIF_SERVICE_ACCOUNT: ${{ inputs.WIF_SERVICE_ACCOUNT }}"
         echo "CREATE_CREDENTIALS_FILE: ${{ inputs.CREATE_CREDENTIALS_FILE }}"
         echo "EXPORT_ENVIRONMENT_VARIABLES: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}"
-        echo "secrets-to-fetch: ${{ inputs.secrets-to-fetch }}"
-        echo "default-secrets-to-fetch: ${{ inputs.default-secrets-to-fetch }}"
+        echo "SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}"
+        echo "DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}"
 
     - name: "Define secrets to fetch"
       id: define-secrets
       shell: bash
       env:
-        DEFAULT_SECRETS_TO_FETCH: '${{ inputs.default-secrets-to-fetch }}'
-        SECRETS_TO_FETCH: '${{ inputs.secrets-to-fetch }}'
+        DEFAULT_SECRETS_TO_FETCH: '${{ inputs.DEFAULT_SECRETS_TO_FETCH }}'
+        SECRETS_TO_FETCH: '${{ inputs.SECRETS_TO_FETCH }}'
       run: |
         echo "DEFAULT_SECRETS_TO_FETCH : ${DEFAULT_SECRETS_TO_FETCH}"
         echo "SECRETS_TO_FETCH         : ${SECRETS_TO_FETCH}"
@@ -74,31 +74,31 @@ runs:
         combined_secrets=""
 
         # Normalize secrets: remove newlines and trailing commas
-        normalized_default_secrets=$(echo "$DEFAULT_SECRETS_TO_FETCH" | tr -d '\n' | sed 's/,$//')
-        normalized_secrets_to_fetch=$(echo "$SECRETS_TO_FETCH" | tr -d '\n' | sed 's/,$//')
+        normalized_default_secrets=$(echo "${DEFAULT_SECRETS_TO_FETCH}" | tr -d '\n' | sed 's/,$//')
+        normalized_secrets_to_fetch=$(echo "${SECRETS_TO_FETCH}" | tr -d '\n' | sed 's/,$//')
 
         # Combine secrets
         if [ -n "$normalized_default_secrets" ]; then
-          combined_secrets="$normalized_default_secrets"
+          combined_secrets="${normalized_default_secrets}"
         fi
 
-        if [ -n "$normalized_secrets_to_fetch" ]; then
-          if [ -n "$combined_secrets" ]; then
-            combined_secrets="$combined_secrets,$normalized_secrets_to_fetch"
+        if [ -n "${normalized_secrets_to_fetch}" ]; then
+          if [ -n "${combined_secrets}" ]; then
+            combined_secrets="${combined_secrets},${normalized_secrets_to_fetch}"
           else
-            combined_secrets="$normalized_secrets_to_fetch"
+            combined_secrets="${normalized_secrets_to_fetch}"
           fi
         fi
 
         # If no secrets are provided, log a message
-        if [ -z "$combined_secrets" ]; then
+        if [ -z "${combined_secrets}" ]; then
           echo "No secrets provided to fetch."
           combined_secrets=""
         fi
 
         echo "combined_secrets : ${combined_secrets}"
-        # Set the output for use in the get-secrets step
-        echo "combined-secrets=$combined_secrets" >> $GITHUB_OUTPUT
+        # Set the output for use in the fetch-secrets step
+        echo "combined-secrets=${combined_secrets}" >> $GITHUB_OUTPUT
 
     - name: "🔑 Google Auth Token"
       id: auth-gcp-token
@@ -121,8 +121,8 @@ runs:
           exit 1
         fi
 
-    - name: "🤫 Get Secrets"
-      id: get-secrets
+    - name: "🤫 Fetch Secrets"
+      id: fetch-secrets
       uses: 'google-github-actions/get-secretmanager-secrets@v2'
       with:
         secrets: ${{ steps.define-secrets.outputs.combined-secrets }}
@@ -131,4 +131,4 @@ runs:
     - name: 'Debug Secrets Outputs'
       shell: bash
       run: |
-        echo "Secrets Fetched: ${{ steps.get-secrets.outputs.secrets-fetched }}"
+        echo "Secrets Fetched: ${{ steps.fetch-secrets.outputs.secrets-fetched }}"

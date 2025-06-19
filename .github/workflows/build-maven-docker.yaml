@@ -13,12 +13,12 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
 
-      secrets-to-fetch:
+      SECRETS_TO_FETCH:
         description: "Secrets to fetch from Google Secret Manager"
         required: false
         type: string
 
-      default-secrets-to-fetch:
+      DEFAULT_SECRETS_TO_FETCH:
         description: "Default secrets to fetch from Google Secret Manager"
         required: false
         type: string
@@ -252,16 +252,16 @@ jobs:
         with:
           WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
           WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
-          secrets-to-fetch: ${{ inputs.secrets-to-fetch }}
-          default-secrets-to-fetch: ${{ inputs.default-secrets-to-fetch }}
+          SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
+          DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
 
       - name: "⚙️ Set MVN_ARGS_SECRETS"
         id: set-mvn-args-secrets
         env:
-          SECRETS_TO_FETCH: '${{ inputs.secrets-to-fetch }}'
+          SECRETS_TO_FETCH: '${{ inputs.SECRETS_TO_FETCH }}'
         run: |
           MVN_ARGS_SECRETS=""
-          echo "inputs.secrets-to-fetch : $SECRETS_TO_FETCH"
+          echo "inputs.SECRETS_TO_FETCH : $SECRETS_TO_FETCH"
 
           if [ -n "${SECRETS_TO_FETCH}" ]; then
             # Remove possible newlines and extra whitespace
