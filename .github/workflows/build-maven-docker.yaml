@@ -281,15 +281,13 @@ jobs:
       - name: "⚙️ Set MVN_ARGS_SECRETS"
         id: set-mvn-args-secrets
         env:
-          # SECRETS_TO_FETCH: '${{ inputs.secrets-to-fetch }}'
-          SECRETS_TO_FETCH: '${{ steps.set-mvn-args-secrets.outputs.MVN_ARGS_SECRETS }}'
+          SECRETS_TO_FETCH: '${{ inputs.secrets-to-fetch }}'
         run: |
-          MVN_ARGS_SECRETS=
+          MVN_ARGS_SECRETS=""
           echo "inputs.secrets-to-fetch : ${{ inputs.secrets-to-fetch }}"
-          echo "steps.set-mvn-args-secrets.outputs.MVN_ARGS_SECRETS : ${{ steps.set-mvn-args-secrets.outputs.MVN_ARGS_SECRETS }}"
           if [ -n "${SECRETS_TO_FETCH}" ]; then
             # IFS=',' read -ra SECRETS <<< "${{ inputs.secrets-to-fetch }}"
-            IFS=',' read -ra SECRETS <<< "${{ steps.set-mvn-args-secrets.outputs.MVN_ARGS_SECRETS }}"
+            IFS=',' read -ra SECRETS <<< "${SECRETS_TO_FETCH}"
             for secret in "${SECRETS[@]}"; do
               secret_name=$(echo "$secret" | cut -d':' -f1)
               echo "secret_name  : ${secret_name}"
