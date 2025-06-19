@@ -58,6 +58,9 @@ jobs:
 
   repo-version:
     runs-on: ${{ inputs.GH_RUNS_ON }}
+    permissions:
+      id-token: write
+      contents: read
     env:
       GH_TOKEN: ${{ secrets.GH_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
