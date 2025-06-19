@@ -303,7 +303,10 @@ jobs:
               if [[ "$secret_key" == MVN_ARGS-* ]]; then
                 mvn_arg_key="${secret_key#MVN_ARGS-}"
                 echo "mvn_arg_key  : ${mvn_arg_key}"
-                mvn_arg_value=$(echo ${!secret_key})
+                echo "1 here"
+                echo "!secret_key : ${!secret_key}"
+                echo "2 here"
+                mvn_arg_value=$(echo "${!secret_key}")
                 echo "mvn_arg_value: ${mvn_arg_value}"
 
                 if [[ -z "$MVN_ARGS_SECRETS" ]]; then
