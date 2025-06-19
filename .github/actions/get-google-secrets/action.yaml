@@ -83,4 +83,4 @@ runs:
       uses: 'google-github-actions/get-secretmanager-secrets@v2'
       with:
         secrets: ${{ steps.define-secrets.outputs.combined-secrets }}
-        export-to-environment: 'true'
+        export_to_environment: 'true'

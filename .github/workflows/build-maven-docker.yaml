@@ -315,6 +315,8 @@ jobs:
 
           echo "MVN_ARGS_SECRETS : ${MVN_ARGS_SECRETS}"
           echo "MVN_ARGS_SECRETS=${MVN_ARGS_SECRETS}" >> $GITHUB_OUTPUT
+          # debug
+          env | sort
 
       - name: "🧰 Set up gh cli"
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
