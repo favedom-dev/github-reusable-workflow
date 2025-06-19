@@ -276,7 +276,6 @@ jobs:
           GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
           GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
 
-
       - name: "☁️ Checkout repository ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}"
         uses: actions/checkout@v4
         with:
