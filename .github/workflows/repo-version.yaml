@@ -28,7 +28,16 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
-    # secrets:
+    secrets:
+
+      WIF_PROVIDER:
+        description: "Workload Identity Federation Provider"
+        required: true
+
+      WIF_SERVICE_ACCOUNT:
+        description: "Workload Identity Federation Service Account"
+        required: true
+
     #   GH_TOKEN:
     #     required: true
 
