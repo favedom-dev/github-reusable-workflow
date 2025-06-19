@@ -23,7 +23,8 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
         default: |
-          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
+          SHIFTLEFT_ACCESS_TOKEN:projects/1054075584205/secrets/cicd_SHIFTLEFT_ACCESS_TOKEN
 
       FILE_DOWNLOAD_BASE_URL:
         default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
