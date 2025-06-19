@@ -286,7 +286,7 @@ jobs:
           MVN_ARGS_SECRETS=""
           echo "inputs.secrets-to-fetch : $SECRETS_TO_FETCH"
           # debug
-          env | sort
+          env | sort | grep '^MVN_ARGS-'
 
           if [ -n "${SECRETS_TO_FETCH}" ]; then
             # Remove possible newlines and extra whitespace
