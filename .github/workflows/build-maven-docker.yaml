@@ -248,6 +248,7 @@ jobs:
       - name: "🔐 Get Secrets"
         # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
         uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@FAN-6956-secrets
+        id: get-secrets
         with:
           WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
           WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
@@ -334,7 +335,8 @@ jobs:
         uses: 'docker/login-action@v3'
         with:
           username: 'oauth2accesstoken'
-          password: '${{ steps.auth-gcp-token.outputs.access_token }}'
+          # password: '${{ steps.auth-gcp-token.outputs.access_token }}'
+          password: ${{ steps.get-secrets.outputs.access-token }}
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
       - name: "⚙️ Set up JDK ${{ inputs.JDK_DISTRIBUTION }} ${{ inputs.JDK_VERSION }}"
