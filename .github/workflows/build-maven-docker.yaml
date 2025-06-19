@@ -278,42 +278,6 @@ jobs:
           secrets-to-fetch: ${{ inputs.secrets-to-fetch }}
           default-secrets-to-fetch: ${{ inputs.default-secrets-to-fetch }}
 
-      # - name: "⚙️ Set MVN_ARGS_SECRETS"
-      #   id: set-mvn-args-secrets
-      #   env:
-      #     SECRETS_TO_FETCH: '${{ inputs.secrets-to-fetch }}'
-      #   run: |
-      #     MVN_ARGS_SECRETS=""
-      #     echo "inputs.secrets-to-fetch : ${{ inputs.secrets-to-fetch }}"
-
-      #     if [ -n "${SECRETS_TO_FETCH}" ]; then
-
-      #       IFS=',' read -ra SECRETS <<< "${SECRETS_TO_FETCH}"
-      #       for secret in "${SECRETS[@]}"; do
-
-      #         secret_name=$(echo "${secret}" | cut -d':' -f1)
-      #         echo "secret_name  : ${secret_name}"
-
-      #         if [[ "$var" == MVN_ARGS-* ]]; then
-      #           # Variable starts with MVN_ARGS-
-      #           echo "Variable starts with MVN_ARGS-"
-      #           mvn_arg_key="${var#MVN_ARGS-}"
-
-      #           if [[ -z "$MVN_ARGS_SECRETS" ]]; then
-      #             # MVN_ARGS_SECRETS is empty or unset
-      #             MVN_ARGS_SECRETS="-D${mvn_arg_key}=${!mvn_arg_key}"
-      #           else
-      #             # MVN_ARGS_SECRETS has a value
-      #             MVN_ARGS_SECRETS="${MVN_ARGS_SECRETS} -D${mvn_arg_key}=${!mvn_arg_key}"
-      #           fi
-      #         else
-      #           echo "Variable does NOT start with MVN_ARGS-"
-      #         fi
-      #       done
-      #     fi
-      #     echo "MVN_ARGS_SECRETS : ${MVN_ARGS_SECRETS}"
-      #     echo "MVN_ARGS_SECRETS=${MVN_ARGS_SECRETS}" >> $GITHUB_OUTPUT
-
       - name: "⚙️ Set MVN_ARGS_SECRETS"
         id: set-mvn-args-secrets
         env:
@@ -338,9 +302,9 @@ jobs:
                 mvn_arg_key="${secret_key#MVN_ARGS-}"
 
                 if [[ -z "$MVN_ARGS_SECRETS" ]]; then
-                  MVN_ARGS_SECRETS="-D${mvn_arg_key}=${secret_value}"
+                  MVN_ARGS_SECRETS="-D${mvn_arg_key}=${!mvn_arg_key}"
                 else
-                  MVN_ARGS_SECRETS="${MVN_ARGS_SECRETS} -D${mvn_arg_key}=${secret_value}"
+                  MVN_ARGS_SECRETS="${MVN_ARGS_SECRETS} -D${mvn_arg_key}=${!mvn_arg_key}"
                 fi
               else
                 echo "Variable does NOT start with MVN_ARGS-"
