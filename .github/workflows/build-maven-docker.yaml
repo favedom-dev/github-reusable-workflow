@@ -246,6 +246,7 @@ jobs:
         run: ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
 
       - name: "🔐 Get Secrets"
+        # TODO
         # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
         uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@FAN-6956-secrets
         id: get-secrets
@@ -308,16 +309,6 @@ jobs:
         with:
           platforms: ${{ inputs.PLATFORMS }}
 
-      # - name: "🔑 Google Auth Token"
-      #   id: auth-gcp-token
-      #   uses: 'google-github-actions/auth@v2'
-      #   with:
-      #     token_format: 'access_token'
-      #     workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
-      #     service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-      #     create_credentials_file: ${{ inputs.CREATE_CREDENTIALS_FILE }}
-      #     export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
-
       - name: "🗝️ Google Auth JSON Key"
         id: auth-gcp-key
         if: inputs.RUN_GCP_JSON_KEY
@@ -328,12 +319,6 @@ jobs:
       # https://github.com/google-github-actions/setup-gcloud
       # - name: "🧰 Set up Cloud SDK"
       #   uses: 'google-github-actions/setup-gcloud@v0'
-
-      - name: "Debug Access Token"
-        run: |
-          echo "Access Token: ${{ steps.get-secrets.outputs.access-token }}"
-          echo "Credentials File Path: ${{ steps.get-secrets.outputs.credentials-file-path }}"
-          echo "Secrets Fetched: ${{ steps.get-secrets.outputs.secrets-fetched }}"
 
       - name: "🔑 Docker Auth: GAR"
         if: ${{ !env.ACT }}
