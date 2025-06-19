@@ -329,6 +329,10 @@ jobs:
       # - name: "🧰 Set up Cloud SDK"
       #   uses: 'google-github-actions/setup-gcloud@v0'
 
+      - name: "Debug Access Token"
+        run: |
+          echo "Access Token: ${{ steps.get-secrets.outputs.access-token }}"
+
       - name: "🔑 Docker Auth: GAR"
         if: ${{ !env.ACT }}
         id: auth-docker
