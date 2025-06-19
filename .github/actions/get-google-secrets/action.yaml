@@ -5,12 +5,25 @@ inputs:
   WIF_PROVIDER:
     description: 'Workload Identity Federation Provider'
     required: true
+
   WIF_SERVICE_ACCOUNT:
     description: 'Workload Identity Federation Service Account'
     required: true
+
+  CREATE_CREDENTIALS_FILE:
+    description: "Generate a credentials file"
+    default: 'true'
+    required: false
+
+  EXPORT_ENVIRONMENT_VARIABLES:
+    description: "Export common environment variables"
+    default: 'true'
+    required: false
+
   secrets-to-fetch:
     description: 'Secrets to fetch from Google Secret Manager (format: secret-name:projects/PROJECT_ID/secrets/SECRET_NAME)'
     required: true
+
   default-secrets-to-fetch:
     description: 'Secrets to fetch from Google Secret Manager (format: secret-name:projects/PROJECT_ID/secrets/SECRET_NAME)'
     required: true
@@ -19,9 +32,11 @@ outputs:
   access-token:
     description: 'Access token (if token-format is access_token)'
     value: ${{ steps.auth.outputs.access-token }}
+
   credentials-file-path:
     description: 'Path to credentials file'
     value: ${{ steps.auth.outputs.credentials-file-path }}
+
   secrets-fetched:
     description: 'List of secret names that were fetched'
     value: ${{ steps.get-secrets.outputs.secrets-fetched }}
@@ -69,7 +84,6 @@ runs:
         # Set the output for use in the get-secrets step
         echo "combined-secrets=$combined_secrets" >> $GITHUB_OUTPUT
 
-
     - name: "🔑 Google Auth Token"
       id: auth-gcp-token
       uses: 'google-github-actions/auth@v2'
@@ -77,6 +91,8 @@ runs:
         token_format: 'access_token'
         workload_identity_provider: '${{ inputs.WIF_PROVIDER }}'
         service_account: '${{ inputs.WIF_SERVICE_ACCOUNT }}'
+        create_credentials_file: ${{ inputs.CREATE_CREDENTIALS_FILE }}
+        export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
 
     - name: "🤫 Get Secrets"
       id: get-secrets
