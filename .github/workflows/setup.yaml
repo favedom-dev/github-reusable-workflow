@@ -126,9 +126,8 @@ jobs:
             MONOREPO_APP=${{ needs.setup.outputs.NAME }}
           fi
           echo "MONOREPO_APP : ${MONOREPO_APP}"
-          echo "MONOREPO_APP=$MONOREPO_APP" >> $MONOREPO_APP
-          echo "MONOREPO_APP=$MONOREPO_APP" >> $MONOREPO_APP
-
+          echo "MONOREPO_APP=$MONOREPO_APP" >> $GITHUB_ENV
+          echo "MONOREPO_APP=$MONOREPO_APP" >> $GITHUB_OUTPUT
 
   version:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@FAN-6956-secrets
