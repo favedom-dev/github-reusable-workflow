@@ -24,7 +24,6 @@ on:  # yamllint disable-line rule:truthy
         type: string
         default: |
           GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
-          GH_TOKEN2:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
           SLACK_TRIVY_WEBHOOK_URL:projects/1054075584205/secrets/cicd_SLACK_TRIVY_WEBHOOK_URL,
           SLACK_DEVOPS_TOKEN:projects/1054075584205/secrets/cicd_SLACK_DEVOPS_TOKEN
 
@@ -299,7 +298,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           # token: ${{ steps.get-secrets.outputs.GH_TOKEN }}
-          token: ${{ env.GH_TOKEN2 }}
+          token: ${{ env.GH_TOKEN }}
           repository: ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}
           path: '${{ needs.trivy-setup.outputs.TRIVY_REPO_NAME }}'
 
@@ -453,8 +452,7 @@ jobs:
       - name: "☁️ Checkout repository ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}"
         uses: actions/checkout@v4
         with:
-          # token: ${{ needs.trivy-setup.outputs.GH_TOKEN }}
-          token: ${{ env.GH_TOKEN2 }}
+          token: ${{ env.GH_TOKEN }}
           repository: ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}
           path: '${{ needs.trivy-setup.outputs.TRIVY_REPO_NAME }}'
 
@@ -503,8 +501,7 @@ jobs:
         uses: slackapi/slack-github-action@v2.0.0
         with:
           errors: true
-          # webhook: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
-          webhook: ${{ needs.trivy-setup.outputs.SLACK_TRIVY_WEBHOOK_URL }}
+          webhook: ${{ env.SLACK_TRIVY_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
             text: "🚨 *Trivy Scan: ${{ inputs.NAME }} ${{ inputs.VERSION }} (${{ steps.setup-notification-variables.outputs.ARCH_LIST }})*"
