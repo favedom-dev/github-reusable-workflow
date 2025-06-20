@@ -24,6 +24,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
         default: |
           GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
+          GH_TOKEN2:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
           SLACK_TRIVY_WEBHOOK_URL:projects/1054075584205/secrets/cicd_SLACK_TRIVY_WEBHOOK_URL,
           SLACK_DEVOPS_TOKEN:projects/1054075584205/secrets/cicd_SLACK_DEVOPS_TOKEN
 
@@ -174,10 +175,6 @@ jobs:
       TRIVY_REPO_NAME: ${{ steps.setup-variables.outputs.TRIVY_REPO_NAME }}
       TRIVY_REPO_FULLNAME: ${{ steps.setup-variables.outputs.TRIVY_REPO_FULLNAME }}
       TRIVY_REPO_URL: ${{ steps.setup-variables.outputs.TRIVY_REPO_URL }}
-      ACCESS_TOKEN: ${{ steps.get-secrets.outputs.access-token }}
-      GH_TOKEN: ${{ steps.set-secrets.outputs.GH_TOKEN }}
-      SLACK_TRIVY_WEBHOOK_URL: ${{ steps.set-secrets.outputs.SLACK_TRIVY_WEBHOOK_URL }}
-      SLACK_DEVOPS_TOKEN: ${{ steps.set-secrets.outputs.SLACK_DEVOPS_TOKEN }}
     steps:
 
       # Not really used here to remove warning
@@ -244,31 +241,6 @@ jobs:
           echo "TRIVY_BASE_FILE=${TRIVY_BASE_FILE}" >> $GITHUB_ENV
           echo "TRIVY_BASE_FILE=${TRIVY_BASE_FILE}" >> $GITHUB_OUTPUT
 
-      - name: "🔐 Get Secrets"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@FAN-6956-secrets
-        id: get-secrets
-        with:
-          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
-          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
-          SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
-          DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
-
-      - name: "🤫 Set Secrets as Outputs"
-        id: set-secrets
-        shell: bash
-        run: |
-          set -x  # Enable debug mode to trace commands
-          echo "Debug: GH_TOKEN is set (length: ${#GH_TOKEN})"
-          echo "Debug: SLACK_TRIVY_WEBHOOK_URL is set (length: ${#SLACK_TRIVY_WEBHOOK_URL})"
-          echo "Debug: SLACK_DEVOPS_TOKEN is set (length: ${#SLACK_DEVOPS_TOKEN})"
-          echo "GH_TOKEN=${GH_TOKEN}" >> $GITHUB_OUTPUT
-          echo "SLACK_TRIVY_WEBHOOK_URL=${SLACK_TRIVY_WEBHOOK_URL}" >> $GITHUB_OUTPUT
-          echo "SLACK_DEVOPS_TOKEN=${SLACK_DEVOPS_TOKEN}" >> $GITHUB_OUTPUT
-          echo "Debug: Contents of GITHUB_OUTPUT"
-          cat $GITHUB_OUTPUT
-
   trivy-scan:
     needs: trivy-setup
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && inputs.RUN_PR == 'true')
@@ -306,16 +278,16 @@ jobs:
           echo "ARCH_TRIVY_LINK=$ARCH_TRIVY_LINK" >> $GITHUB_ENV
           echo "ARCH_TRIVY_LINK=$ARCH_TRIVY_LINK" >> $GITHUB_OUTPUT
 
-      # - name: "🔐 Get Secrets"
-      #   # TODO
-      #   # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
-      #   uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@FAN-6956-secrets
-      #   id: get-secrets
-      #   with:
-      #     WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
-      #     WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
-      #     SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
-      #     DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
+      - name: "🔐 Get Secrets"
+        # TODO
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@FAN-6956-secrets
+        id: get-secrets
+        with:
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
+          DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
 
       - name: "🔩 Git config"
         uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2
@@ -323,41 +295,11 @@ jobs:
           GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
           GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
 
-      - name: "🔍 Debug All trivy-setup Outputs"
-        shell: bash
-        run: |
-          set -x
-          echo "Dumping all needs.trivy-setup.outputs.*:"
-          echo "DOCKER_LOCATION: ${{ needs.trivy-setup.outputs.DOCKER_LOCATION }}"
-          echo "DOCKER_URL: ${{ needs.trivy-setup.outputs.DOCKER_URL }}"
-          echo "GHA_RUN_URL: ${{ needs.trivy-setup.outputs.GHA_RUN_URL }}"
-          echo "MATRIX_ARCH: ${{ needs.trivy-setup.outputs.MATRIX_ARCH }}"
-          echo "REPO_URL: ${{ needs.trivy-setup.outputs.REPO_URL }}"
-          echo "TRIVY_DIR: ${{ needs.trivy-setup.outputs.TRIVY_DIR }}"
-          echo "TRIVY_BASE_FILE: ${{ needs.trivy-setup.outputs.TRIVY_BASE_FILE }}"
-          echo "TRIVY_REPO_NAME: ${{ needs.trivy-setup.outputs.TRIVY_REPO_NAME }}"
-          echo "TRIVY_REPO_FULLNAME: ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}"
-          echo "TRIVY_REPO_URL: ${{ needs.trivy-setup.outputs.TRIVY_REPO_URL }}"
-          echo "ACCESS_TOKEN: $(if [ -n "${{ needs.trivy-setup.outputs.ACCESS_TOKEN }}" ]; then echo 'set (length: ${#{{ needs.trivy-setup.outputs.ACCESS_TOKEN }}})'; else echo 'NOT set'; fi)"
-          echo "GH_TOKEN: $(if [ -n "${{ needs.trivy-setup.outputs.GH_TOKEN }}" ]; then echo 'set (length: ${#{{ needs.trivy-setup.outputs.GH_TOKEN }}})'; else echo 'NOT set'; fi)"
-          echo "SLACK_TRIVY_WEBHOOK_URL: $(if [ -n "${{ needs.trivy-setup.outputs.SLACK_TRIVY_WEBHOOK_URL }}" ]; then echo 'set (length: ${#{{ needs.trivy-setup.outputs.SLACK_TRIVY_WEBHOOK_URL }}})'; else echo 'NOT set'; fi)"
-          echo "SLACK_DEVOPS_TOKEN: $(if [ -n "${{ needs.trivy-setup.outputs.SLACK_DEVOPS_TOKEN }}" ]; then echo 'set (length: ${#{{ needs.trivy-setup.outputs.SLACK_DEVOPS_TOKEN }}})'; else echo 'NOT set'; fi)"
-
-      # - name: "🔍 Debug GH_TOKEN"
-      #   shell: bash
-      #   run: |
-      #     set -x  # Enable debug mode to trace commands
-      #     if [ -n "${{ needs.trivy-setup.outputs.GH_TOKEN }}" ]; then
-      #       echo "GH_TOKEN output is set (length: ${#{{ needs.trivy-setup.outputs.GH_TOKEN }})"
-      #     else
-      #       echo "GH_TOKEN output is NOT set"
-      #       exit 1
-      #     fi
-
       - name: "☁️ Checkout repository ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}"
         uses: actions/checkout@v4
         with:
-          token: ${{ needs.trivy-setup.outputs.GH_TOKEN }}
+          # token: ${{ steps.get-secrets.outputs.GH_TOKEN }}
+          token: ${{ env.GH_TOKEN2 }}
           repository: ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}
           path: '${{ needs.trivy-setup.outputs.TRIVY_REPO_NAME }}'
 
@@ -366,8 +308,7 @@ jobs:
         uses: 'docker/login-action@v3'
         with:
           username: 'oauth2accesstoken'
-          # password: '${{ steps.auth-gcp-token.outputs.access_token }}'
-          password: '${{ needs.trivy-setup.outputs.ACCESS_TOKEN }}'
+          password: '${{ steps.get-secrets.outputs.access-token }}'
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
       - name: "🚀 Run Trivy vulnerability scanner: ${{ matrix.arch }}"
@@ -492,6 +433,17 @@ jobs:
     runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
 
+      - name: "🔐 Get Secrets"
+        # TODO
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@FAN-6956-secrets
+        id: get-secrets
+        with:
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
+          DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
+
       - name: "🔩 Git config"
         uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2
         with:
@@ -501,7 +453,8 @@ jobs:
       - name: "☁️ Checkout repository ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}"
         uses: actions/checkout@v4
         with:
-          token: ${{ needs.trivy-setup.outputs.GH_TOKEN }}
+          # token: ${{ needs.trivy-setup.outputs.GH_TOKEN }}
+          token: ${{ env.GH_TOKEN2 }}
           repository: ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}
           path: '${{ needs.trivy-setup.outputs.TRIVY_REPO_NAME }}'
 
