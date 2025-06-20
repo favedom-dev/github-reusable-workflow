@@ -325,15 +325,6 @@ jobs:
           ${{ inputs.MVN_ARGS }} \
           ${{ inputs.MVN_ARGS_EXTRA }}
 
-      # - name: "🔑 Docker Auth: GAR"
-      #   if: ${{ !env.ACT }}
-      #   id: auth-docker
-      #   uses: 'docker/login-action@v3'
-      #   with:
-      #     username: 'oauth2accesstoken'
-      #     password: ${{ steps.get-secrets.outputs.access-token }}
-      #     registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'
-
       - name: "🐳 Docker"
         # TODO
         # uses: favedom-dev/github-reusable-workflow/.github/actions/build-docker@v2
@@ -341,8 +332,8 @@ jobs:
         id: build-docker
         with:
           ACCESS_TOKEN: ${{ steps.get-secrets.outputs.access-token }}
-          APP_WORKING_DIR: ${{ inputs.APP_WORKING_DIR }}
           ARTIFACT_LINK_SCRIPT_NAME: ${{ env.ARTIFACT_LINK_SCRIPT_NAME }}
+          DOCKER_CONTEXT: ${{ inputs.APP_WORKING_DIR }}
           DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
           DOCKER_PUSH: ${{ steps.setup-variables.outputs.DOCKER_PUSH }}
           DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}

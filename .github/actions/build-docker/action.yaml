@@ -7,14 +7,14 @@ inputs:
     required: true
     description: "Google access token"
 
-  APP_WORKING_DIR:
-    default: '.'
-    required: false
-    description: "Application working directory"
-
   ARTIFACT_LINK_SCRIPT_NAME:
     required: true
     description: "Script to run that for Atifact links"
+
+  DOCKER_CONTEXT:
+    default: '.'
+    required: false
+    description: "Build's context is the set of files located in the specified PATH or URL"
 
   DOCKER_LOCATION:
     required: true
@@ -76,7 +76,7 @@ runs:
       id: docker-build
       if: ${{ !env.ACT }}
       with:
-        context: ${{ inputs.APP_WORKING_DIR }}
+        context: ${{ inputs.DOCKER_CONTEXT }}
         platforms: ${{ inputs.PLATFORMS }}
         push: ${{ inputs.DOCKER_PUSH }}
         tags: ${{ steps.docker-tags.outputs.tags }}
