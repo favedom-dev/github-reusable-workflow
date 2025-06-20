@@ -259,12 +259,15 @@ jobs:
         id: set-secrets
         shell: bash
         run: |
+          set -x  # Enable debug mode to trace commands
           echo "Debug: GH_TOKEN is set (length: ${#GH_TOKEN})"
           echo "Debug: SLACK_TRIVY_WEBHOOK_URL is set (length: ${#SLACK_TRIVY_WEBHOOK_URL})"
           echo "Debug: SLACK_DEVOPS_TOKEN is set (length: ${#SLACK_DEVOPS_TOKEN})"
           echo "GH_TOKEN=${GH_TOKEN}" >> $GITHUB_OUTPUT
           echo "SLACK_TRIVY_WEBHOOK_URL=${SLACK_TRIVY_WEBHOOK_URL}" >> $GITHUB_OUTPUT
-          echo "SLACK_DEVOPS_TOKEN=${SLACK_DEVOPS_TOKEN}" >> $GITHUB_OUTPUT
+          echo "SLACK_DEVOPS_TOKEN=${SLACK_DEVOPS_TOKEN}" >> $GITHUB_OUTPUT\
+          echo "Debug: Contents of GITHUB_OUTPUT"
+          cat $GITHUB_OUTPUT
 
   trivy-scan:
     needs: trivy-setup
@@ -320,15 +323,36 @@ jobs:
           GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
           GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
 
-      - name: "🔍 Debug GH_TOKEN"
+      - name: "🔍 Debug All trivy-setup Outputs"
         shell: bash
         run: |
-          if [ -n "${{ needs.trivy-setup.outputs.GH_TOKEN }}" ]; then
-            echo "GH_TOKEN output is set (length: ${#{{ needs.trivy-setup.outputs.GH_TOKEN }})"
-          else
-            echo "GH_TOKEN output is NOT set"
-            exit 1
-          fi
+          set -x
+          echo "Dumping all needs.trivy-setup.outputs.*:"
+          echo "DOCKER_LOCATION: ${{ needs.trivy-setup.outputs.DOCKER_LOCATION }}"
+          echo "DOCKER_URL: ${{ needs.trivy-setup.outputs.DOCKER_URL }}"
+          echo "GHA_RUN_URL: ${{ needs.trivy-setup.outputs.GHA_RUN_URL }}"
+          echo "MATRIX_ARCH: ${{ needs.trivy-setup.outputs.MATRIX_ARCH }}"
+          echo "REPO_URL: ${{ needs.trivy-setup.outputs.REPO_URL }}"
+          echo "TRIVY_DIR: ${{ needs.trivy-setup.outputs.TRIVY_DIR }}"
+          echo "TRIVY_BASE_FILE: ${{ needs.trivy-setup.outputs.TRIVY_BASE_FILE }}"
+          echo "TRIVY_REPO_NAME: ${{ needs.trivy-setup.outputs.TRIVY_REPO_NAME }}"
+          echo "TRIVY_REPO_FULLNAME: ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}"
+          echo "TRIVY_REPO_URL: ${{ needs.trivy-setup.outputs.TRIVY_REPO_URL }}"
+          echo "ACCESS_TOKEN: $(if [ -n "${{ needs.trivy-setup.outputs.ACCESS_TOKEN }}" ]; then echo 'set (length: ${#{{ needs.trivy-setup.outputs.ACCESS_TOKEN }}})'; else echo 'NOT set'; fi)"
+          echo "GH_TOKEN: $(if [ -n "${{ needs.trivy-setup.outputs.GH_TOKEN }}" ]; then echo 'set (length: ${#{{ needs.trivy-setup.outputs.GH_TOKEN }}})'; else echo 'NOT set'; fi)"
+          echo "SLACK_TRIVY_WEBHOOK_URL: $(if [ -n "${{ needs.trivy-setup.outputs.SLACK_TRIVY_WEBHOOK_URL }}" ]; then echo 'set (length: ${#{{ needs.trivy-setup.outputs.SLACK_TRIVY_WEBHOOK_URL }}})'; else echo 'NOT set'; fi)"
+          echo "SLACK_DEVOPS_TOKEN: $(if [ -n "${{ needs.trivy-setup.outputs.SLACK_DEVOPS_TOKEN }}" ]; then echo 'set (length: ${#{{ needs.trivy-setup.outputs.SLACK_DEVOPS_TOKEN }}})'; else echo 'NOT set'; fi)"
+
+      # - name: "🔍 Debug GH_TOKEN"
+      #   shell: bash
+      #   run: |
+      #     set -x  # Enable debug mode to trace commands
+      #     if [ -n "${{ needs.trivy-setup.outputs.GH_TOKEN }}" ]; then
+      #       echo "GH_TOKEN output is set (length: ${#{{ needs.trivy-setup.outputs.GH_TOKEN }})"
+      #     else
+      #       echo "GH_TOKEN output is NOT set"
+      #       exit 1
+      #     fi
 
       - name: "☁️ Checkout repository ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}"
         uses: actions/checkout@v4
