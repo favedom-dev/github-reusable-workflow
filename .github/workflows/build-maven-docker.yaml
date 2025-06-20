@@ -190,7 +190,7 @@ jobs:
       MVN_SETTINGS_SCRIPT_NAME: mvn-settings.xml.sh
       MVN_SETTINGS_FILE: settings.xml
     outputs:
-      ARTIFACT_URL: ${{ steps.artifact-url.outputs.ARTIFACT_URL }}
+      ARTIFACT_URL: ${{ steps.build-docker.outputs.ARTIFACT_URL }}
 
     steps:
 

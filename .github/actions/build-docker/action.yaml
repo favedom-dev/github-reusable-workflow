@@ -49,6 +49,11 @@ inputs:
     required: true
     description: "App Version"
 
+outputs:
+  ARTIFACT_URL:
+    description: "Artifcat URL to specific tag"
+    value: ${{ steps.artifact-url.outputs.ARTIFACT_URL }}
+
 runs:
   using: 'composite'
 
@@ -80,6 +85,9 @@ runs:
         platforms: ${{ inputs.PLATFORMS }}
         push: ${{ inputs.DOCKER_PUSH }}
         tags: ${{ steps.docker-tags.outputs.tags }}
+      # env:
+      #   # Pass GitHub token as an environment variable for secure authentication
+      #   GITHUB_TOKEN: ${{ env.GH_TOKEN }}
 
     - name: "🔗 Link to Container"
       if: inputs.DOCKER_PUSH == 'true'
