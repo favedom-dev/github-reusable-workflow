@@ -334,7 +334,7 @@ jobs:
       #     password: ${{ steps.get-secrets.outputs.access-token }}
       #     registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'
 
-      - name: "🧰 Set up build maven"
+      - name: "🐳 Docker"
         # TODO
         # uses: favedom-dev/github-reusable-workflow/.github/actions/build-docker@v2
         uses: favedom-dev/github-reusable-workflow/.github/actions/build-docker@FAN-6956-secrets
