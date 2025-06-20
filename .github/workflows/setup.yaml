@@ -111,10 +111,31 @@ jobs:
       GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
     secrets: inherit
 
+  monorepo:
+    runs-on: ${{ inputs.GH_RUNS_ON }}
+    needs: [setup]
+    outputs:
+      MONOREPO_APP: ${{ steps.monorepo-app.outputs.MONOREPO_APP }}
+    steps:
+      - name: "Monorepo App"
+        id: monorepo-app
+        run: |
+          if [ ${{ inputs.MONOREPO_APP }} ]; then
+            MONOREPO_APP=${{ inputs.MONOREPO_APP }}
+          else
+            MONOREPO_APP=${{ needs.setup.outputs.NAME }}
+          fi
+          echo "MONOREPO_APP : ${MONOREPO_APP}"
+          echo "MONOREPO_APP=$MONOREPO_APP" >> $MONOREPO_APP
+          echo "MONOREPO_APP=$MONOREPO_APP" >> $MONOREPO_APP
+
+
   version:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@FAN-6956-secrets
+    needs: [monorepo]
     with:
-      MONOREPO_APP: ${{ inputs.MONOREPO_APP }}
+      # MONOREPO_APP: ${{ inputs.MONOREPO_APP }}
+      MONOREPO_APP: ${{ needs.monorepo.outputs.MONOREPO_APP }}
       INCREMENT_SCRIPT_NAME: ${{ inputs.INCREMENT_SCRIPT_NAME }}
       SCRIPT_GIT_BRANCH: ${{ inputs.SCRIPT_GIT_BRANCH }}
       SCRIPTS_DOWNLOAD_BASE_URL: ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}
