@@ -297,16 +297,13 @@ jobs:
         with:
           platforms: ${{ inputs.PLATFORMS }}
 
-      - name: "🗝️ Google Auth JSON Key"
-        id: auth-gcp-key
-        if: inputs.RUN_GCP_JSON_KEY
-        uses: 'google-github-actions/auth@v2'
-        with:
-          credentials_json: '${{ secrets.GCP_JSON_KEY }}'
-
-      # https://github.com/google-github-actions/setup-gcloud
-      # - name: "🧰 Set up Cloud SDK"
-      #   uses: 'google-github-actions/setup-gcloud@v0'
+      # - name: "🗝️ Google Auth JSON Key"
+      #   id: auth-gcp-key
+      #   if: inputs.RUN_GCP_JSON_KEY
+      #   uses: 'google-github-actions/auth@v2'
+      #   with:
+      #     # credentials_json: '${{ secrets.GCP_JSON_KEY }}'
+      #     credentials_json: '${{ env.GCP_JSON_KEY }}'
 
       - name: "🔑 Docker Auth: GAR"
         if: ${{ !env.ACT }}
@@ -314,9 +311,8 @@ jobs:
         uses: 'docker/login-action@v3'
         with:
           username: 'oauth2accesstoken'
-          # password: '${{ steps.auth-gcp-token.outputs.access_token }}'
           password: ${{ steps.get-secrets.outputs.access-token }}
-          registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
+          registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'
 
       - name: "⚙️ Set up JDK ${{ inputs.JDK_DISTRIBUTION }} ${{ inputs.JDK_VERSION }}"
         uses: actions/setup-java@v4
@@ -350,14 +346,13 @@ jobs:
 
       - name: "🛠️ Build with Maven"
         working-directory: ${{ inputs.APP_WORKING_DIR }}
-        env:
-          GCP_ACCESS_TOKEN: '${{ steps.auth-gcp-token.outputs.access_token }}'
-          GCP_ACCESS_TOKEN_EXPIRATION: '${{ steps.auth-gcp-token.outputs.access_token_expiration }}'
+        # env:
+        #   GCP_ACCESS_TOKEN: '${{ steps.auth-gcp-token.outputs.access_token }}'
+        #   GCP_ACCESS_TOKEN_EXPIRATION: '${{ steps.auth-gcp-token.outputs.access_token_expiration }}'
         run: |
           echo "MVN_ARGS        : ${{ inputs.MVN_ARGS }}"
           echo "MVN_ENV_VARS    : ${{ inputs.MVN_ENV_VARS }}"
           echo "MVN_ARGS_EXTRA  : ${{ inputs.MVN_ARGS_EXTRA }}"
-          # echo "MVN_ARGS_SECRETS: ${{ secrets.MVN_ARGS_SECRETS }}"
           echo "MVN_ARGS_SECRETS: ${{ steps.set-mvn-args-secrets.outputs.MVN_ARGS_SECRETS }}"
           mvn -B \
           ${{ steps.set-mvn-args-secrets.outputs.MVN_ARGS_SECRETS }} \
@@ -368,12 +363,14 @@ jobs:
       - name: "⬇️ Download Qwiet CLI"
         uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2
         with:
-          shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+          # shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+          shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
 
       - name: "🔍 Qwiet Analyze with NextGen Static Analysis"
         uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@v2
         with:
-          shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+          # shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+          shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
           name: ${{ inputs.NAME }}
           vcs-prefix-correction: ${{ inputs.VCS_PREFIX_CORRECTION }}
           scan-jar: ${{ inputs.SCAN_JAR }}
@@ -401,7 +398,7 @@ jobs:
         if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
         id: artifact-url
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ env.GH_TOKEN }}
           ARTIFACT_DIGEST: ${{ steps.docker-build.outputs.digest }}
           # ARTIFACT_TYPE: docker
           ARTIFACT_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}

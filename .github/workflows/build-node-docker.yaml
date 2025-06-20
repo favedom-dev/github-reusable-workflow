@@ -250,22 +250,13 @@ jobs:
         with:
           platforms: ${{ inputs.PLATFORMS }}
 
-      - name: "🔑 Google Auth Token"
-        if: ${{ !env.ACT }}
-        id: auth-gcp-token
-        uses: 'google-github-actions/auth@v2'
-        with:
-          token_format: 'access_token'
-          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
-          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-
       - name: "🔑 Docker Auth"
         if: ${{ !env.ACT }}
         id: auth-docker
         uses: 'docker/login-action@v3'
         with:
           username: 'oauth2accesstoken'
-          password: '${{ steps.auth-gcp-token.outputs.access_token }}'
+          password: ${{ steps.get-secrets.outputs.access-token }}
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
       - name: "🔧 Set up node.js version: ${{ inputs.NODE_VERSION }}"
@@ -316,9 +307,11 @@ jobs:
 
       - name: "⚙️ Set up .npmrc"
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ env.NPM_TOKEN }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+          echo "//registry.npmjs.org/:_authToken=${{ env.NPM_TOKEN }}" > .npmrc
+          # echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
 
       - name: "🪛 ${{ inputs.INSTALL_NAME }}"
         if: inputs.INSTALL == true
@@ -367,7 +360,7 @@ jobs:
         if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
         id: artifact-url
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ env.GH_TOKEN }}
           ARTIFACT_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
           DOCKER_DIGEST: ${{ steps.docker-build.outputs.digest }}
           DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
