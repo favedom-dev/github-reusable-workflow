@@ -142,3 +142,4 @@ jobs:
           build-version: ${{ steps.set-version.outputs.build-version }}
           tag: ${{ steps.version.outputs.tag }}
           pr-version: ${{ steps.pr-version.outputs.version }}
+          monorepo-app: ${{ inputs.MONOREPO_APP }}
