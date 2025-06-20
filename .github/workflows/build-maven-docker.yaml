@@ -294,35 +294,20 @@ jobs:
           GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
           PLATFORMS: ${{ inputs.PLATFORMS }}
 
-      - name: "⚙️ Set up JDK ${{ inputs.JDK_DISTRIBUTION }} ${{ inputs.JDK_VERSION }}"
-        uses: actions/setup-java@v4
+      - name: "🧰 Set up build maven"
+        # TODO
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-maven@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-maven@FAN-6956-secrets
+        id: build-setup-maven
         with:
-          java-version: '${{ inputs.JDK_VERSION }}'
-          distribution: '${{ inputs.JDK_DISTRIBUTION }}'
-
-      - name: "⚙️ Set up Maven ${{ inputs.MVN_VERSION }}"
-        uses: stCarolas/setup-maven@v5
-        if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
-        with:
-          maven-version: '${{ inputs.MVN_VERSION }}'
-
-      - name: "📦 Cache local Maven repository"
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ inputs.NAME }}-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ inputs.NAME }}-${{ runner.os }}-maven-
-
-      - name: "🧰 Maven ~/.m2/settings.xml"
-        run: ../mvn-settings.xml.sh
-
-      - name: "⚙️ Maven set app version ${{ inputs.VERSION }}"
-        working-directory: ${{ inputs.APP_WORKING_DIR }}
-        env:
+          GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
+          JDK_DISTRIBUTION: ${{ inputs.JDK_DISTRIBUTION }}
+          JDK_VERSION: ${{ inputs.JDK_VERSION }}
+          MAVEN_CACHE: 'true'
+          MAVEN_WORKING_DIR: ${{ inputs.APP_WORKING_DIR }}
+          MVN_VERSION: ${{ inputs.MVN_VERSION }}
+          NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
-        run: |
-          mvn -B versions:set -DnewVersion=${VERSION}
 
       - name: "🛠️ Build with Maven"
         working-directory: ${{ inputs.APP_WORKING_DIR }}
