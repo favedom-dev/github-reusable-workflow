@@ -265,7 +265,7 @@ jobs:
           echo "Debug: SLACK_DEVOPS_TOKEN is set (length: ${#SLACK_DEVOPS_TOKEN})"
           echo "GH_TOKEN=${GH_TOKEN}" >> $GITHUB_OUTPUT
           echo "SLACK_TRIVY_WEBHOOK_URL=${SLACK_TRIVY_WEBHOOK_URL}" >> $GITHUB_OUTPUT
-          echo "SLACK_DEVOPS_TOKEN=${SLACK_DEVOPS_TOKEN}" >> $GITHUB_OUTPUT\
+          echo "SLACK_DEVOPS_TOKEN=${SLACK_DEVOPS_TOKEN}" >> $GITHUB_OUTPUT
           echo "Debug: Contents of GITHUB_OUTPUT"
           cat $GITHUB_OUTPUT
 
