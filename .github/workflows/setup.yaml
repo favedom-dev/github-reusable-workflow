@@ -135,7 +135,7 @@ jobs:
     with:
       # MONOREPO_APP: ${{ inputs.MONOREPO_APP }}
       # MONOREPO_APP: ${{ needs.monorepo.outputs.MONOREPO_APP }}
-      MONOREPO_APP: ${{ inputs.MONOREPO_APP || inputs.OVERRIDE_NAME}}
+      MONOREPO_APP: ${{ inputs.MONOREPO_APP || inputs.OVERRIDE_NAME }}
       INCREMENT_SCRIPT_NAME: ${{ inputs.INCREMENT_SCRIPT_NAME }}
       SCRIPT_GIT_BRANCH: ${{ inputs.SCRIPT_GIT_BRANCH }}
       SCRIPTS_DOWNLOAD_BASE_URL: ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}
