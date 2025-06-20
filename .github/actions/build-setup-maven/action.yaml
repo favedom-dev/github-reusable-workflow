@@ -19,16 +19,16 @@ inputs:
   MAVEN_CACHE:
     default: 'false'
     required: false
-    description: "JDK Version"
+    description: "Enable Maven caching"
 
   MAVEN_WORKING_DIR:
     default: '.'
     required: false
-    description: "Enable Maven caching"
+    description: "Maven working directory"
 
   MVN_VERSION:
-    description: "Maven Version See https://maven.apache.org/docs/history.html"
     required: false
+    description: "Maven Version See https://maven.apache.org/docs/history.html"
 
   NAME:
     required: true
