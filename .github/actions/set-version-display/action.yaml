@@ -17,6 +17,10 @@ inputs:
     description: "PR version (to determine PR vs release)"
     required: false
     default: ""
+  monorepo-app:
+    description: "Monorepo App"
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -24,6 +28,7 @@ runs:
     - name: "Display Version"
       env:
         PR_VERSION: ${{ inputs.pr-version }}
+        MONOREPO_APP: ${{ inputs.monorepo-app }}
       run: |
         echo "🔖 version            : ${{ inputs.version }}"
 
@@ -37,5 +42,9 @@ runs:
         else
           echo "🏷️ Tag                : ${{ inputs.tag }}"
           echo "| 🏷️ Tag | \`${{ inputs.tag }}\` |" >> $GITHUB_STEP_SUMMARY
+        fi
+        if [ -n "${MONOREPO_APP}" ]; then
+          echo "🗃️ Monorepo App       : ${{ inputs.monorepo-app }}"
+          echo "| 🗃️ Monorepo App | \`${{ inputs.monorepo-app }}\` |" >> $GITHUB_STEP_SUMMARY
         fi
       shell: bash
