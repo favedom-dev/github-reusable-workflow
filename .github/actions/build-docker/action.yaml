@@ -1,0 +1,98 @@
+name: 'Build setup basics'
+description: 'Setup build environment'
+
+inputs:
+
+  ACCESS_TOKEN:
+    required: true
+    description: "Google access token"
+
+  APP_WORKING_DIR:
+    default: '.'
+    required: false
+    description: "Application working directory"
+
+  ARTIFACT_LINK_SCRIPT_NAME:
+    required: true
+    description: "Script to run that for Atifact links"
+
+  DOCKER_LOCATION:
+    required: true
+    description: "Docker location"
+
+  DOCKER_PUSH:
+    required: true
+    description: "Push is a shorthand for --output=type=registry (true or false)"
+
+  DOCKER_URL:
+    description: "URL to the Docker location"
+
+  GAR_LOCATION:
+    required: true
+    description: "Google Artifact Repostory location"
+
+  GH_RUNS_ON:
+    default: 'ubuntu-latest'
+    required: false
+    description: "GitHub runs-on"
+
+  NAME:
+    required: true
+    description: "Project name for cache key"
+
+  PLATFORMS:
+    required: false
+    default: linux/amd64,linux/arm64
+    description: "Platform(s) to build"
+
+  VERSION:
+    required: true
+    description: "App Version"
+
+runs:
+  using: 'composite'
+
+  steps:
+
+    - name: "🔑 Docker Auth: GAR"
+      if: ${{ !env.ACT }}
+      id: auth-docker
+      uses: 'docker/login-action@v3'
+      with:
+        username: 'oauth2accesstoken'
+        password: ${{ inputs.ACCESS_TOKEN }}
+        registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'
+
+    - name: "# Set up Docker tags"
+      uses: favedom-dev/github-reusable-workflow/.github/actions/set-docker-tags@v2
+      id: docker-tags
+      with:
+        VERSION: ${{ inputs.VERSION }}
+        DOCKER_LOCATION: ${{ inputs.DOCKER_LOCATION }}
+        GITHUB_EVENT_NAME: ${{ github.event_name }}
+
+    - name: "🐳 Docker: build, tag, and push"
+      uses: docker/build-push-action@v6
+      id: docker-build
+      if: ${{ !env.ACT }}
+      with:
+        context: ${{ inputs.APP_WORKING_DIR }}
+        platforms: ${{ inputs.PLATFORMS }}
+        push: ${{ inputs.DOCKER_PUSH }}
+        tags: ${{ steps.docker-tags.outputs.tags }}
+
+    - name: "🔗 Link to Container"
+      if: inputs.DOCKER_PUSH == 'true'
+      id: artifact-url
+      shell: bash
+      env:
+        GH_TOKEN: ${{ env.GH_TOKEN }}
+        ARTIFACT_DIGEST: ${{ steps.docker-build.outputs.digest }}
+        # ARTIFACT_TYPE: docker
+        ARTIFACT_URL: ${{ inputs.DOCKER_URL }}
+        NAME: ${{ inputs.NAME }}
+        VERSION: ${{ inputs.VERSION }}
+        GITHUB_EVENT_NAME: ${{ github.event_name }}
+        GITHUB_EVENT_PATH: ${{ github.event_path }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+      run: ../${{ inputs.ARTIFACT_LINK_SCRIPT_NAME }}

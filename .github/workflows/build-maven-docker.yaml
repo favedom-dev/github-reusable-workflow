@@ -325,48 +325,32 @@ jobs:
           ${{ inputs.MVN_ARGS }} \
           ${{ inputs.MVN_ARGS_EXTRA }}
 
-      - name: "🔑 Docker Auth: GAR"
-        if: ${{ !env.ACT }}
-        id: auth-docker
-        uses: 'docker/login-action@v3'
-        with:
-          username: 'oauth2accesstoken'
-          password: ${{ steps.get-secrets.outputs.access-token }}
-          registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'
+      # - name: "🔑 Docker Auth: GAR"
+      #   if: ${{ !env.ACT }}
+      #   id: auth-docker
+      #   uses: 'docker/login-action@v3'
+      #   with:
+      #     username: 'oauth2accesstoken'
+      #     password: ${{ steps.get-secrets.outputs.access-token }}
+      #     registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'
 
-      - name: "# Set up Docker tags"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/set-docker-tags@v2
-        id: docker-tags
+      - name: "🧰 Set up build maven"
+        # TODO
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/build-docker@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/build-docker@FAN-6956-secrets
+        id: build-docker
         with:
-          VERSION: ${{ inputs.VERSION }}
+          ACCESS_TOKEN: ${{ steps.get-secrets.outputs.access-token }}
+          APP_WORKING_DIR: ${{ inputs.APP_WORKING_DIR }}
+          ARTIFACT_LINK_SCRIPT_NAME: ${{ env.ARTIFACT_LINK_SCRIPT_NAME }}
           DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-
-      - name: "🐳 Docker: build, tag, and push"
-        uses: docker/build-push-action@v6
-        id: docker-build
-        if: ${{ !env.ACT }}
-        with:
-          context: ${{ inputs.APP_WORKING_DIR }}
-          # file: ${{ env.DOCKERFILE_FILE }}
-          platforms: ${{ inputs.PLATFORMS }}
-          push: ${{ steps.setup-variables.outputs.DOCKER_PUSH }}
-          tags: ${{ steps.docker-tags.outputs.tags }}
-
-      - name: "🔗 Link to Container"
-        if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
-        id: artifact-url
-        env:
-          GH_TOKEN: ${{ env.GH_TOKEN }}
-          ARTIFACT_DIGEST: ${{ steps.docker-build.outputs.digest }}
-          # ARTIFACT_TYPE: docker
-          ARTIFACT_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
+          DOCKER_PUSH: ${{ steps.setup-variables.outputs.DOCKER_PUSH }}
+          DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
+          GAR_LOCATION:  ${{ inputs.GAR_LOCATION }}
+          GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
           NAME: ${{ inputs.NAME }}
+          PLATFORMS: ${{ inputs.PLATFORMS }}
           VERSION: ${{ inputs.VERSION }}
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-          GITHUB_EVENT_PATH: ${{ github.event_path }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-        run: ../${ARTIFACT_LINK_SCRIPT_NAME}
 
       - name: "⬇️ Download Qwiet CLI"
         uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2
