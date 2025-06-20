@@ -12,6 +12,19 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
 
+      SECRETS_TO_FETCH:
+        description: "Secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+
+      DEFAULT_SECRETS_TO_FETCH:
+        description: "Default secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+        default: |
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
+          SHIFTLEFT_ACCESS_TOKEN:projects/1054075584205/secrets/cicd_SHIFTLEFT_ACCESS_TOKEN
+
       FILE_DOWNLOAD_BASE_URL:
         default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
         required: false
@@ -101,9 +114,6 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
     secrets:
-      GH_TOKEN:
-        description: "GitHub token"
-        required: true
 
       WIF_PROVIDER:
         description: "Workload Identity Federation Provider"
@@ -112,10 +122,6 @@ on:  # yamllint disable-line rule:truthy
       WIF_SERVICE_ACCOUNT:
         description: "Workload Identity Federation Service Account"
         required: true
-
-      SHIFTLEFT_ACCESS_TOKEN:
-        description: "Shiftleft/Qwiet token"
-        required: false
 
     outputs:
       ARTIFACT_URL:
@@ -138,6 +144,9 @@ jobs:
       ARTIFACT_URL: ${{ steps.artifact-url.outputs.ARTIFACT_URL }}
 
     steps:
+
+      - name: "☁️ Checkout repository"
+        uses: actions/checkout@v4
 
       - name: "⬇️ Get reusable files"
         uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
@@ -170,6 +179,17 @@ jobs:
           echo "MVN_ARG_ARTIFACT_REGISTRY=${MVN_ARG_ARTIFACT_REGISTRY}" >> $GITHUB_ENV
           echo "MVN_ARG_ARTIFACT_REGISTRY=${MVN_ARG_ARTIFACT_REGISTRY}" >> $GITHUB_OUTPUT
 
+      - name: "🔐 Get Secrets"
+        # TODO
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@FAN-6956-secrets
+        id: get-secrets
+        with:
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
+          DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
+
       - name: "🧰 Set up gh cli"
         uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
         if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
@@ -181,18 +201,6 @@ jobs:
         uses: docker/setup-buildx-action@v3
         with:
           platforms: ${{ inputs.PLATFORMS }}
-
-      - name: "☁️ Checkout repository"
-        uses: actions/checkout@v4
-
-      - name: "🔑 Google Auth Token"
-        if: ${{ !env.ACT }}
-        id: auth-gcp-token
-        uses: 'google-github-actions/auth@v2'
-        with:
-          token_format: 'access_token'
-          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
-          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
 
       - name: "⚙️ Set up JDK ${{ inputs.JDK_DISTRIBUTION }} ${{ inputs.JDK_VERSION }}"
         uses: actions/setup-java@v4
@@ -225,7 +233,7 @@ jobs:
         # if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
         id: artifact-url
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ env.GH_TOKEN }}
           ARTIFACT_TYPE: jar
           ARTIFACT_URL: ${{ steps.setup-variables.outputs.GAR_URL }}
           NAME: ${{ inputs.NAME }}
@@ -238,12 +246,12 @@ jobs:
       - name: "⬇️ Download Qwiet CLI"
         uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2
         with:
-          shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+          shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
 
       - name: "🔍 Qwiet Analyze with NextGen Static Analysis"
         uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@v2
         with:
-          shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+          shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
           name: ${{ inputs.NAME }}
           vcs-prefix-correction: ${{ inputs.VCS_PREFIX_CORRECTION }}
           scan-jar: ${{ inputs.SCAN_JAR }}

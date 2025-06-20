@@ -360,21 +360,6 @@ jobs:
           ${{ inputs.MVN_ARGS }} \
           ${{ inputs.MVN_ARGS_EXTRA }}
 
-      - name: "⬇️ Download Qwiet CLI"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2
-        with:
-          # shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
-          shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
-
-      - name: "🔍 Qwiet Analyze with NextGen Static Analysis"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@v2
-        with:
-          # shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
-          shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
-          name: ${{ inputs.NAME }}
-          vcs-prefix-correction: ${{ inputs.VCS_PREFIX_CORRECTION }}
-          scan-jar: ${{ inputs.SCAN_JAR }}
-
       - name: "# Set up Docker tags"
         uses: favedom-dev/github-reusable-workflow/.github/actions/set-docker-tags@v2
         id: docker-tags
@@ -408,3 +393,16 @@ jobs:
           GITHUB_EVENT_PATH: ${{ github.event_path }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: ../${ARTIFACT_LINK_SCRIPT_NAME}
+
+      - name: "⬇️ Download Qwiet CLI"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2
+        with:
+          shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
+
+      - name: "🔍 Qwiet Analyze with NextGen Static Analysis"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@v2
+        with:
+          shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
+          name: ${{ inputs.NAME }}
+          vcs-prefix-correction: ${{ inputs.VCS_PREFIX_CORRECTION }}
+          scan-jar: ${{ inputs.SCAN_JAR }}
