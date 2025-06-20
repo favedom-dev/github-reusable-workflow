@@ -259,6 +259,9 @@ jobs:
         id: set-secrets
         shell: bash
         run: |
+          echo "Debug: GH_TOKEN is set (length: ${#GH_TOKEN})
+          echo "Debug: SLACK_TRIVY_WEBHOOK_URL is set (length: ${#SLACK_TRIVY_WEBHOOK_URL})
+          echo "Debug: SLACK_DEVOPS_TOKEN is set (length: ${#SLACK_DEVOPS_TOKEN})
           echo "GH_TOKEN=${GH_TOKEN}" >> $GITHUB_OUTPUT
           echo "SLACK_TRIVY_WEBHOOK_URL=${SLACK_TRIVY_WEBHOOK_URL}" >> $GITHUB_OUTPUT
           echo "SLACK_DEVOPS_TOKEN=${SLACK_DEVOPS_TOKEN}" >> $GITHUB_OUTPUT
@@ -316,6 +319,16 @@ jobs:
         with:
           GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
           GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
+
+      - name: "🔍 Debug GH_TOKEN"
+        shell: bash
+        run: |
+          if [ -n "${{ needs.trivy-setup.outputs.GH_TOKEN }}" ]; then
+            echo "GH_TOKEN output is set (length: ${#{{ needs.trivy-setup.outputs.GH_TOKEN }})"
+          else
+            echo "GH_TOKEN output is NOT set"
+            exit 1
+          fi
 
       - name: "☁️ Checkout repository ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}"
         uses: actions/checkout@v4
