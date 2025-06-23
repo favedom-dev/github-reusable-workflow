@@ -17,43 +17,57 @@ on:
         default: false
         required: false
         type: boolean
+
       IS_STACKHAWK_READY:
         default: true
         required: false
         type: boolean
+
       STACKHAWK_DIRECTORY:
         default: 'stackhawk'
         required: false
         type: string
+
       STACKHAWK_TMPL_YML:
         default: 'stackhawk-tmpl.yml'
         required: false
         type: string
+
+      DO_TRIVY:
+        required: false
+        type: string
+
       IS_FRONTEND:
         default: false
         required: false
         type: boolean
+
       IS_MONOREPO:
         default: false
         required: false
         type: boolean
+
       # Inputs from repo-version.yaml
       MONOREPO_APP:
         default: ''
         required: false
         type: string
+
       INCREMENT_SCRIPT_NAME:
         default: 'auto_increment_version.sh'
         required: false
         type: string
+
       SCRIPT_GIT_BRANCH:
         default: 'master'
         required: false
         type: string
+
       SCRIPTS_DOWNLOAD_BASE_URL:
         default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
         required: false
         type: string
+
       # Common input
       GH_RUNS_ON:
         default: 'ubuntu-latest'
@@ -75,15 +89,19 @@ on:
       NAME:
         description: "App/Service name"
         value: ${{ jobs.app.outputs.NAME }}
+
       PREVIEW_NAMESPACE:
         description: "Preview namespace"
         value: ${{ jobs.app.outputs.PREVIEW_NAMESPACE }}
+
       IS_STACKHAWK_READY:
         description: "Is Stackhawk ready"
         value: ${{ jobs.app.outputs.IS_STACKHAWK_READY }}
+
       STACKHAWK_DIRECTORY:
         description: "Stackhawk directory"
         value: ${{ jobs.app.outputs.STACKHAWK_DIRECTORY }}
+
       # IS_FRONTEND:
       #   description: "Is frontend"
       #   value: ${{ jobs.app.outputs.IS_FRONTEND }}
@@ -91,19 +109,22 @@ on:
       #   description: "Is monorepo"
       #   value: ${{ jobs.app.outputs.IS_MONOREPO }}
       # Outputs from repo-version.yaml
+
       version:
         description: "Repo Version"
         value: ${{ jobs.version.outputs.version }}
+
       tag:
         description: "Repo Tag"
         value: ${{ jobs.version.outputs.tag }}
+
       build-version:
         description: "Build Version"
         value: ${{ jobs.version.outputs.build-version }}
+
       GH_RUNS_ON:
         # value: ${{ jobs.runner.outputs.GH_RUNS_ON }}
         value: ${{ inputs.GH_RUNS_ON }}
-
 
 jobs:
   # runner:
