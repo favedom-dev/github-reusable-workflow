@@ -1,4 +1,4 @@
-name: Combined Helm Preview and Deploy
+name: Deploy (Preview and Dev)
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
@@ -293,6 +293,15 @@ on:  # yamllint disable-line rule:truthy
         value: ${{ jobs.helm-preview.outputs.APP_HOST }}
 
 jobs:
+  debug:
+    runs-on: ${{ inputs.GH_RUNS_ON }}
+    steps:
+      - name: DEBUG
+        run: |
+          echo "github.event_name : ${{ github.event_name }}"
+          echo "inputs.DO_PREVIEW : ${{ inputs.DO_PREVIEW }}"
+          echo "inputs.DO_DEV     : ${{ inputs.DO_DEV }}"
+
   helm-preview:
     # TODO
     # uses:  favedom-dev/github-reusable-workflow/.github/workflows/deploy-helm-preview.yaml@v2
