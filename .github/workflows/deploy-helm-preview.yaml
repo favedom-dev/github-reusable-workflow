@@ -575,7 +575,7 @@ jobs:
 
       - name: "🔗 PREVIEW: Link to Preview"
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ env.GH_TOKEN }}
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           PREVIEW_URL: ${{ steps.setup-variables.outputs.PREVIEW_URL }}
           API_PATH: ${{ steps.get-api-path.outputs.API_PATH }}
