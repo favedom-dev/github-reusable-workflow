@@ -18,7 +18,7 @@ runs:
       id: trivy-scan-prep
       shell: bash
       env:
-        DO_TRIVY: ${{ inputs.do-trivy }}
+        DO_TRIVY: ${{ inputs.DO_TRIVY }}
       run: |
         if [[ ${DO_TRIVY} == "true" ]]; then
           DO_TRIVY=true
