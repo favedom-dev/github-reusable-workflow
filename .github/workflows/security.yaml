@@ -185,7 +185,7 @@ on:
         type: string
         default: |
           GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
-          SLACK_TRIVY_WEBHOOK_URL:projects/1054075584205/secrets/cicd_SLACK_TRIVY_WHEBHOOK_URL
+          SLACK_TRIVY_WEBHOOK_URL:projects/1054075584205/secrets/cicd_SLACK_TRIVY_WEBHOOK_URL
 
       ARTIFACT_URL:
         description: "Link to the specific version in GAR"
