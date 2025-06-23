@@ -168,7 +168,7 @@ on:
         required: false
         type: boolean
 
-      JOBS_TIMEOUT:
+      STACKHAWK_JOBS_TIMEOUT:
         default: 10
         required: false
         type: number
@@ -350,7 +350,7 @@ jobs:
       STACKHAWK_VERBOSE: ${{ inputs.STACKHAWK_VERBOSE }}
       STACKHAWK_DEBUG: ${{ inputs.STACKHAWK_DEBUG }}
       STACKHAWK_CODESCANNINGALERTS: ${{ inputs.STACKHAWK_CODESCANNINGALERTS }}
-      JOBS_TIMEOUT: ${{ inputs.JOBS_TIMEOUT }}
+      JOBS_TIMEOUT: ${{ inputs.STACKHAWK_JOBS_TIMEOUT }}
       GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
     secrets:
       WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
