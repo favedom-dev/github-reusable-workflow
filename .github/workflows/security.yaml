@@ -210,7 +210,7 @@ on:
         type: string
 
       GAR_LOCATION:
-        default: ''
+        default: 'us-central1'
         required: false
         type: string
 
