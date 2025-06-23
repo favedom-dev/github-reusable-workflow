@@ -21,11 +21,11 @@ runs:
         DO_TRIVY: ${{ inputs.DO_TRIVY }}
       run: |
         if [[ ${DO_TRIVY} == "true" ]]; then
-          DO_TRIVY=true
+          DO_TRIVY='true'
         else
-          DO_TRIVY=true
+          DO_TRIVY='true'
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            DO_TRIVY=false
+            DO_TRIVY='false'
           fi
         fi
         echo "DO_TRIVY : ${DO_TRIVY}"
