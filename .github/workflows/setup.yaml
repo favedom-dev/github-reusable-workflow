@@ -79,12 +79,12 @@ on:
       STACKHAWK_DIRECTORY:
         description: "Stackhawk directory"
         value: ${{ jobs.setup.outputs.STACKHAWK_DIRECTORY }}
-      IS_FRONTEND:
-        description: "Is frontend"
-        value: ${{ jobs.setup.outputs.IS_FRONTEND }}
-      IS_MONOREPO:
-        description: "Is monorepo"
-        value: ${{ jobs.setup.outputs.IS_MONOREPO }}
+      # IS_FRONTEND:
+      #   description: "Is frontend"
+      #   value: ${{ jobs.setup.outputs.IS_FRONTEND }}
+      # IS_MONOREPO:
+      #   description: "Is monorepo"
+      #   value: ${{ jobs.setup.outputs.IS_MONOREPO }}
       # Outputs from repo-version.yaml
       version:
         description: "Repo Version"
@@ -95,10 +95,27 @@ on:
       build-version:
         description: "Build Version"
         value: ${{ jobs.version.outputs.build-version }}
+      GH_RUNS_ON:
+        value: ${{ jobs.runner.outputs.GH_RUNS_ON }}
 
 jobs:
+  runner:
+    # uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-gha-runners.yaml@v2
+    # secrets: inherit
+    runs-on: ubuntu-latest
+    outputs:
+      GH_RUNS_ON: ${{ steps.set-runner.outputs.GH_RUNS_ON }}
+    steps:
+      - name: "✓ Set Runner"
+        id: set-runner
+        run: |
+          GH_RUNS_ON=${{ inputs.GH_RUNS_ON }}
+          echo "## GH_RUNS_ON : \`${GH_RUNS_ON}\`" >> $GITHUB_STEP_SUMMARY
+          echo "GH_RUNS_ON=${GH_RUNS_ON}" >> $GITHUB_OUTPUT
+
   setup:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-app.yaml@v2
+    needs: [runner]
     with:
       OVERRIDE_NAME: ${{ inputs.OVERRIDE_NAME }}
       OVERRIDE_PREVIEW_NAMESPACE: ${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
@@ -108,7 +125,7 @@ jobs:
       STACKHAWK_TMPL_YML: ${{ inputs.STACKHAWK_TMPL_YML }}
       IS_FRONTEND: ${{ inputs.IS_FRONTEND }}
       IS_MONOREPO: ${{ inputs.IS_MONOREPO }}
-      GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
+      GH_RUNS_ON: ${{ needs.runner.outputs.GH_RUNS_ON }}
     secrets: inherit
 
   # monorepo:
@@ -131,7 +148,7 @@ jobs:
 
   version:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@FAN-6956-secrets
-    # needs: [monorepo]
+    needs: [runner]
     with:
       # MONOREPO_APP: ${{ inputs.MONOREPO_APP }}
       # MONOREPO_APP: ${{ needs.monorepo.outputs.MONOREPO_APP }}
@@ -139,7 +156,7 @@ jobs:
       INCREMENT_SCRIPT_NAME: ${{ inputs.INCREMENT_SCRIPT_NAME }}
       SCRIPT_GIT_BRANCH: ${{ inputs.SCRIPT_GIT_BRANCH }}
       SCRIPTS_DOWNLOAD_BASE_URL: ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}
-      GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
+      GH_RUNS_ON: ${{ needs.runner.outputs.GH_RUNS_ON }}
     secrets:
       WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
       WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
