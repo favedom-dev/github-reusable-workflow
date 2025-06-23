@@ -29,4 +29,4 @@ runs:
           fi
         fi
         echo "DO_TRIVY : ${DO_TRIVY}"
-        echo "DO_TRIVY=${DO_TRIVY}" >> $DO_TRIVY
+        echo "DO_TRIVY=${DO_TRIVY}" >> $GITHUB_OUTPUT
