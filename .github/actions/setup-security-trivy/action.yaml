@@ -20,11 +20,15 @@ runs:
       env:
         DO_TRIVY: ${{ inputs.DO_TRIVY }}
       run: |
+        echo "input.DO_TRIVY : ${{ inputs.DO_TRIVY }}"
         if [[ ${DO_TRIVY} == "true" ]]; then
+          echo "Overrride"
           DO_TRIVY='true'
         else
+          echo "Else"
           DO_TRIVY='true'
           if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "pull_request"
             DO_TRIVY='false'
           fi
         fi
