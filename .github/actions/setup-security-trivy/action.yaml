@@ -23,7 +23,7 @@ runs:
         if [[ ${DO_TRIVY} == "true" ]]; then
           DO_TRIVY=true
         else
-          if [ "${{ github.event_name }}" != "pull_request" ]; then
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
             DO_TRIVY=false
           else
             DO_TRIVY=true
