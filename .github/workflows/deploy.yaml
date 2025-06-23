@@ -293,14 +293,15 @@ on:  # yamllint disable-line rule:truthy
         value: ${{ jobs.helm-preview.outputs.APP_HOST }}
 
 jobs:
-  debug:
-    runs-on: ${{ inputs.GH_RUNS_ON }}
-    steps:
-      - name: DEBUG
-        run: |
-          echo "github.event_name : ${{ github.event_name }}"
-          echo "inputs.DO_PREVIEW : ${{ inputs.DO_PREVIEW }}"
-          echo "inputs.DO_DEV     : ${{ inputs.DO_DEV }}"
+
+  # debug:
+  #   runs-on: ${{ inputs.GH_RUNS_ON }}
+  #   steps:
+  #     - name: DEBUG
+  #       run: |
+  #         echo "github.event_name : ${{ github.event_name }}"
+  #         echo "inputs.DO_PREVIEW : ${{ inputs.DO_PREVIEW }}"
+  #         echo "inputs.DO_DEV     : ${{ inputs.DO_DEV }}"
 
   helm-preview:
     # TODO
