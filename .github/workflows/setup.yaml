@@ -105,11 +105,12 @@ on:
       # IS_FRONTEND:
       #   description: "Is frontend"
       #   value: ${{ jobs.app.outputs.IS_FRONTEND }}
+
       # IS_MONOREPO:
       #   description: "Is monorepo"
       #   value: ${{ jobs.app.outputs.IS_MONOREPO }}
-      # Outputs from repo-version.yaml
 
+      # Outputs from repo-version.yaml
       version:
         description: "Repo Version"
         value: ${{ jobs.version.outputs.version }}
@@ -144,6 +145,7 @@ jobs:
       IS_STACKHAWK_READY: ${{ inputs.IS_STACKHAWK_READY }}
       STACKHAWK_DIRECTORY: ${{ inputs.STACKHAWK_DIRECTORY }}
       STACKHAWK_TMPL_YML: ${{ inputs.STACKHAWK_TMPL_YML }}
+      DO_TRIVY: ${{ inputs.DO_TRIVY }}
       IS_FRONTEND: ${{ inputs.IS_FRONTEND }}
       IS_MONOREPO: ${{ inputs.IS_MONOREPO }}
       # GH_RUNS_ON: ${{ needs.runner.outputs.GH_RUNS_ON }}

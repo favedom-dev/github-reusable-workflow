@@ -2,7 +2,7 @@ name: "Setup Trivy"
 description: "Setup security values"
 
 inputs:
-  do-trivy:
+  DO_TRIVY:
     description: "Force Trivy run"
     required: false
 
@@ -23,10 +23,9 @@ runs:
         if [[ ${DO_TRIVY} == "true" ]]; then
           DO_TRIVY=true
         else
+          DO_TRIVY=true
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             DO_TRIVY=false
-          else
-            DO_TRIVY=true
           fi
         fi
         echo "DO_TRIVY : ${DO_TRIVY}"
