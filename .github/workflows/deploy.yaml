@@ -287,10 +287,10 @@ on:  # yamllint disable-line rule:truthy
 
     outputs:
       API_PATH:
-        value: ${{ jobs.helm-preview.outputs.API_PATH }}
+        value: ${{ jobs.preview.outputs.API_PATH }}
 
       APP_HOST:
-        value: ${{ jobs.helm-preview.outputs.APP_HOST }}
+        value: ${{ jobs.preview.outputs.APP_HOST }}
 
 jobs:
 
@@ -303,7 +303,7 @@ jobs:
   #         echo "inputs.DO_PREVIEW : ${{ inputs.DO_PREVIEW }}"
   #         echo "inputs.DO_DEV     : ${{ inputs.DO_DEV }}"
 
-  helm-preview:
+  preview:
     # TODO
     # uses:  favedom-dev/github-reusable-workflow/.github/workflows/deploy-helm-preview.yaml@v2
     uses:  favedom-dev/github-reusable-workflow/.github/workflows/deploy-helm-preview.yaml@FAN-6956-secrets
