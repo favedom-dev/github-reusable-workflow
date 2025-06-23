@@ -1,0 +1,394 @@
+name: Combined Stackhawk and Trivy Scan
+
+on:
+  workflow_call:
+    inputs:
+      IS_STACKHAWK_READY:
+        description: "Do Stackhawk scans"
+        default: false
+        required: false
+        type: boolean
+
+      DO_TRIVY:
+        description: "Do Trivy scans"
+        default: true
+        required: false
+        type: boolean
+
+      # Inputs for Stackhawk
+      NAME:
+        description: "Name of service"
+        required: true
+        type: string
+
+      NAMESPACE:
+        description: "Namespace for Stackhawk deployment"
+        required: true
+        type: string
+
+      API_PATH:
+        description: "API path for Stackhawk"
+        required: true
+        type: string
+
+      APP_HOST:
+        description: "Application host for Stackhawk"
+        required: false
+        type: string
+
+      APP_ID:
+        description: "Application ID"
+        required: false
+        type: string
+
+      SECRETS_TO_FETCH:
+        description: "Secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+
+      DEFAULT_SECRETS_TO_FETCH_STACKHAWK:
+        description: "Default secrets for Stackhawk"
+        required: false
+        type: string
+        default: |
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
+          HAWK_API_KEY:projects/1054075584205/secrets/cicd_HAWK_API_KEY
+
+      TEST_USERNAME:
+        default: 'stackhawk@velocityz.com'
+        required: false
+        type: string
+
+      BASE_DOMAIN:
+        default: 'dev.fanfuzenil.com'
+        required: false
+        type: string
+
+      KEYCLOAK_REALM:
+        default: 'fanfuzenil'
+        required: false
+        type: string
+
+      HEALTH_PATH:
+        default: 'actuator/health'
+        required: false
+        type: string
+
+      HEALTH_RETRIES:
+        default: 6
+        required: false
+        type: number
+
+      HEALTH_RETRY_DELAY:
+        default: 10
+        required: false
+        type: number
+
+      FILE_GIT_BRANCH:
+        default: 'v2'
+        required: false
+        type: string
+        description: "Used typically for testing new non-merged helm changes"
+
+      FILE_DOWNLOAD_BASE_URL:
+        default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
+        required: false
+        type: string
+
+      CURL_ARGS:
+        default: ''
+        required: false
+        type: string
+
+      JDK_VERSION:
+        default: 21
+        required: false
+        type: number
+
+      JDK_DISTRIBUTION:
+        default: 'temurin'
+        required: false
+        type: string
+
+      STACKHAWK_SLEEP_DELAY:
+        required: false
+        type: number
+
+      STACKHAWK_SLEEP_DELAY_DEFAULT:
+        default: 15
+        required: false
+        type: number
+
+      STACKHAWK_SLEEP_DELAY_DEFAULT_JAVA:
+        default: 30
+        required: false
+        type: number
+
+      STACKHAWK_SETUP_SCRIPT_NAME:
+        default: 'setup-stackhawk.sh'
+        required: false
+        type: string
+
+      STACKHAWK_TMPL_YML:
+        default: 'stackhawk-tmpl.yml'
+        required: false
+        type: string
+
+      STACKHAWK_DIRECTORY:
+        default: 'stackhawk'
+        required: false
+        type: string
+
+      STACKHAWK_APP_ID:
+        required: false
+        type: string
+
+      STACKHAWK_APP_ENV:
+        default: 'Preview'
+        required: false
+        type: string
+
+      STACKHAWK_DRYRUN:
+        default: false
+        required: false
+        type: boolean
+
+      STACKHAWK_VERBOSE:
+        default: false
+        required: false
+        type: boolean
+
+      STACKHAWK_DEBUG:
+        default: true
+        required: false
+        type: boolean
+
+      STACKHAWK_CODESCANNINGALERTS:
+        default: true
+        required: false
+        type: boolean
+
+      JOBS_TIMEOUT:
+        default: 10
+        required: false
+        type: number
+
+      # Inputs for Trivy
+      VERSION:
+        required: true
+        type: string
+        description: "Version of the service"
+
+      DEFAULT_SECRETS_TO_FETCH_TRIVY:
+        description: "Default secrets for Trivy"
+        required: false
+        type: string
+        default: |
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
+          SLACK_TRIVY_WEBHOOK_URL:projects/1054075584205/secrets/cicd_SLACK_TRIVY_WHEBHOOK_URL,
+          SLACK_DEVOPS_TOKEN: ''
+
+      ARTIFACT_URL:
+        description: "Link to the specific version in GAR"
+        required: true
+        type: string
+
+      RUN_PR:
+        description: "Set to true to run Trivy on PRs"
+        default: 'false'
+        required: false
+        type: string
+
+      ARCHITECTURE:
+        default: 's'
+        description: "Comma-separated list of architectures to scan (e.g., 'linux/amd64,linux/arm64')"
+        required: false
+        type: string
+
+      PROJECT_ID:
+        default: 'favedom-dev'
+        required: false
+        type: string
+
+      GAR_LOCATION:
+        default: ''
+        required: false
+        type: string
+
+      DOCKER_REGISTRY:
+        default: 'docker'
+        required: false
+        type: string
+
+      CREATE_CREDENTIALS_FILE:
+        default: true
+        required: false
+        type: boolean
+
+      EXPORT_ENVIRONMENT_VARIABLES:
+        default: true
+        required: false
+        type: boolean
+
+      TRIVY_CONTINUE_ON_ERROR:
+        default: true
+        required: false
+        type: boolean
+
+      TRIVY_TEMPLATE_FILE:
+        default: 'trivy-template'
+        required: false
+        type: string
+
+      TRIVY_OUTPUT:
+        default: 'trivy-results'
+        required: false
+        type: string
+
+      TRIVY_IGNORE_UNFIXED:
+        default: true
+        required: false
+        type: boolean
+
+      TRIVY_EXIT_CODE:
+        default: '0'
+        required: false
+        type: string
+
+      GH_USER_NAME:
+        default: 'PowerVZ GitHub Bot'
+        required: false
+        type: string
+
+      GH_USER_EMAIL:
+        default: ''
+        required: false
+        type: string
+
+      TRIVY_REPO_NAME:
+        default: 'trivy-scans'
+        required: false
+        type: string
+
+      TRIVY_REPO_ORG_NAME:
+        default: 'favedom-dev'
+        required: false
+        type: string
+
+      TRIVY_MAIN_BRANCH:
+        default: 'master'
+        required: false
+        type: string
+
+      SLACK_CHANNEL:
+        default: 'trivy-scans'
+        required: false
+        type: string
+
+      SLACK_ICON:
+        required: false
+        type: string
+
+      SLACK_USERNAME:
+        default: 'Trivy Scanner'
+        required: false
+        type: string
+
+      SLACK_COLOR:
+        default: "#0a0b23"
+        required: false
+        type: string
+
+      GH_RUNS_ON:
+        default: 'ubuntu-latest'
+        required: false
+        type: string
+
+    secrets:
+      WIF_PROVIDER:
+        description: "Workload Identity Federation Provider"
+        required: true
+
+      WIF_SERVICE_ACCOUNT:
+        description: "Workload Identity Federation Service Account"
+        required: true
+
+jobs:
+  stackhawk:
+    # TODO
+    # uses:  favedom-dev/github-reusable-workflow/.github/workflows/security-stackhawk.yaml@v2
+    uses:  favedom-dev/github-reusable-workflow/.github/workflows/security-stackhawk.yaml@FAN-6956-secrets
+    if: github.event_name == 'pull_request' && inputs.IS_STACKHAWK_READY == 'true'
+    with:
+      NAME: ${{ inputs.NAME }}
+      NAMESPACE: ${{ inputs.NAMESPACE }}
+      API_PATH: ${{ inputs.API_PATH }}
+      APP_HOST: ${{ inputs.APP_HOST }}
+      APP_ID: ${{ inputs.APP_ID }}
+      SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
+      DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH_STACKHAWK }}
+      TEST_USERNAME: ${{ inputs.TEST_USERNAME }}
+      BASE_DOMAIN: ${{ inputs.BASE_DOMAIN }}
+      KEYCLOAK_REALM: ${{ inputs.KEYCLOAK_REALM }}
+      HEALTH_PATH: ${{ inputs.HEALTH_PATH }}
+      HEALTH_RETRIES: ${{ inputs.HEALTH_RETRIES }}
+      HEALTH_RETRY_DELAY: ${{ inputs.HEALTH_RETRY_DELAY }}
+      FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
+      FILE_DOWNLOAD_BASE_URL: ${{ inputs.FILE_DOWNLOAD_BASE_URL }}
+      CURL_ARGS: ${{ inputs.CURL_ARGS }}
+      JDK_VERSION: ${{ inputs.JDK_VERSION }}
+      JDK_DISTRIBUTION: ${{ inputs.JDK_DISTRIBUTION }}
+      STACKHAWK_SLEEP_DELAY: ${{ inputs.STACKHAWK_SLEEP_DELAY }}
+      STACKHAWK_SLEEP_DELAY_DEFAULT: ${{ inputs.STACKHAWK_SLEEP_DELAY_DEFAULT }}
+      STACKHAWK_SLEEP_DELAY_DEFAULT_JAVA: ${{ inputs.STACKHAWK_SLEEP_DELAY_DEFAULT_JAVA }}
+      STACKHAWK_SETUP_SCRIPT_NAME: ${{ inputs.STACKHAWK_SETUP_SCRIPT_NAME }}
+      STACKHAWK_TMPL_YML: ${{ inputs.STACKHAWK_TMPL_YML }}
+      STACKHAWK_DIRECTORY: ${{ inputs.STACKHAWK_DIRECTORY }}
+      STACKHAWK_APP_ID: ${{ inputs.STACKHAWK_APP_ID }}
+      STACKHAWK_APP_ENV: ${{ inputs.STACKHAWK_APP_ENV }}
+      STACKHAWK_DRYRUN: ${{ inputs.STACKHAWK_DRYRUN }}
+      STACKHAWK_VERBOSE: ${{ inputs.STACKHAWK_VERBOSE }}
+      STACKHAWK_DEBUG: ${{ inputs.STACKHAWK_DEBUG }}
+      STACKHAWK_CODESCANNINGALERTS: ${{ inputs.STACKHAWK_CODESCANNINGALERTS }}
+      JOBS_TIMEOUT: ${{ inputs.JOBS_TIMEOUT }}
+      GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
+    secrets:
+      WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+      WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+  trivy:
+    # TODO
+    # uses:  favedom-dev/github-reusable-workflow/.github/workflows/security-trivy.yaml@v2
+    uses:  favedom-dev/github-reusable-workflow/.github/workflows/security-trivy.yaml@FAN-6956-secrets
+    if: inputs.DO_TRIVY == 'true'
+    with:
+      NAME: ${{ inputs.NAME }}
+      VERSION: ${{ inputs.VERSION }}
+      SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
+      DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH_TRIVY }}
+      ARTIFACT_URL: ${{ inputs.ARTIFACT_URL }}
+      RUN_PR: ${{ inputs.RUN_PR }}
+      ARCHITECTURES: ${{ inputs.ARCHITECTURES }}
+      PROJECT_ID: ${{ inputs.PROJECT_ID }}
+      GAR_LOCATION: ${{ inputs.GAR_LOCATION }}
+      DOCKER_REGISTRY: ${{ inputs.DOCKER_REGISTRY }}
+      CREATE_CREDENTIALS_FILE: ${{ inputs.CREATE_CREDENTIALS_FILE }}
+      EXPORT_ENVIRONMENT_VARIABLES: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
+      TRIVY_CONTINUE_ON_ERROR: ${{ inputs.TRIVY_CONTINUE_ON_ERROR }}
+      TRIVY_TEMPLATE_FILE: ${{ inputs.TRIVY_TEMPLATE_FILE }}
+      TRIVY_OUTPUT: ${{ inputs.TRIVY_OUTPUT }}
+      TRIVY_IGNORE_UNFIXED: ${{ inputs.TRIVY_IGNORE_UNFIXED }}
+      TRIVY_EXIT_CODE: ${{ inputs.TRIVY_EXIT_CODE }}
+      GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
+      GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
+      TRIVY_REPO_NAME: ${{ inputs.TRIVY_REPO_NAME }}
+      TRIVY_REPO_ORG_NAME: ${{ inputs.TRIVY_REPO_ORG_NAME }}
+      TRIVY_MAIN_BRANCH: ${{ inputs.TRIVY_MAIN_BRANCH }}
+      SLACK_CHANNEL: ${{ inputs.SLACK_CHANNEL }}
+      SLACK_ICON: ${{ inputs.SLACK_ICON }}
+      SLACK_USERNAME: ${{ inputs.SLACK_USERNAME }}
+      SLACK_COLOR: ${{ inputs.SLACK_COLOR }}
+      GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
+    secrets:
+      WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+      WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
