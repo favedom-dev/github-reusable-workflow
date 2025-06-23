@@ -111,7 +111,7 @@ jobs:
   #   secrets: inherit
 
 
-  setup:
+  app:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-app.yaml@v2
     # needs: [runner]
     with:
