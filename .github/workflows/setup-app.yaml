@@ -123,7 +123,7 @@ jobs:
           is-stackhawk-ready: ${{ inputs.IS_STACKHAWK_READY }}
           override-is-stackhawk-ready: ${{ inputs.OVERRIDE_IS_STACKHAWK_READY }}
 
-      - name: "🦅 Setup Trivy"
+      - name: "🛡️ Setup Trivy"
         # TODO
         # uses: favedom-dev/github-reusable-workflow/.github/actions/setup-security-trivy@v2
         uses: favedom-dev/github-reusable-workflow/.github/actions/setup-security-trivy@FAN-6956-secrets
