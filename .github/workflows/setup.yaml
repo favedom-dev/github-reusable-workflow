@@ -139,29 +139,29 @@ jobs:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-app.yaml@FAN-6956-secrets
     # needs: [runner]
     with:
-      OVERRIDE_NAME: ${{ inputs.OVERRIDE_NAME }}
-      OVERRIDE_PREVIEW_NAMESPACE: ${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
-      USE_REPO_NAME_PREVIEW_NAMESPACE: ${{ inputs.USE_REPO_NAME_PREVIEW_NAMESPACE }}
-      IS_STACKHAWK_READY: ${{ inputs.IS_STACKHAWK_READY }}
-      STACKHAWK_DIRECTORY: ${{ inputs.STACKHAWK_DIRECTORY }}
-      STACKHAWK_TMPL_YML: ${{ inputs.STACKHAWK_TMPL_YML }}
       DO_TRIVY: ${{ inputs.DO_TRIVY }}
-      IS_FRONTEND: ${{ inputs.IS_FRONTEND }}
-      IS_MONOREPO: ${{ inputs.IS_MONOREPO }}
       # GH_RUNS_ON: ${{ needs.runner.outputs.GH_RUNS_ON }}
       GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
+      IS_FRONTEND: ${{ inputs.IS_FRONTEND }}
+      IS_MONOREPO: ${{ inputs.IS_MONOREPO }}
+      IS_STACKHAWK_READY: ${{ inputs.IS_STACKHAWK_READY }}
+      OVERRIDE_NAME: ${{ inputs.OVERRIDE_NAME }}
+      OVERRIDE_PREVIEW_NAMESPACE: ${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
+      STACKHAWK_DIRECTORY: ${{ inputs.STACKHAWK_DIRECTORY }}
+      STACKHAWK_TMPL_YML: ${{ inputs.STACKHAWK_TMPL_YML }}
+      USE_REPO_NAME_PREVIEW_NAMESPACE: ${{ inputs.USE_REPO_NAME_PREVIEW_NAMESPACE }}
     secrets: inherit
 
   version:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-version.yaml@FAN-6956-secrets
     # needs: [runner]
     with:
-      MONOREPO_APP: ${{ inputs.MONOREPO_APP || inputs.OVERRIDE_NAME }}
-      INCREMENT_SCRIPT_NAME: ${{ inputs.INCREMENT_SCRIPT_NAME }}
-      SCRIPT_GIT_BRANCH: ${{ inputs.SCRIPT_GIT_BRANCH }}
-      SCRIPTS_DOWNLOAD_BASE_URL: ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}
       # GH_RUNS_ON: ${{ needs.runner.outputs.GH_RUNS_ON }}
       GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
+      INCREMENT_SCRIPT_NAME: ${{ inputs.INCREMENT_SCRIPT_NAME }}
+      MONOREPO_APP: ${{ inputs.MONOREPO_APP || inputs.OVERRIDE_NAME }}
+      SCRIPT_GIT_BRANCH: ${{ inputs.SCRIPT_GIT_BRANCH }}
+      SCRIPTS_DOWNLOAD_BASE_URL: ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}
     secrets:
       WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
       WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}

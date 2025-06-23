@@ -129,7 +129,7 @@ jobs:
         uses: favedom-dev/github-reusable-workflow/.github/actions/setup-security-trivy@FAN-6956-secrets
         id: setup-security-trivy
         with:
-          do-trivy: ${{ inputs.DO_TRIVY }}
+          DO_TRIVY: ${{ inputs.DO_TRIVY }}
 
 
       - name: "👀 Display values: ${{ steps.set-name.outputs.NAME }} "
