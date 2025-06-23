@@ -5,9 +5,9 @@ on:
     inputs:
       IS_STACKHAWK_READY:
         description: "Do Stackhawk scans"
-        default: false
+        default: 'false'
         required: false
-        type: boolean
+        type: string
 
       DO_TRIVY:
         description: "Do Trivy scans"
