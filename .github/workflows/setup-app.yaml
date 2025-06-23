@@ -21,6 +21,10 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: boolean
 
+      OVERRIDE_IS_STACKHAWK_READY:
+        required: false
+        type: string
+
       STACKHAWK_DIRECTORY:
         default: 'stackhawk'
         required: false
@@ -28,6 +32,10 @@ on:  # yamllint disable-line rule:truthy
 
       STACKHAWK_TMPL_YML:
         default: 'stackhawk-tmpl.yml'
+        required: false
+        type: string
+
+      DO_TRIVY:
         required: false
         type: string
 
@@ -61,6 +69,9 @@ on:  # yamllint disable-line rule:truthy
       STACKHAWK_DIRECTORY:
         value: ${{ jobs.app-setup.outputs.STACKHAWK_DIRECTORY }}
 
+      DO_TRIVY:
+        value: ${{ jobs.app-setup.outputs.DO_TRIVY }}
+
 jobs:
 
   app-setup:
@@ -71,6 +82,7 @@ jobs:
       PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}
       IS_STACKHAWK_READY: ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}
       STACKHAWK_DIRECTORY: ${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}
+      DO_TRIVY: ${{ steps.setup-security-trivy.outputs.DO_TRIVY }}
       IS_FRONTEND: ${{ steps.extra-vars.outputs.IS_FRONTEND }}
       IS_MONOREPO: ${{ steps.extra-vars.outputs.IS_MONOREPO }}
     steps:
@@ -111,12 +123,22 @@ jobs:
           is-stackhawk-ready: ${{ inputs.IS_STACKHAWK_READY }}
           override-is-stackhawk-ready: ${{ inputs.OVERRIDE_IS_STACKHAWK_READY }}
 
+      - name: "🦅 Setup Trivy"
+        # TODO
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/setup-security-trivy@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-security-trivy@FAN-6956-secrets
+        id: setup-security-trivy
+        with:
+          do-trivy: ${{ inputs.DO_TRIVY }}
+
+
       - name: "👀 Display values: ${{ steps.set-name.outputs.NAME }} "
         run: |
           echo "NAME                : ${{ steps.set-name.outputs.NAME }}"
           echo "PREVIEW_NAMESPACE   : ${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}"
           echo "IS_STACKHAWK_READY  : ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}"
           echo "STACKHAWK_DIRECTORY : ${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}"
+          echo "DO_TRIVY            : ${{ steps.setup-security-trivy.outputs.DO_TRIVY }}"
           echo "IS_FRONTEND         : ${{ steps.extra-vars.outputs.IS_FRONTEND }}"
           echo "IS_MONOREPO         : ${{ steps.extra-vars.outputs.IS_MONOREPO }}"
           #
@@ -127,6 +149,7 @@ jobs:
           echo "| PREVIEW_NAMESPACE   | \`${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| IS_STACKHAWK_READY  | \`${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| STACKHAWK_DIRECTORY | \`${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| DO_TRIVY            | \`${{ steps.setup-security-trivy.outputs.DO_TRIVY }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| IS_FRONTEND         | \`${{ steps.extra-vars.outputs.IS_FRONTEND }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| IS_MONOREPO         | \`${{ steps.extra-vars.outputs.IS_MONOREPO }}\` |" >> $GITHUB_STEP_SUMMARY
 
