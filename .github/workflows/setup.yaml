@@ -74,22 +74,22 @@ on:
       # Outputs from setup-app.yaml
       NAME:
         description: "App/Service name"
-        value: ${{ jobs.setup.outputs.NAME }}
+        value: ${{ jobs.app.outputs.NAME }}
       PREVIEW_NAMESPACE:
         description: "Preview namespace"
-        value: ${{ jobs.setup.outputs.PREVIEW_NAMESPACE }}
+        value: ${{ jobs.app.outputs.PREVIEW_NAMESPACE }}
       IS_STACKHAWK_READY:
         description: "Is Stackhawk ready"
-        value: ${{ jobs.setup.outputs.IS_STACKHAWK_READY }}
+        value: ${{ jobs.app.outputs.IS_STACKHAWK_READY }}
       STACKHAWK_DIRECTORY:
         description: "Stackhawk directory"
-        value: ${{ jobs.setup.outputs.STACKHAWK_DIRECTORY }}
+        value: ${{ jobs.app.outputs.STACKHAWK_DIRECTORY }}
       # IS_FRONTEND:
       #   description: "Is frontend"
-      #   value: ${{ jobs.setup.outputs.IS_FRONTEND }}
+      #   value: ${{ jobs.app.outputs.IS_FRONTEND }}
       # IS_MONOREPO:
       #   description: "Is monorepo"
-      #   value: ${{ jobs.setup.outputs.IS_MONOREPO }}
+      #   value: ${{ jobs.app.outputs.IS_MONOREPO }}
       # Outputs from repo-version.yaml
       version:
         description: "Repo Version"
