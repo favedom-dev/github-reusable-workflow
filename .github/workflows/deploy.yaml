@@ -1,0 +1,371 @@
+name: Combined Helm Preview and Deploy
+
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      DO_PREVIEW:
+        description: "Do preview environment"
+        default: false
+        required: false
+        type: boolean
+
+      DO_DEV:
+        description: "Do promotion to dev"
+        default: true
+        required: false
+        type: boolean
+
+      # Inputs for Helm Preview
+      NAME:
+        description: "Name of service"
+        required: true
+        type: string
+
+      VERSION:
+        required: true
+        type: string
+
+      SECRETS_TO_FETCH:
+        description: "Secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+
+      DEFAULT_SECRETS_TO_FETCH:
+        description: "Default secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+        default: |
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
+
+      EXTRA_VARS:
+        default: ''
+        required: false
+        type: string
+
+      TENANT:
+        default: ''
+        required: false
+        type: string
+
+      YQ_VERSION:
+        required: false
+        type: string
+        description: "Version of yq to install"
+
+      PREVIEW_NAMESPACE:
+        required: true
+        type: string
+
+      PREVIEW_SUBDOMAIN:
+        required: false
+        type: string
+
+      CHARTS_DIR:
+        default: 'charts'
+        type: string
+        required: false
+
+      HELM_CHARTS_GIT_REPO:
+        default: 'helm-charts'
+        required: false
+        type: string
+
+      HELM_CHARTS_GIT_ORG:
+        default: 'favedom-dev'
+        required: false
+        type: string
+
+      HELM_CHARTS_GIT_BRANCH:
+        default: 'master'
+        required: false
+        type: string
+        description: "Repo {{HELM_CHARTS_GIT_REPO}} branch to use. Used typically for testing new non-merged helm changes"
+
+      HELM_USE_LOCAL_COMMON:
+        required: false
+        type: string
+        description: "Use the local common chart from the repo {{HELM_CHARTS_GIT_REPO}}. Used typically for testing new non-merged helm changes"
+
+      GH_USER_EMAIL:
+        default: ''
+        required: false
+        type: string
+
+      GH_USER_NAME:
+        default: 'PowerVZ GitHub Bot'
+        required: false
+        type: string
+
+      HELM_REGISTRY_BASE_URL:
+        default: "https://console.cloud.google.com/artifacts/docker"
+        required: false
+        type: string
+
+      HELM_DOCKER_REGISTRY:
+        description: "Use GAR oci://"
+        default: 'us-central1-docker.pkg.dev'
+        required: false
+        type: string
+
+      HELM_REGISTRY_NAME:
+        default: 'helm'
+        required: false
+        type: string
+
+      HELM_PROJECT_ID:
+        default: 'favedom-dev'
+        required: false
+        type: string
+
+      HELM_LOCATION:
+        default: 'us-central1'
+        required: false
+        type: string
+
+      HELM_VERSION:
+        default: 'v3.17.1'
+        required: false
+        type: string
+
+      HELM_ENABLE_DEBUG:
+        default: true
+        required: false
+        type: boolean
+
+      KUBECTL_APPLY:
+        default: false
+        required: false
+        type: boolean
+
+      DOCKER_REGISTRY:
+        description: "Use GAR"
+        default: 'us-central1-docker.pkg.dev'
+        required: false
+        type: string
+
+      DOCKER_REGISTRY_NAME:
+        default: 'docker'
+        required: false
+        type: string
+
+      DOCKER_PROJECT_ID:
+        default: 'favedom-dev'
+        required: false
+        type: string
+
+      VALUES_GLOBALS_YAML:
+        default: 'values-preview.yaml'
+        required: false
+        type: string
+
+      VALUES_PREVIEW_YAML:
+        default: 'values-preview.yaml'
+        required: false
+        type: string
+
+      VALUES_PREVIEW_YAML_TPL:
+        default: 'values-preview.yaml.tpl'
+        required: false
+        type: string
+
+      OVERRIDE_CHART_NAME:
+        required: false
+        type: string
+
+      CLUSTER_PROJECT_ID:
+        default: 'development-375017'
+        required: false
+        type: string
+
+      CLUSTER_NAME:
+        default: 'fanfuzenil'
+        required: false
+        type: string
+
+      CLUSTER_LOCATION:
+        default: 'us-central1-a'
+        required: false
+        type: string
+
+      HELM_PREVIEW_ARGS:
+        default: ''
+        required: false
+        type: string
+
+      PREVIEW_BASE_DOMAIN:
+        default: 'dev.fanfuzenil.com'
+        required: false
+        type: string
+
+      PREVIEW_HEALTHCHECK:
+        default: 'actuator/health'
+        required: false
+        type: string
+
+      SECRETS_FROM_NAMESPACE:
+        default: fanfuze
+        required: false
+        type: string
+
+      GH_RUNS_ON:
+        default: 'ubuntu-latest'
+        required: false
+        type: string
+
+      # Inputs for Deploy Environment
+      MONOREPO_APP:
+        default: ''
+        required: false
+        type: string
+
+      ENV_REPO_NAME:
+        default: 'favedom-dev/argocd-deployments'
+        required: false
+        type: string
+
+      ENV_REPO_BRANCH:
+        default: 'master'
+        required: false
+        type: string
+
+      ENV_REPO_PATH:
+        default: 'env-repo'
+        required: false
+        type: string
+
+      ENV_REPO_SUBDIR_BASE:
+        default: 'dev/fanfuzenil'
+        required: false
+        type: string
+
+      ENV_REPO_SUBDIR:
+        required: false
+        type: string
+
+      OVERRIDE_SUBDIR_NAME:
+        required: false
+        type: string
+
+      DO_PR_MERGE:
+        default: 'true'
+        required: false
+        type: string
+
+      VERSION_SCRIPT_BASE_URL:
+        default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
+        required: false
+        type: string
+
+      VERSION_SCRIPT_BRANCH:
+        default: 'v2'
+        required: false
+        type: string
+
+      VERSION_SCRIPT_DIR:
+        default: '.github/scripts'
+        required: false
+        type: string
+
+      VERSION_SCRIPT_NAME:
+        default: 'update-values-tag.sh'
+        required: false
+        type: string
+
+      YAML_FILE:
+        default: 'values.yaml'
+        required: false
+        type: string
+
+    secrets:
+      WIF_PROVIDER:
+        description: "Workload Identity Federation Provider"
+        required: true
+
+      WIF_SERVICE_ACCOUNT:
+        description: "Workload Identity Federation Service Account"
+        required: true
+
+    outputs:
+      API_PATH:
+        value: ${{ jobs.helm-preview.outputs.API_PATH }}
+
+      APP_HOST:
+        value: ${{ jobs.helm-preview.outputs.APP_HOST }}
+
+jobs:
+  helm-preview:
+    # TODO
+    # uses:  favedom-dev/github-reusable-workflow/.github/workflows/deploy-helm-preview.yaml@v2
+    uses:  favedom-dev/github-reusable-workflow/.github/workflows/deploy-helm-preview.yaml@FAN-6956-secrets
+    if: github.event_name == 'pull_request' && DO_PREVIEW == 'true'
+    with:
+      NAME: ${{ inputs.NAME }}
+      VERSION: ${{ inputs.VERSION }}
+      SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
+      DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
+      EXTRA_VARS: ${{ inputs.EXTRA_VARS }}
+      TENANT: ${{ inputs.TENANT }}
+      YQ_VERSION: ${{ inputs.YQ_VERSION }}
+      PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
+      PREVIEW_SUBDOMAIN: ${{ inputs.PREVIEW_SUBDOMAIN }}
+      CHARTS_DIR: ${{ inputs.CHARTS_DIR }}
+      HELM_CHARTS_GIT_REPO: ${{ inputs.HELM_CHARTS_GIT_REPO }}
+      HELM_CHARTS_GIT_ORG: ${{ inputs.HELM_CHARTS_GIT_ORG }}
+      HELM_CHARTS_GIT_BRANCH: ${{ inputs.HELM_CHARTS_GIT_BRANCH }}
+      HELM_USE_LOCAL_COMMON: ${{ inputs.HELM_USE_LOCAL_COMMON }}
+      GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
+      GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
+      HELM_REGISTRY_BASE_URL: ${{ inputs.HELM_REGISTRY_BASE_URL }}
+      HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
+      HELM_REGISTRY_NAME: ${{ inputs.HELM_REGISTRY_NAME }}
+      HELM_PROJECT_ID: ${{ inputs.HELM_PROJECT_ID }}
+      HELM_LOCATION: ${{ inputs.HELM_LOCATION }}
+      HELM_VERSION: ${{ inputs.HELM_VERSION }}
+      HELM_ENABLE_DEBUG: ${{ inputs.HELM_ENABLE_DEBUG }}
+      KUBECTL_APPLY: ${{ inputs.KUBECTL_APPLY }}
+      DOCKER_REGISTRY: ${{ inputs.DOCKER_REGISTRY }}
+      DOCKER_REGISTRY_NAME: ${{ inputs.DOCKER_REGISTRY_NAME }}
+      DOCKER_PROJECT_ID: ${{ inputs.DOCKER_PROJECT_ID }}
+      VALUES_GLOBALS_YAML: ${{ inputs.VALUES_GLOBALS_YAML }}
+      VALUES_PREVIEW_YAML: ${{ inputs.VALUES_PREVIEW_YAML }}
+      VALUES_PREVIEW_YAML_TPL: ${{ inputs.VALUES_PREVIEW_YAML_TPL }}
+      OVERRIDE_CHART_NAME: ${{ inputs.OVERRIDE_CHART_NAME }}
+      CLUSTER_PROJECT_ID: ${{ inputs.CLUSTER_PROJECT_ID }}
+      CLUSTER_NAME: ${{ inputs.CLUSTER_NAME }}
+      CLUSTER_LOCATION: ${{ inputs.CLUSTER_LOCATION }}
+      HELM_PREVIEW_ARGS: ${{ inputs.HELM_PREVIEW_ARGS }}
+      PREVIEW_BASE_DOMAIN: ${{ inputs.PREVIEW_BASE_DOMAIN }}
+      PREVIEW_HEALTHCHECK: ${{ inputs.PREVIEW_HEALTHCHECK }}
+      SECRETS_FROM_NAMESPACE: ${{ inputs.SECRETS_FROM_NAMESPACE }}
+      GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
+    secrets:
+      WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+      WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+  deploy-environment:
+    # TODO
+    # uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-argocd-env.yaml@v2
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-argocd-env.yaml@FAN-6956-secrets
+    if: github.ref == 'refs/heads/master' && DO_DEV == 'true'
+    with:
+      NAME: ${{ inputs.NAME }}
+      VERSION: ${{ inputs.VERSION }}
+      MONOREPO_APP: ${{ inputs.MONOREPO_APP }}
+      ENV_REPO_NAME: ${{ inputs.ENV_REPO_NAME }}
+      ENV_REPO_BRANCH: ${{ inputs.ENV_REPO_BRANCH }}
+      ENV_REPO_PATH: ${{ inputs.ENV_REPO_PATH }}
+      ENV_REPO_SUBDIR_BASE: ${{ inputs.ENV_REPO_SUBDIR_BASE }}
+      ENV_REPO_SUBDIR: ${{ inputs.ENV_REPO_SUBDIR }}
+      OVERRIDE_SUBDIR_NAME: ${{ inputs.OVERRIDE_SUBDIR_NAME }}
+      DO_PR_MERGE: ${{ inputs.DO_PR_MERGE }}
+      VERSION_SCRIPT_BASE_URL: ${{ inputs.VERSION_SCRIPT_BASE_URL }}
+      VERSION_SCRIPT_BRANCH: ${{ inputs.VERSION_SCRIPT_BRANCH }}
+      VERSION_SCRIPT_DIR: ${{ inputs.VERSION_SCRIPT_DIR }}
+      VERSION_SCRIPT_NAME: ${{ inputs.VERSION_SCRIPT_NAME }}
+      YAML_FILE: ${{ inputs.YAML_FILE }}
+      GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
+      GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
+      GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
+    secrets:
+      WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+      WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
