@@ -110,7 +110,7 @@ jobs:
         id: set-runner
         run: |
           GH_RUNS_ON=${{ inputs.GH_RUNS_ON }}
-          echo "## GH_RUNS_ON : \`${GH_RUNS_ON}\`" >> $GITHUB_STEP_SUMMARY
+          echo "### GH_RUNS_ON : \`${GH_RUNS_ON}\`" >> $GITHUB_STEP_SUMMARY
           echo "GH_RUNS_ON=${GH_RUNS_ON}" >> $GITHUB_OUTPUT
 
   setup:
