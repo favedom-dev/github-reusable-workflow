@@ -11,9 +11,9 @@ on:
 
       DO_TRIVY:
         description: "Do Trivy scans"
-        default: true
+        default: 'false'
         required: false
-        type: boolean
+        type: string
 
       # Inputs for Stackhawk
       NAME:
@@ -359,7 +359,7 @@ jobs:
     # TODO
     # uses:  favedom-dev/github-reusable-workflow/.github/workflows/security-trivy.yaml@v2
     uses:  favedom-dev/github-reusable-workflow/.github/workflows/security-trivy.yaml@FAN-6956-secrets
-    if: inputs.DO_TRIVY == true
+    if: inputs.DO_TRIVY == 'true'
     with:
       NAME: ${{ inputs.NAME }}
       VERSION: ${{ inputs.VERSION }}
