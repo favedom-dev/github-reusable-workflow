@@ -112,7 +112,9 @@ jobs:
 
 
   app:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-app.yaml@v2
+    # TODO
+    # uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-app.yaml@v2
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-app.yaml@FAN-6956-secrets
     # needs: [runner]
     with:
       OVERRIDE_NAME: ${{ inputs.OVERRIDE_NAME }}
