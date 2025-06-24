@@ -33,19 +33,19 @@ on:
         required: false
         type: string
 
-      DO_TRIVY:
-        required: false
-        type: string
+      # DO_TRIVY:
+      #   required: false
+      #   type: string
 
-      IS_FRONTEND:
-        default: false
-        required: false
-        type: boolean
+      # IS_FRONTEND:
+      #   default: false
+      #   required: false
+      #   type: boolean
 
-      IS_MONOREPO:
-        default: false
-        required: false
-        type: boolean
+      # IS_MONOREPO:
+      #   default: false
+      #   required: false
+      #   type: boolean
 
       # Inputs from repo-version.yaml
       MONOREPO_APP:
@@ -139,11 +139,11 @@ jobs:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-app.yaml@FAN-6956-secrets
     # needs: [runner]
     with:
-      DO_TRIVY: ${{ inputs.DO_TRIVY }}
+      # DO_TRIVY: ${{ inputs.DO_TRIVY }}
       # GH_RUNS_ON: ${{ needs.runner.outputs.GH_RUNS_ON }}
       GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
-      IS_FRONTEND: ${{ inputs.IS_FRONTEND }}
-      IS_MONOREPO: ${{ inputs.IS_MONOREPO }}
+      # IS_FRONTEND: ${{ inputs.IS_FRONTEND }}
+      # IS_MONOREPO: ${{ inputs.IS_MONOREPO }}
       IS_STACKHAWK_READY: ${{ inputs.IS_STACKHAWK_READY }}
       OVERRIDE_NAME: ${{ inputs.OVERRIDE_NAME }}
       OVERRIDE_PREVIEW_NAMESPACE: ${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}

@@ -39,15 +39,15 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
-      IS_FRONTEND:
-        default: false
-        required: false
-        type: boolean
+      # IS_FRONTEND:
+      #   default: false
+      #   required: false
+      #   type: boolean
 
-      IS_MONOREPO:
-        default: false
-        required: false
-        type: boolean
+      # IS_MONOREPO:
+      #   default: false
+      #   required: false
+      #   type: boolean
 
       GH_RUNS_ON:
         default: 'ubuntu-latest'
@@ -83,8 +83,8 @@ jobs:
       IS_STACKHAWK_READY: ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}
       STACKHAWK_DIRECTORY: ${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}
       # DO_TRIVY: ${{ steps.setup-security-trivy.outputs.DO_TRIVY }}
-      IS_FRONTEND: ${{ steps.extra-vars.outputs.IS_FRONTEND }}
-      IS_MONOREPO: ${{ steps.extra-vars.outputs.IS_MONOREPO }}
+      # IS_FRONTEND: ${{ steps.extra-vars.outputs.IS_FRONTEND }}
+      # IS_MONOREPO: ${{ steps.extra-vars.outputs.IS_MONOREPO }}
     steps:
 
       - name: "📝 Set Name"
@@ -94,12 +94,12 @@ jobs:
           override-name: ${{ inputs.OVERRIDE_NAME }}
           repo-name: ${{ github.event.repository.name }}
 
-      - name: "📝 Set Extra Vars"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-extra-vars@v2
-        id: extra-vars
-        with:
-          is-frontend: ${{ inputs.IS_FRONTEND }}
-          is-monorepo: ${{ inputs.IS_MONOREPO }}
+      # - name: "📝 Set Extra Vars"
+      #   uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-extra-vars@v2
+      #   id: extra-vars
+      #   with:
+      #     is-frontend: ${{ inputs.IS_FRONTEND }}
+      #     is-monorepo: ${{ inputs.IS_MONOREPO }}
 
       - name: "📝 Set Preview Namespace name"
         uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-preview-namespace@v2
@@ -139,8 +139,8 @@ jobs:
           echo "IS_STACKHAWK_READY  : ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}"
           echo "STACKHAWK_DIRECTORY : ${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}"
           # echo "DO_TRIVY            : ${{ steps.setup-security-trivy.outputs.DO_TRIVY }}"
-          echo "IS_FRONTEND         : ${{ steps.extra-vars.outputs.IS_FRONTEND }}"
-          echo "IS_MONOREPO         : ${{ steps.extra-vars.outputs.IS_MONOREPO }}"
+          # echo "IS_FRONTEND         : ${{ steps.extra-vars.outputs.IS_FRONTEND }}"
+          # echo "IS_MONOREPO         : ${{ steps.extra-vars.outputs.IS_MONOREPO }}"
           #
           # echo "## App Values" >> $GITHUB_STEP_SUMMARY
           echo "| Property            | Value |" >> $GITHUB_STEP_SUMMARY
@@ -150,6 +150,6 @@ jobs:
           echo "| IS_STACKHAWK_READY  | \`${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| STACKHAWK_DIRECTORY | \`${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}\` |" >> $GITHUB_STEP_SUMMARY
           # echo "| DO_TRIVY            | \`${{ steps.setup-security-trivy.outputs.DO_TRIVY }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| IS_FRONTEND         | \`${{ steps.extra-vars.outputs.IS_FRONTEND }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| IS_MONOREPO         | \`${{ steps.extra-vars.outputs.IS_MONOREPO }}\` |" >> $GITHUB_STEP_SUMMARY
+          # echo "| IS_FRONTEND         | \`${{ steps.extra-vars.outputs.IS_FRONTEND }}\` |" >> $GITHUB_STEP_SUMMARY
+          # echo "| IS_MONOREPO         | \`${{ steps.extra-vars.outputs.IS_MONOREPO }}\` |" >> $GITHUB_STEP_SUMMARY
 
