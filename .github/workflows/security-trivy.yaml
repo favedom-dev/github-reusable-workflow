@@ -278,9 +278,7 @@ jobs:
           echo "ARCH_TRIVY_LINK=$ARCH_TRIVY_LINK" >> $GITHUB_OUTPUT
 
       - name: "🔐 Get Secrets"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@FAN-6956-secrets
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
         id: get-secrets
         with:
           WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
@@ -289,7 +287,7 @@ jobs:
           DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
 
       - name: "🔩 Git config"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2.1
         with:
           GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
           GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
@@ -433,9 +431,7 @@ jobs:
     steps:
 
       - name: "🔐 Get Secrets"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@FAN-6956-secrets
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
         id: get-secrets
         with:
           WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
@@ -444,7 +440,7 @@ jobs:
           DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
 
       - name: "🔩 Git config"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2.1
         with:
           GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
           GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
