@@ -67,7 +67,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       VERSION_SCRIPT_BRANCH:
-        default: 'v2'
+        default: 'v2.1'
         required: false
         type: string
 
@@ -137,7 +137,7 @@ jobs:
       #     echo "YAML_FILE               : ${{ inputs.YAML_FILE }}"
 
       - name: "⬇️ Get reusable files"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2.1
         id: get-reusable-files
         with:
           FILE_GIT_BRANCH: ${{ inputs.VERSION_SCRIPT_BRANCH }}
@@ -148,9 +148,7 @@ jobs:
             ]
 
       - name: "🔐 Get Secrets"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@FAN-6956-secrets
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
         id: get-secrets
         with:
           WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
@@ -159,7 +157,7 @@ jobs:
           DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
 
       - name: "🔩 Git config"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2.1
         with:
           GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
           GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
@@ -231,7 +229,7 @@ jobs:
           cat ./${{ inputs.YAML_FILE }}
 
       - name: "🡢 Create environment PR in repo: ${{ inputs.ENV_REPO_NAME }}"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
         if: github.ref == 'refs/heads/master'
         with:
           env-repo-name: ${{ inputs.ENV_REPO_NAME }}
