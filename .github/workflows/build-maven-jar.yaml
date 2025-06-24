@@ -124,9 +124,10 @@ on:  # yamllint disable-line rule:truthy
         required: true
 
     outputs:
+
       ARTIFACT_URL:
         description: "Artifcat URL to specific tag"
-        value: ${{ jobs.maven-docker.outputs.ARTIFACT_URL }}
+        value: ${{ jobs.maven-jar.outputs.ARTIFACT_URL }}
 
 jobs:
 
@@ -142,6 +143,7 @@ jobs:
       MVN_SETTINGS_FILE: settings.xml
     outputs:
       ARTIFACT_URL: ${{ steps.artifact-url.outputs.ARTIFACT_URL }}
+      # ARTIFACT_URL: ${{ steps.build-docker.outputs.ARTIFACT_URL }}
 
     steps:
 
@@ -149,7 +151,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "⬇️ Get reusable files"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2.1
         id: get-reusable-files
         with:
           FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
@@ -180,9 +182,7 @@ jobs:
           echo "MVN_ARG_ARTIFACT_REGISTRY=${MVN_ARG_ARTIFACT_REGISTRY}" >> $GITHUB_OUTPUT
 
       - name: "🔐 Get Secrets"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@FAN-6956-secrets
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
         id: get-secrets
         with:
           WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
@@ -190,37 +190,24 @@ jobs:
           SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
           DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
 
-      - name: "🧰 Set up gh cli"
-        uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
-        if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
-
-      - name: "🧰 Set up QEMU"
-        uses: docker/setup-qemu-action@v3
-
-      - name: "🧰 Set up Docker Buildx ${{ inputs.PLATFORMS }}"
-        uses: docker/setup-buildx-action@v3
+      - name: "🧰 Set up build basics"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-basics@v2.1
+        id: build-setup-basics
         with:
-          platforms: ${{ inputs.PLATFORMS }}
+          GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
+          PLATFORMS: ${{ inputs.PLATFORMS }}
 
-      - name: "⚙️ Set up JDK ${{ inputs.JDK_DISTRIBUTION }} ${{ inputs.JDK_VERSION }}"
-        uses: actions/setup-java@v4
+      - name: "🧰 Set up build maven"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-maven@v2.1
+        id: build-setup-maven
         with:
-          java-version: '${{ inputs.JDK_VERSION }}'
-          distribution: '${{ inputs.JDK_DISTRIBUTION }}'
-
-      - name: "⚙️ Set up Maven ${{ inputs.MVN_VERSION }}"
-        uses: stCarolas/setup-maven@v5
-        if: ${{ !startsWith(github.event.inputs.GH_RUNS_ON, 'ubuntu') }}
-        with:
-          maven-version: '${{ inputs.MVN_VERSION }}'
-
-      - name: "🧰 Maven ~/.m2/settings.xml"
-        run: ../mvn-settings.xml.sh
-
-      - name: "⚙️ Maven set app version ${{ inputs.VERSION }}"
-        working-directory: ${{ inputs.MAVEN_WORKING_DIR }}
-        run: |
-          mvn -B versions:set -DnewVersion=${{ inputs.VERSION }}
+          GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
+          JDK_DISTRIBUTION: ${{ inputs.JDK_DISTRIBUTION }}
+          JDK_VERSION: ${{ inputs.JDK_VERSION }}
+          MAVEN_WORKING_DIR: ${{ inputs.MAVEN_WORKING_DIR }}
+          MVN_VERSION: ${{ inputs.MVN_VERSION }}
+          NAME: ${{ inputs.NAME }}
+          VERSION: ${{ inputs.VERSION }}
 
       - name: "🛠️ Build with Maven"
         working-directory: ${{ inputs.MAVEN_WORKING_DIR }}
@@ -244,12 +231,12 @@ jobs:
         run: ../${ARTIFACT_LINK_SCRIPT_NAME}
 
       - name: "⬇️ Download Qwiet CLI"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2.1
         with:
           shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
 
       - name: "🔍 Qwiet Analyze with NextGen Static Analysis"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@v2.1
         with:
           shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
           name: ${{ inputs.NAME }}

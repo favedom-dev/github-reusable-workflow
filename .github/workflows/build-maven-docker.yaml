@@ -341,7 +341,7 @@ jobs:
           shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
 
       - name: "🔍 Qwiet Analyze with NextGen Static Analysis"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@v2.1
         with:
           shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
           name: ${{ inputs.NAME }}
