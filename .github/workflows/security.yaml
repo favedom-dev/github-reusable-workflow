@@ -86,7 +86,7 @@ on:
         type: number
 
       FILE_GIT_BRANCH:
-        default: 'v2'
+        default: 'v2.1'
         required: false
         type: string
         description: "Used typically for testing new non-merged helm changes"
@@ -315,9 +315,7 @@ on:
 
 jobs:
   stackhawk:
-    # TODO
-    # uses:  favedom-dev/github-reusable-workflow/.github/workflows/security-stackhawk.yaml@v2
-    uses:  favedom-dev/github-reusable-workflow/.github/workflows/security-stackhawk.yaml@FAN-6956-secrets
+    uses:  favedom-dev/github-reusable-workflow/.github/workflows/security-stackhawk.yaml@v2.1
     if: github.event_name == 'pull_request' && inputs.IS_STACKHAWK_READY == 'true'
     with:
       NAME: ${{ inputs.NAME }}
@@ -357,9 +355,7 @@ jobs:
       WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
 
   trivy:
-    # TODO
-    # uses:  favedom-dev/github-reusable-workflow/.github/workflows/security-trivy.yaml@v2
-    uses:  favedom-dev/github-reusable-workflow/.github/workflows/security-trivy.yaml@FAN-6956-secrets
+    uses:  favedom-dev/github-reusable-workflow/.github/workflows/security-trivy.yaml@v2.1
     # if: inputs.DO_TRIVY == 'true'
     with:
       NAME: ${{ inputs.NAME }}
