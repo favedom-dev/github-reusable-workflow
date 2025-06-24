@@ -12,6 +12,18 @@ on:
         required: true
         type: string
 
+      SECRETS_TO_FETCH:
+        description: "Secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+
+      DEFAULT_SECRETS_TO_FETCH:
+        description: "Default secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+        default: |
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
+
       FILE_DOWNLOAD_BASE_URL:
         default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
         required: false
@@ -128,12 +140,15 @@ jobs:
       # DOCKER_BUILDKIT: 1
       ARTIFACT_LINK_SCRIPT_NAME: artifact-link.sh
     outputs:
-      ARTIFACT_URL: ${{ steps.artifact-url.outputs.ARTIFACT_URL }}
+      ARTIFACT_URL: ${{ steps.build-docker.outputs.ARTIFACT_URL }}
 
     steps:
 
+      - name: "☁️ Checkout repository"
+        uses: actions/checkout@v4
+
       - name: "⬇️ Get reusable files"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2.1
         id: get-reusable-files
         with:
           FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
@@ -157,20 +172,21 @@ jobs:
           PROJECT_ID: ${{ inputs.PROJECT_ID }}
         run: ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
 
-      - name: "🧰 Set up gh cli"
-        uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
-        if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
-
-      - name: "🧰 Set up QEMU"
-        uses: docker/setup-qemu-action@v3
-
-      - name: "🧰 Set up Docker Buildx ${{ inputs.PLATFORMS }}"
-        uses: docker/setup-buildx-action@v3
+      - name: "🔐 Get Secrets"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
+        id: get-secrets
         with:
-          platforms: ${{ inputs.PLATFORMS }}
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
+          DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
 
-      - name: "☁️ Checkout repository"
-        uses: actions/checkout@v4
+      - name: "🧰 Set up build basics"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-basics@v2.1
+        id: build-setup-basics
+        with:
+          GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
+          PLATFORMS: ${{ inputs.PLATFORMS }}
 
       - name: "⚙️ Set up pnpm ${{ inputs.PNPM_VERSION }}"
         uses: pnpm/action-setup@v4
@@ -186,53 +202,18 @@ jobs:
       - name: "🛠️ Install dependencies"
         run: pnpm install
 
-      - name: "🔑 Google Auth"
-        if: ${{ !env.ACT }}
-        id: auth
-        uses: 'google-github-actions/auth@v2'
+      - name: "🐳 Docker"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/build-docker@v2.1
+        id: build-docker
         with:
-          token_format: 'access_token'
-          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
-          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-
-      - name: "🔑 Docker Auth"
-        if: ${{ !env.ACT }}
-        id: docker-auth
-        uses: 'docker/login-action@v3'
-        with:
-          username: 'oauth2accesstoken'
-          password: '${{ steps.auth.outputs.access_token }}'
-          registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev' # Google Artifact Registry
-
-      - name: "# Set up Docker tags"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/set-docker-tags@v2
-        id: docker-tags
-        with:
-          VERSION: ${{ inputs.VERSION }}
+          ACCESS_TOKEN: ${{ steps.get-secrets.outputs.access-token }}
+          ARTIFACT_LINK_SCRIPT_NAME: ${{ env.ARTIFACT_LINK_SCRIPT_NAME }}
+          DOCKER_CONTEXT: ${{ inputs.DOCKER_CONTEXT }}
           DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-
-      - name: "🐳 Docker: build, tag, and push"
-        uses: docker/build-push-action@v6
-        id: docker-build
-        with:
-          context: ${{ inputs.DOCKER_CONTEXT }}
-          file: ${{ inputs.DOCKERFILE_FILE }}
-          platforms: ${{ inputs.PLATFORMS }}
-          push: ${{ steps.setup-variables.outputs.DOCKER_PUSH }}
-          tags: ${{ steps.docker-tags.outputs.tags }}
-
-      - name: "🔗 Link to Container"
-        if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
-        id: artifact-url
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          ARTIFACT_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
-          DOCKER_DIGEST: ${{ steps.docker-build.outputs.digest }}
+          DOCKER_PUSH: ${{ steps.setup-variables.outputs.DOCKER_PUSH }}
           DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
+          GAR_LOCATION:  ${{ inputs.GAR_LOCATION }}
+          GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
           NAME: ${{ inputs.NAME }}
+          PLATFORMS: ${{ inputs.PLATFORMS }}
           VERSION: ${{ inputs.VERSION }}
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-          GITHUB_EVENT_PATH: ${{ github.event_path }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-        run: ../${ARTIFACT_LINK_SCRIPT_NAME}
