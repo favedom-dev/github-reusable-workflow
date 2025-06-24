@@ -117,6 +117,9 @@ jobs:
   deploy-environment:
     timeout-minutes: 5
     runs-on: ${{ inputs.GH_RUNS_ON }}
+    permissions:
+      id-token: write
+      contents: read
     steps:
 
       # - name: "🕸️ DEBUG: inputs"
