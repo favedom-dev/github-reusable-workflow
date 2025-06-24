@@ -23,12 +23,13 @@ on:
 
       NAMESPACE:
         description: "Namespace for Stackhawk deployment"
-        required: true
+        required: false
         type: string
 
       API_PATH:
+        default: ''
         description: "API path for Stackhawk"
-        required: true
+        required: false
         type: string
 
       APP_HOST:
@@ -189,7 +190,7 @@ on:
 
       ARTIFACT_URL:
         description: "Link to the specific version in GAR"
-        required: true
+        required: false
         type: string
 
       RUN_PR:
