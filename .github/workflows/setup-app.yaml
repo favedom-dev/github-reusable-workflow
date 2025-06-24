@@ -88,21 +88,21 @@ jobs:
     steps:
 
       - name: "📝 Set Name"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-name@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-name@v2.1
         id: set-name
         with:
           override-name: ${{ inputs.OVERRIDE_NAME }}
           repo-name: ${{ github.event.repository.name }}
 
       # - name: "📝 Set Extra Vars"
-      #   uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-extra-vars@v2
+      #   uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-extra-vars@v2.1
       #   id: extra-vars
       #   with:
       #     is-frontend: ${{ inputs.IS_FRONTEND }}
       #     is-monorepo: ${{ inputs.IS_MONOREPO }}
 
       - name: "📝 Set Preview Namespace name"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-preview-namespace@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-preview-namespace@v2.1
         id: set-name-pr-namespace
         with:
           override-preview-namespace: ${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
@@ -115,7 +115,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "🦅 Stackhawk ready repo"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-stackhawk-ready-repo@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-stackhawk-ready-repo@v2.1
         id: stackhawk-ready-repo
         with:
           stackhawk-directory: ${{ inputs.STACKHAWK_DIRECTORY }}
@@ -123,24 +123,12 @@ jobs:
           is-stackhawk-ready: ${{ inputs.IS_STACKHAWK_READY }}
           override-is-stackhawk-ready: ${{ inputs.OVERRIDE_IS_STACKHAWK_READY }}
 
-      # - name: "🛡️ Setup Trivy"
-      #   # TODO
-      #   # uses: favedom-dev/github-reusable-workflow/.github/actions/setup-security-trivy@v2
-      #   uses: favedom-dev/github-reusable-workflow/.github/actions/setup-security-trivy@FAN-6956-secrets
-      #   id: setup-security-trivy
-      #   with:
-      #     DO_TRIVY: ${{ inputs.DO_TRIVY }}
-
-
       - name: "👀 Display values: ${{ steps.set-name.outputs.NAME }} "
         run: |
           echo "NAME                : ${{ steps.set-name.outputs.NAME }}"
           echo "PREVIEW_NAMESPACE   : ${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}"
           echo "IS_STACKHAWK_READY  : ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}"
           echo "STACKHAWK_DIRECTORY : ${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}"
-          # echo "DO_TRIVY            : ${{ steps.setup-security-trivy.outputs.DO_TRIVY }}"
-          # echo "IS_FRONTEND         : ${{ steps.extra-vars.outputs.IS_FRONTEND }}"
-          # echo "IS_MONOREPO         : ${{ steps.extra-vars.outputs.IS_MONOREPO }}"
           #
           # echo "## App Values" >> $GITHUB_STEP_SUMMARY
           echo "| Property            | Value |" >> $GITHUB_STEP_SUMMARY
@@ -149,7 +137,5 @@ jobs:
           echo "| PREVIEW_NAMESPACE   | \`${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| IS_STACKHAWK_READY  | \`${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| STACKHAWK_DIRECTORY | \`${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}\` |" >> $GITHUB_STEP_SUMMARY
-          # echo "| DO_TRIVY            | \`${{ steps.setup-security-trivy.outputs.DO_TRIVY }}\` |" >> $GITHUB_STEP_SUMMARY
-          # echo "| IS_FRONTEND         | \`${{ steps.extra-vars.outputs.IS_FRONTEND }}\` |" >> $GITHUB_STEP_SUMMARY
-          # echo "| IS_MONOREPO         | \`${{ steps.extra-vars.outputs.IS_MONOREPO }}\` |" >> $GITHUB_STEP_SUMMARY
+
 
