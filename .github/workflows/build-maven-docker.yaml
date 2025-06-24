@@ -32,7 +32,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       FILE_GIT_BRANCH:
-        default: 'v2'
+        default: 'v2.1'
         required: false
         type: string
         description: "Used typically for testing new non-merged helm changes"
