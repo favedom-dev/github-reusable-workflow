@@ -69,7 +69,7 @@ runs:
         registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'
 
     - name: "# Set up Docker tags"
-      uses: favedom-dev/github-reusable-workflow/.github/actions/set-docker-tags@v2
+      uses: favedom-dev/github-reusable-workflow/.github/actions/set-docker-tags@v2.1
       id: docker-tags
       with:
         VERSION: ${{ inputs.VERSION }}

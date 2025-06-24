@@ -195,7 +195,7 @@ jobs:
     steps:
 
       # - name: "📄 GITHUB INFO"
-      #   uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2
+      #   uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2.1
       #   with:
       #     github-context: ${{ toJSON(github) }}
       #     event-name: ${{ github.event_name }}
@@ -207,7 +207,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "⬇️ Get reusable files"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2.1
         id: get-reusable-files
         with:
           FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
@@ -234,9 +234,7 @@ jobs:
         run: ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
 
       - name: "🔐 Get Secrets"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@FAN-6956-secrets
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
         id: get-secrets
         with:
           WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
@@ -286,18 +284,14 @@ jobs:
           echo "MVN_ARGS_SECRETS=${MVN_ARGS_SECRETS}" >> $GITHUB_OUTPUT
 
       - name: "🧰 Set up build basics"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-basics@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-basics@FAN-6956-secrets
+        uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-basics@v2.1
         id: build-setup-basics
         with:
           GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
           PLATFORMS: ${{ inputs.PLATFORMS }}
 
       - name: "🧰 Set up build maven"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-maven@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-maven@FAN-6956-secrets
+        uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-maven@v2.1
         id: build-setup-maven
         with:
           GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
@@ -326,9 +320,7 @@ jobs:
           ${{ inputs.MVN_ARGS_EXTRA }}
 
       - name: "🐳 Docker"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/build-docker@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/build-docker@FAN-6956-secrets
+        uses: favedom-dev/github-reusable-workflow/.github/actions/build-docker@v2.1
         id: build-docker
         with:
           ACCESS_TOKEN: ${{ steps.get-secrets.outputs.access-token }}
@@ -344,7 +336,7 @@ jobs:
           VERSION: ${{ inputs.VERSION }}
 
       - name: "⬇️ Download Qwiet CLI"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2.1
         with:
           shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
 
