@@ -257,7 +257,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       VERSION_SCRIPT_BRANCH:
-        default: 'v2'
+        default: 'v2.1'
         required: false
         type: string
 
@@ -304,9 +304,7 @@ jobs:
   #         echo "inputs.DO_DEV     : ${{ inputs.DO_DEV }}"
 
   preview:
-    # TODO
-    # uses:  favedom-dev/github-reusable-workflow/.github/workflows/deploy-helm-preview.yaml@v2
-    uses:  favedom-dev/github-reusable-workflow/.github/workflows/deploy-helm-preview.yaml@FAN-6956-secrets
+    uses:  favedom-dev/github-reusable-workflow/.github/workflows/deploy-helm-preview.yaml@v2.1
     if: github.event_name == 'pull_request' && inputs.DO_PREVIEW == true
     with:
       NAME: ${{ inputs.NAME }}
@@ -353,9 +351,7 @@ jobs:
       WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
 
   dev:
-    # TODO
-    # uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-argocd-env.yaml@v2
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-argocd-env.yaml@FAN-6956-secrets
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-argocd-env.yaml@v2.1
     if: github.ref == 'refs/heads/master' && inputs.DO_DEV == true
     with:
       NAME: ${{ inputs.NAME }}
