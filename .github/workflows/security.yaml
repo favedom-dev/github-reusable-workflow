@@ -193,7 +193,7 @@ on:
         required: false
         type: string
 
-      RUN_PR:
+      TRIVY_RUN_PR:
         description: "Set to true to run Trivy on PRs"
         default: 'false'
         required: false
@@ -367,7 +367,7 @@ jobs:
       SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
       DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH_TRIVY }}
       ARTIFACT_URL: ${{ inputs.ARTIFACT_URL }}
-      RUN_PR: ${{ inputs.RUN_PR }}
+      RUN_PR: ${{ inputs.TRIVY_RUN_PR }}
       ARCHITECTURES: ${{ inputs.ARCHITECTURES }}
       PROJECT_ID: ${{ inputs.PROJECT_ID }}
       GAR_LOCATION: ${{ inputs.GAR_LOCATION }}
