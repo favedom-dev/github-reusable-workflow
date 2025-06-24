@@ -72,7 +72,7 @@ on:
 jobs:
 
   # runner:
-  #   uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-gha-runners.yaml@v2
+  #   uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-gha-runners.yaml@v2.1
   #   secrets: inherit
 
   app:
