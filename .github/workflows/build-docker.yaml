@@ -30,7 +30,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       FILE_GIT_BRANCH:
-        default: 'v2'
+        default: 'v2.1'
         required: false
         type: string
         description: "Used typically for testing new non-merged helm changes"
@@ -139,7 +139,7 @@ jobs:
           fetch-depth: 0
 
       - name: "⬇️ Get Reusable Files"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2.1
         id: get-reusable-files
         with:
           FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
@@ -164,9 +164,7 @@ jobs:
         run: ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
 
       - name: "🔐 Get Secrets"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@FAN-6956-secrets
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
         id: get-secrets
         with:
           WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
@@ -175,18 +173,14 @@ jobs:
           DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
 
       - name: "🧰 Set up build basics"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-basics@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-basics@FAN-6956-secrets
+        uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-basics@v2.1
         id: build-setup-basics
         with:
           GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
           PLATFORMS: ${{ inputs.PLATFORMS }}
 
       - name: "🐳 Docker"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/build-docker@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/build-docker@FAN-6956-secrets
+        uses: favedom-dev/github-reusable-workflow/.github/actions/build-docker@v2.1
         id: build-docker
         with:
           ACCESS_TOKEN: ${{ steps.get-secrets.outputs.access-token }}
