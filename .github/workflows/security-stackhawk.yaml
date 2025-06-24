@@ -67,7 +67,7 @@ on:  # yamllint disable-line rule:truthy
         type: number
 
       FILE_GIT_BRANCH:
-        default: 'v2'
+        default: 'v2.1'
         required: false
         type: string
         description: "Used typically for testing new non-merged helm changes"
@@ -197,9 +197,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "🔐 Get Secrets"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@FAN-6956-secrets
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
         id: get-secrets
         with:
           WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
@@ -228,7 +226,7 @@ jobs:
           echo "APP_HOST=${APP_HOST}" >> $GITHUB_OUTPUT
 
       - name: "⬇️ Get reusable files"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2.1
         id: get-reusable-files
         # if: github.event_name != 'pull_request'
         with:

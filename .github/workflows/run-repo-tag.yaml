@@ -5,7 +5,7 @@ on: # yamllint disable-line rule:truthy
   workflow_dispatch:
     inputs:
       TAG_NAME:
-        default: v2
+        default: v2.1
         description: "Git tag name"
         required: true
         type: string
@@ -19,7 +19,7 @@ on: # yamllint disable-line rule:truthy
 jobs:
 
   git-tag:
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-update-tag.yaml@v2
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/repo-update-tag.yaml@v2.1
     with:
       TAG_NAME: ${{ inputs.TAG_NAME }}
       BRANCH_NAME: ${{ inputs.BRANCH_NAME }}

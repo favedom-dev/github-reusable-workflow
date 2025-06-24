@@ -54,7 +54,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "⬇️ Download Qwiet CLI"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2.1
         with:
           shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
 
