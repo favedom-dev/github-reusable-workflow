@@ -61,9 +61,9 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    env:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+    # env:
+    #   GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    #   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     outputs:
       version: ${{ steps.set-version.outputs.version }}
       tag: ${{ steps.set-version.outputs.tag }}
@@ -113,7 +113,7 @@ jobs:
           event-name: ${{ github.event_name }}
           increment-script-name: ${{ inputs.INCREMENT_SCRIPT_NAME }}
           monorepo-app: ${{ inputs.MONOREPO_APP }}
-          gh-token: ${{ secrets.GH_TOKEN }}
+          gh-token: ${{ env.GH_TOKEN }}
 
       - name: "📝 Set PR Version"
         uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-pr@v2.1
