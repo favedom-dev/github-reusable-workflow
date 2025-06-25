@@ -3,6 +3,7 @@ name: Maven and Docker
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
+
       NAME:
         description: "Name of service"
         required: true
@@ -12,13 +13,26 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
 
+      SECRETS_TO_FETCH:
+        description: "Secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+
+      DEFAULT_SECRETS_TO_FETCH:
+        description: "Default secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+        default: |
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
+          SHIFTLEFT_ACCESS_TOKEN:projects/1054075584205/secrets/cicd_SHIFTLEFT_ACCESS_TOKEN
+
       FILE_DOWNLOAD_BASE_URL:
         default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
         required: false
         type: string
 
       FILE_GIT_BRANCH:
-        default: 'v2'
+        default: 'v2.1'
         required: false
         type: string
         description: "Used typically for testing new non-merged helm changes"
@@ -139,9 +153,6 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
     secrets:
-      GH_TOKEN:
-        description: "GitHub token"
-        required: true
 
       WIF_PROVIDER:
         description: "Workload Identity Federation Provider"
@@ -151,18 +162,15 @@ on:  # yamllint disable-line rule:truthy
         description: "Workload Identity Federation Service Account"
         required: true
 
-      MVN_ARGS_SECRETS:
-        description: "Maven args that contain secrets"
-        required: false
+      # GCP_JSON_KEY:
+      #   required: false
 
-      GCP_JSON_KEY:
-        required: false
-
-      SHIFTLEFT_ACCESS_TOKEN:
-        description: "Shiftleft/Qwiet token"
-        required: false
+      # SHIFTLEFT_ACCESS_TOKEN:
+      #   description: "Shiftleft/Qwiet token"
+      #   required: false
 
     outputs:
+
       ARTIFACT_URL:
         description: "Artifcat URL to specific tag"
         value: ${{ jobs.maven-docker.outputs.ARTIFACT_URL }}
@@ -182,12 +190,12 @@ jobs:
       MVN_SETTINGS_SCRIPT_NAME: mvn-settings.xml.sh
       MVN_SETTINGS_FILE: settings.xml
     outputs:
-      ARTIFACT_URL: ${{ steps.artifact-url.outputs.ARTIFACT_URL }}
+      ARTIFACT_URL: ${{ steps.build-docker.outputs.ARTIFACT_URL }}
 
     steps:
 
       # - name: "📄 GITHUB INFO"
-      #   uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2
+      #   uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2.1
       #   with:
       #     github-context: ${{ toJSON(github) }}
       #     event-name: ${{ github.event_name }}
@@ -195,8 +203,11 @@ jobs:
       #     run-number: ${{ github.run_number }}
       #     pr-number: ${{ github.event.pull_request.number }}
 
+      - name: "☁️ Checkout repository"
+        uses: actions/checkout@v4
+
       - name: "⬇️ Get reusable files"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2.1
         id: get-reusable-files
         with:
           FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
@@ -222,140 +233,117 @@ jobs:
           PROJECT_ID: ${{ inputs.PROJECT_ID }}
         run: ../${{ inputs.VAR_DOCKER_SCRIPT_NAME }}
 
-      - name: "🧰 Set up gh cli"
-        uses: dev-hanz-ops/install-gh-cli-action@v0.2.1
-        if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
-
-      - name: "🧰 Set up QEMU"
-        uses: docker/setup-qemu-action@v3
-
-      - name: "🧰 Set up Docker Buildx ${{ inputs.PLATFORMS }}"
-        uses: docker/setup-buildx-action@v3
+      - name: "🔐 Get Secrets"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
+        id: get-secrets
         with:
-          platforms: ${{ inputs.PLATFORMS }}
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
+          DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
 
-      - name: "☁️ Checkout repository"
-        uses: actions/checkout@v4
-
-      - name: "🔑 Google Auth Token"
-        id: auth-gcp-token
-        uses: 'google-github-actions/auth@v2'
-        with:
-          token_format: 'access_token'
-          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
-          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-          create_credentials_file: ${{ inputs.CREATE_CREDENTIALS_FILE }}
-          export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
-
-      - name: "🗝️ Google Auth JSON Key"
-        id: auth-gcp-key
-        if: inputs.RUN_GCP_JSON_KEY
-        uses: 'google-github-actions/auth@v2'
-        with:
-          credentials_json: '${{ secrets.GCP_JSON_KEY }}'
-
-      # https://github.com/google-github-actions/setup-gcloud
-      # - name: "🧰 Set up Cloud SDK"
-      #   uses: 'google-github-actions/setup-gcloud@v0'
-
-      - name: "🔑 Docker Auth: GAR"
-        if: ${{ !env.ACT }}
-        id: auth-docker
-        uses: 'docker/login-action@v3'
-        with:
-          username: 'oauth2accesstoken'
-          password: '${{ steps.auth-gcp-token.outputs.access_token }}'
-          registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
-
-      - name: "⚙️ Set up JDK ${{ inputs.JDK_DISTRIBUTION }} ${{ inputs.JDK_VERSION }}"
-        uses: actions/setup-java@v4
-        with:
-          java-version: '${{ inputs.JDK_VERSION }}'
-          distribution: '${{ inputs.JDK_DISTRIBUTION }}'
-
-      - name: "⚙️ Set up Maven ${{ inputs.MVN_VERSION }}"
-        uses: stCarolas/setup-maven@v5
-        if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
-        with:
-          maven-version: '${{ inputs.MVN_VERSION }}'
-
-      - name: "📦 Cache local Maven repository"
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2/repository
-          key: ${{ inputs.NAME }}-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: |
-            ${{ inputs.NAME }}-${{ runner.os }}-maven-
-
-      - name: "🧰 Maven ~/.m2/settings.xml"
-        run: ../mvn-settings.xml.sh
-
-      - name: "⚙️ Maven set app version ${{ inputs.VERSION }}"
-        working-directory: ${{ inputs.APP_WORKING_DIR }}
+      - name: "⚙️ Set MVN_ARGS_SECRETS"
+        id: set-mvn-args-secrets
         env:
-          VERSION: ${{ inputs.VERSION }}
+          SECRETS_TO_FETCH: '${{ inputs.SECRETS_TO_FETCH }}'
         run: |
-          mvn -B versions:set -DnewVersion=${VERSION}
+          MVN_ARGS_SECRETS=""
+          echo "inputs.SECRETS_TO_FETCH : $SECRETS_TO_FETCH"
+
+          if [ -n "${SECRETS_TO_FETCH}" ]; then
+            # Remove possible newlines and extra whitespace
+            CLEANED_SECRETS=$(echo "${SECRETS_TO_FETCH}" | tr -d '\n' | sed 's/ //g')
+
+            IFS=',' read -ra SECRETS <<< "${CLEANED_SECRETS}"
+            for secret in "${SECRETS[@]}"; do
+              secret_key=$(echo "${secret}" | cut -d':' -f1)
+              secret_value=$(echo "${secret}" | cut -d':' -f2-)
+
+              echo "secret_key   : ${secret_key}"
+              echo "secret_value : ${secret_value}"
+
+              if [[ "${secret_key}" == MVN_ARGS__* ]]; then
+                mvn_arg_key="${secret_key#MVN_ARGS__}"
+                echo "mvn_arg_key  : ${mvn_arg_key}"
+
+                mvn_arg_value=$(echo "${!secret_key}")
+                # echo "mvn_arg_value: ${mvn_arg_value}"
+
+                if [[ -z "$MVN_ARGS_SECRETS" ]]; then
+                  MVN_ARGS_SECRETS="-D${mvn_arg_key}=${mvn_arg_value}"
+                else
+                  MVN_ARGS_SECRETS="${MVN_ARGS_SECRETS} -D${mvn_arg_key}=${mvn_arg_value}"
+                fi
+              else
+                echo "Variable does NOT start with MVN_ARGS__"
+              fi
+            done
+          fi
+
+          echo "MVN_ARGS_SECRETS : ${MVN_ARGS_SECRETS}"
+          echo "MVN_ARGS_SECRETS=${MVN_ARGS_SECRETS}" >> $GITHUB_OUTPUT
+
+      - name: "🧰 Set up build basics"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-basics@v2.1
+        id: build-setup-basics
+        with:
+          GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
+          PLATFORMS: ${{ inputs.PLATFORMS }}
+
+      - name: "🧰 Set up build maven"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-maven@v2.1
+        id: build-setup-maven
+        with:
+          GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
+          JDK_DISTRIBUTION: ${{ inputs.JDK_DISTRIBUTION }}
+          JDK_VERSION: ${{ inputs.JDK_VERSION }}
+          MAVEN_CACHE: 'true'
+          MAVEN_WORKING_DIR: ${{ inputs.APP_WORKING_DIR }}
+          MVN_VERSION: ${{ inputs.MVN_VERSION }}
+          NAME: ${{ inputs.NAME }}
+          VERSION: ${{ inputs.VERSION }}
 
       - name: "🛠️ Build with Maven"
         working-directory: ${{ inputs.APP_WORKING_DIR }}
-        env:
-          GCP_ACCESS_TOKEN: '${{ steps.auth-gcp-token.outputs.access_token }}'
-          GCP_ACCESS_TOKEN_EXPIRATION: '${{ steps.auth-gcp-token.outputs.access_token_expiration }}'
+        # env:
+        #   GCP_ACCESS_TOKEN: '${{ steps.auth-gcp-token.outputs.access_token }}'
+        #   GCP_ACCESS_TOKEN_EXPIRATION: '${{ steps.auth-gcp-token.outputs.access_token_expiration }}'
         run: |
           echo "MVN_ARGS        : ${{ inputs.MVN_ARGS }}"
           echo "MVN_ENV_VARS    : ${{ inputs.MVN_ENV_VARS }}"
           echo "MVN_ARGS_EXTRA  : ${{ inputs.MVN_ARGS_EXTRA }}"
-          echo "MVN_ARGS_SECRETS: ${{ secrets.MVN_ARGS_SECRETS }}"
+          echo "MVN_ARGS_SECRETS: ${{ steps.set-mvn-args-secrets.outputs.MVN_ARGS_SECRETS }}"
           mvn -B \
-          ${{ secrets.MVN_ARGS_SECRETS }} \
+          ${{ steps.set-mvn-args-secrets.outputs.MVN_ARGS_SECRETS }} \
           ${{ inputs.MVN_ENV_VARS }} \
           ${{ inputs.MVN_ARGS }} \
           ${{ inputs.MVN_ARGS_EXTRA }}
 
-      - name: "⬇️ Download Qwiet CLI"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2
+      - name: "🐳 Docker"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/build-docker@v2.1
+        id: build-docker
         with:
-          shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+          ACCESS_TOKEN: ${{ steps.get-secrets.outputs.access-token }}
+          ARTIFACT_LINK_SCRIPT_NAME: ${{ env.ARTIFACT_LINK_SCRIPT_NAME }}
+          DOCKER_CONTEXT: ${{ inputs.APP_WORKING_DIR }}
+          DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
+          DOCKER_PUSH: ${{ steps.setup-variables.outputs.DOCKER_PUSH }}
+          DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
+          GAR_LOCATION:  ${{ inputs.GAR_LOCATION }}
+          GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
+          NAME: ${{ inputs.NAME }}
+          PLATFORMS: ${{ inputs.PLATFORMS }}
+          VERSION: ${{ inputs.VERSION }}
+
+      - name: "⬇️ Download Qwiet CLI"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2.1
+        with:
+          shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
 
       - name: "🔍 Qwiet Analyze with NextGen Static Analysis"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@v2.1
         with:
-          shiftleft-access-token: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
+          shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
           name: ${{ inputs.NAME }}
           vcs-prefix-correction: ${{ inputs.VCS_PREFIX_CORRECTION }}
           scan-jar: ${{ inputs.SCAN_JAR }}
-
-      - name: "# Set up Docker tags"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/set-docker-tags@v2
-        id: docker-tags
-        with:
-          VERSION: ${{ inputs.VERSION }}
-          DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-
-      - name: "🐳 Docker: build, tag, and push"
-        uses: docker/build-push-action@v6
-        id: docker-build
-        if: ${{ !env.ACT }}
-        with:
-          context: ${{ inputs.APP_WORKING_DIR }}
-          # file: ${{ env.DOCKERFILE_FILE }}
-          platforms: ${{ inputs.PLATFORMS }}
-          push: ${{ steps.setup-variables.outputs.DOCKER_PUSH }}
-          tags: ${{ steps.docker-tags.outputs.tags }}
-
-      - name: "🔗 Link to Container"
-        if: steps.setup-variables.outputs.DOCKER_PUSH == 'true'
-        id: artifact-url
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          ARTIFACT_DIGEST: ${{ steps.docker-build.outputs.digest }}
-          # ARTIFACT_TYPE: docker
-          ARTIFACT_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
-          NAME: ${{ inputs.NAME }}
-          VERSION: ${{ inputs.VERSION }}
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-          GITHUB_EVENT_PATH: ${{ github.event_path }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-        run: ../${ARTIFACT_LINK_SCRIPT_NAME}

@@ -23,6 +23,19 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      SECRETS_TO_FETCH:
+        description: "Secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+
+      DEFAULT_SECRETS_TO_FETCH:
+        description: "Default secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+        default: |
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
+          HAWK_API_KEY:projects/1054075584205/secrets/cicd_HAWK_API_KEY
+
       TEST_USERNAME:
         default: 'stackhawk@velocityz.com'
         required: false
@@ -54,7 +67,7 @@ on:  # yamllint disable-line rule:truthy
         type: number
 
       FILE_GIT_BRANCH:
-        default: 'v2'
+        default: 'v2.1'
         required: false
         type: string
         description: "Used typically for testing new non-merged helm changes"
@@ -148,14 +161,23 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
     secrets:
-      GH_TOKEN:  # GitHub token
+
+      WIF_PROVIDER:
+        description: "Workload Identity Federation Provider"
         required: true
 
-      HAWK_API_KEY:
+      WIF_SERVICE_ACCOUNT:
+        description: "Workload Identity Federation Service Account"
         required: true
 
-      TEST_PASSWORD:  # stackhawk peeq TEST_USERNAME password
-        required: true
+      # GH_TOKEN:  # GitHub token
+      #   required: true
+
+      # HAWK_API_KEY:
+      #   required: true
+
+      # TEST_PASSWORD:  # stackhawk peeq TEST_USERNAME password
+      #   required: true
 
 jobs:
 
@@ -173,6 +195,15 @@ jobs:
 
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
+
+      - name: "🔐 Get Secrets"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
+        id: get-secrets
+        with:
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
+          DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
 
       - name: "⚙️ Set up JDK ${{ inputs.JDK_DISTRIBUTION }} ${{ inputs.JDK_VERSION }}"
         uses: actions/setup-java@v4
@@ -195,7 +226,7 @@ jobs:
           echo "APP_HOST=${APP_HOST}" >> $GITHUB_OUTPUT
 
       - name: "⬇️ Get reusable files"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2.1
         id: get-reusable-files
         # if: github.event_name != 'pull_request'
         with:
@@ -216,7 +247,8 @@ jobs:
           NAMESPACE: ${{ inputs.NAMESPACE }}
           API_PATH: ${{ inputs.API_PATH }}
           TEST_USERNAME: ${{ inputs.TEST_USERNAME }}
-          TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+          # TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+          TEST_PASSWORD: ${{ env.TEST_PASSWORD }}
           KEYCLOAK_AUTH: https://identity.${{ inputs.BASE_DOMAIN }}/realms/${{ inputs.KEYCLOAK_REALM }}/protocol/openid-connect/token
         run: |
           if [ -f "${{ github.workspace }}/../${SCRIPT_NAME}" ]; then
@@ -277,12 +309,12 @@ jobs:
         # https://github.com/stackhawk/hawkscan-action
         uses: stackhawk/hawkscan-action@v2
         with:
-          apiKey: ${{ secrets.HAWK_API_KEY }}
+          apiKey: ${{ env.HAWK_API_KEY }}
           dryRun: ${{ inputs.STACKHAWK_DRYRUN }}
           workspace: ./${{ inputs.STACKHAWK_DIRECTORY }}
           verbose: ${{ inputs.STACKHAWK_VERBOSE }}
           debug: ${{ inputs.STACKHAWK_DEBUG }}
           # codeScanningAlerts: ${{ inputs.STACKHAWK_CODESCANNINGALERTS }}
-          githubToken: ${{ secrets.GH_TOKEN }}
+          githubToken: ${{ env.GH_TOKEN }}
           configurationFiles: |
             stackhawk.yml

@@ -13,6 +13,18 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      SECRETS_TO_FETCH:
+        description: "Secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+
+      DEFAULT_SECRETS_TO_FETCH:
+        description: "Default secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+        default: |
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
+
       PREVIEW_NAMESPACE:
         required: true
         type: string
@@ -113,13 +125,17 @@ jobs:
     steps:
 
       # - name: "📄 GITHUB INFO"
-      #   uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2
+      #   uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2.1
       #   with:
       #     github-context: ${{ toJSON(github) }}
       #     event-name: ${{ github.event_name }}
       #     run-attempt: ${{ github.run_attempt }}
       #     run-number: ${{ github.run_number }}
       #     pr-number: ${{ github.event.pull_request.number }}
+
+      # Not really used here to remove warning
+      - name: "☁️ Checkout repository"
+        uses: actions/checkout@v4
 
       - name: "🏷️ Set up variables"
         id: setup-variables
@@ -174,22 +190,21 @@ jobs:
           echo "TRIVY_WORKING_DIR    : ${TRIVY_WORKING_DIR}"
           echo "======================"
 
-      - name: "🔑 Google Auth Token"
-        id: auth-gcp-token
-        uses: 'google-github-actions/auth@v2'
+      - name: "🔐 Get Secrets"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
+        id: get-secrets
         with:
-          token_format: 'access_token'
-          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
-          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-          create_credentials_file: ${{ inputs.CREATE_CREDENTIALS_FILE }}
-          export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
+          DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
 
       - name: "🔑 Docker Auth: GAR"
         id: auth-docker
         uses: 'docker/login-action@v3'
         with:
           username: 'oauth2accesstoken'
-          password: '${{ steps.auth-gcp-token.outputs.access_token }}'
+          password: ${{ steps.get-secrets.outputs.access-token }}
           registry: "${{ steps.setup-variables.outputs.GAR }}"
 
       # https://github.com/google-github-actions/setup-gcloud
@@ -277,7 +292,7 @@ jobs:
       - name: "☁️ Checkout repository ${{ steps.setup-variables.outputs.TRIVY_REPO_FULLNAME }}"
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ env.GH_TOKEN }}
           repository: ${{ steps.setup-variables.outputs.TRIVY_REPO_FULLNAME }}
           path: '${{ inputs.TRIVY_REPO_NAME }}'
 

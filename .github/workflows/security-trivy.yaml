@@ -13,6 +13,20 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
 
+      SECRETS_TO_FETCH:
+        description: "Secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+
+      DEFAULT_SECRETS_TO_FETCH:
+        description: "Default secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+        default: |
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
+          SLACK_TRIVY_WEBHOOK_URL:projects/1054075584205/secrets/cicd_SLACK_TRIVY_WEBHOOK_URL,
+          SLACK_DEVOPS_TOKEN:projects/1054075584205/secrets/cicd_SLACK_DEVOPS_TOKEN
+
       ARTIFACT_URL:
         description: "Link to the specific version in GAR"
         required: false
@@ -132,9 +146,6 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
     secrets:
-      GH_TOKEN:
-        description: "GitHub token"
-        required: true
 
       WIF_PROVIDER:
         description: "Workload Identity Federation Provider"
@@ -143,14 +154,6 @@ on:  # yamllint disable-line rule:truthy
       WIF_SERVICE_ACCOUNT:
         description: "Workload Identity Federation Service Account"
         required: true
-
-      SLACK_DEVOPS_TOKEN:
-        description: "Slack token"
-        required: false
-
-      SLACK_TRIVY_WEBHOOK_URL:
-        description: "Slack webhook url for trivy"
-        required: false
 
 jobs:
 
@@ -172,6 +175,10 @@ jobs:
       TRIVY_REPO_FULLNAME: ${{ steps.setup-variables.outputs.TRIVY_REPO_FULLNAME }}
       TRIVY_REPO_URL: ${{ steps.setup-variables.outputs.TRIVY_REPO_URL }}
     steps:
+
+      # Not really used here to remove warning
+      - name: "☁️ Checkout repository"
+        uses: actions/checkout@v4
 
       - name: "🏷️ Set up variables"
         id: setup-variables
@@ -270,36 +277,35 @@ jobs:
           echo "ARCH_TRIVY_LINK=$ARCH_TRIVY_LINK" >> $GITHUB_ENV
           echo "ARCH_TRIVY_LINK=$ARCH_TRIVY_LINK" >> $GITHUB_OUTPUT
 
+      - name: "🔐 Get Secrets"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
+        id: get-secrets
+        with:
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
+          DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
+
       - name: "🔩 Git config"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2.1
         with:
           GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
           GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
 
-
       - name: "☁️ Checkout repository ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}"
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_TOKEN }}
+          # token: ${{ steps.get-secrets.outputs.GH_TOKEN }}
+          token: ${{ env.GH_TOKEN }}
           repository: ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}
           path: '${{ needs.trivy-setup.outputs.TRIVY_REPO_NAME }}'
-
-      - name: "🔑 Google Auth Token"
-        id: auth-gcp-token
-        uses: 'google-github-actions/auth@v2'
-        with:
-          token_format: 'access_token'
-          workload_identity_provider: '${{ secrets.WIF_PROVIDER }}'
-          service_account: '${{ secrets.WIF_SERVICE_ACCOUNT }}'
-          create_credentials_file: ${{ inputs.CREATE_CREDENTIALS_FILE }}
-          export_environment_variables: ${{ inputs.EXPORT_ENVIRONMENT_VARIABLES }}
 
       - name: "🔑 Docker Auth: GAR"
         id: auth-docker
         uses: 'docker/login-action@v3'
         with:
           username: 'oauth2accesstoken'
-          password: '${{ steps.auth-gcp-token.outputs.access_token }}'
+          password: '${{ steps.get-secrets.outputs.access-token }}'
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
       - name: "🚀 Run Trivy vulnerability scanner: ${{ matrix.arch }}"
@@ -424,17 +430,25 @@ jobs:
     runs-on: ${{ inputs.GH_RUNS_ON }}
     steps:
 
+      - name: "🔐 Get Secrets"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
+        id: get-secrets
+        with:
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
+          DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
+
       - name: "🔩 Git config"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2.1
         with:
           GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
           GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
 
-
       - name: "☁️ Checkout repository ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}"
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ env.GH_TOKEN }}
           repository: ${{ needs.trivy-setup.outputs.TRIVY_REPO_FULLNAME }}
           path: '${{ needs.trivy-setup.outputs.TRIVY_REPO_NAME }}'
 
@@ -483,7 +497,7 @@ jobs:
         uses: slackapi/slack-github-action@v2.0.0
         with:
           errors: true
-          webhook: ${{ secrets.SLACK_TRIVY_WEBHOOK_URL }}
+          webhook: ${{ env.SLACK_TRIVY_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
             text: "🚨 *Trivy Scan: ${{ inputs.NAME }} ${{ inputs.VERSION }} (${{ steps.setup-notification-variables.outputs.ARCH_LIST }})*"

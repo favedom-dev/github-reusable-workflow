@@ -1,0 +1,78 @@
+name: 'Build setup basics'
+description: 'Setup build environment'
+
+inputs:
+
+  GH_RUNS_ON:
+    default: 'ubuntu-latest'
+    required: false
+    description: "GitHub runs-on"
+
+  JDK_DISTRIBUTION:
+    required: false
+    description: "JDK distribution"
+
+  JDK_VERSION:
+    required: false
+    description: "JDK Version"
+
+  MAVEN_CACHE:
+    default: 'false'
+    required: false
+    description: "Enable Maven caching"
+
+  MAVEN_WORKING_DIR:
+    default: '.'
+    required: false
+    description: "Maven working directory"
+
+  MVN_VERSION:
+    required: false
+    description: "Maven Version See https://maven.apache.org/docs/history.html"
+
+  NAME:
+    required: true
+    description: "Project name for cache key"
+
+  VERSION:
+    required: true
+    description: "App Version"
+
+runs:
+  using: 'composite'
+
+  steps:
+
+    - name: "⚙️ Set up JDK ${{ inputs.JDK_DISTRIBUTION }} ${{ inputs.JDK_VERSION }}"
+      uses: actions/setup-java@v4
+      with:
+        java-version: '${{ inputs.JDK_VERSION }}'
+        distribution: '${{ inputs.JDK_DISTRIBUTION }}'
+
+    - name: "⚙️ Set up Maven ${{ inputs.MVN_VERSION }}"
+      uses: stCarolas/setup-maven@v5
+      if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
+      with:
+        maven-version: '${{ inputs.MVN_VERSION }}'
+
+    - name: "📦 Cache local Maven repository"
+      uses: actions/cache@v4
+      if: ${{ inputs.MAVEN_CACHE == 'true' }}
+      with:
+        path: ~/.m2/repository
+        # path: ${{ github.workspace }}/.m2/repository
+        key: ${{ inputs.NAME }}-${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ inputs.NAME }}-${{ runner.os }}-maven-
+
+    - name: "🧰 Maven ~/.m2/settings.xml"
+      shell: bash
+      run: ../mvn-settings.xml.sh
+
+    - name: "⚙️ Maven set app version ${{ inputs.VERSION }}"
+      working-directory: ${{ inputs.MAVEN_WORKING_DIR }}
+      shell: bash
+      env:
+        VERSION: ${{ inputs.VERSION }}
+      run: |
+        mvn -B versions:set -DnewVersion=${VERSION}

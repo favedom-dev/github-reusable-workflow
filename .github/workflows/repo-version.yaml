@@ -29,8 +29,17 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
     secrets:
-      GH_TOKEN:
+
+      WIF_PROVIDER:
+        description: "Workload Identity Federation Provider"
         required: true
+
+      WIF_SERVICE_ACCOUNT:
+        description: "Workload Identity Federation Service Account"
+        required: true
+
+    #   GH_TOKEN:
+    #     required: true
 
     outputs:
       version:
@@ -49,9 +58,12 @@ jobs:
 
   repo-version:
     runs-on: ${{ inputs.GH_RUNS_ON }}
-    env:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+    permissions:
+      id-token: write
+      contents: read
+    # env:
+    #   GH_TOKEN: ${{ secrets.GH_TOKEN }}
+    #   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     outputs:
       version: ${{ steps.set-version.outputs.version }}
       tag: ${{ steps.set-version.outputs.tag }}
@@ -59,7 +71,7 @@ jobs:
     steps:
 
       # - name: "📄 GITHUB INFO"
-      #   uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2
+      #   uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2.1
       #   with:
       #     github-context: ${{ toJSON(github) }}
       #     event-name: ${{ github.event_name }}
@@ -73,8 +85,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: "🔐 Get Secrets"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
+        id: get-secrets
+        with:
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          SECRETS_TO_FETCH: "GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD"
+
       - name: "⬇️ Get reusable files"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2.1
         id: get-reusable-files
         if: github.event_name != 'pull_request'
         with:
@@ -86,17 +106,17 @@ jobs:
             ]
 
       - name: "☑ Release version"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-release@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-release@v2.1
         id: version
         if: github.event_name != 'pull_request'
         with:
           event-name: ${{ github.event_name }}
           increment-script-name: ${{ inputs.INCREMENT_SCRIPT_NAME }}
           monorepo-app: ${{ inputs.MONOREPO_APP }}
-          gh-token: ${{ secrets.GH_TOKEN }}
+          gh-token: ${{ env.GH_TOKEN }}
 
       - name: "📝 Set PR Version"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-pr@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-pr@v2.1
         id: pr-version
         if: github.event_name == 'pull_request'
         with:
@@ -106,7 +126,7 @@ jobs:
           run-attempt: ${{ github.run_attempt }}
 
       - name: "📝 Set version"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version@v2.1
         id: set-version
         with:
           pr-version: ${{ steps.pr-version.outputs.version }}
@@ -114,9 +134,10 @@ jobs:
           release-version: ${{ steps.version.outputs.version }}
 
       - name: "👀 Display version"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-display@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-display@v2.1
         with:
           version: ${{ steps.set-version.outputs.version }}
           build-version: ${{ steps.set-version.outputs.build-version }}
           tag: ${{ steps.version.outputs.tag }}
           pr-version: ${{ steps.pr-version.outputs.version }}
+          # monorepo-app: ${{ inputs.MONOREPO_APP }}

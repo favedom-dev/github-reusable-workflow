@@ -11,6 +11,18 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
 
+      SECRETS_TO_FETCH:
+        description: "Secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+
+      DEFAULT_SECRETS_TO_FETCH:
+        description: "Default secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+        default: |
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
+
       MONOREPO_APP:
         default: ''
         required: false
@@ -55,7 +67,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       VERSION_SCRIPT_BRANCH:
-        default: 'v2'
+        default: 'v2.1'
         required: false
         type: string
 
@@ -91,7 +103,13 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
     secrets:
-      GH_TOKEN:
+
+      WIF_PROVIDER:
+        description: "Workload Identity Federation Provider"
+        required: true
+
+      WIF_SERVICE_ACCOUNT:
+        description: "Workload Identity Federation Service Account"
         required: true
 
 jobs:
@@ -99,6 +117,9 @@ jobs:
   deploy-environment:
     timeout-minutes: 5
     runs-on: ${{ inputs.GH_RUNS_ON }}
+    permissions:
+      id-token: write
+      contents: read
     steps:
 
       # - name: "🕸️ DEBUG: inputs"
@@ -119,7 +140,7 @@ jobs:
       #     echo "YAML_FILE               : ${{ inputs.YAML_FILE }}"
 
       - name: "⬇️ Get reusable files"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2.1
         id: get-reusable-files
         with:
           FILE_GIT_BRANCH: ${{ inputs.VERSION_SCRIPT_BRANCH }}
@@ -129,8 +150,17 @@ jobs:
               { "subdirectory": "${{ inputs.VERSION_SCRIPT_DIR }}", "filename": "${{ inputs.VERSION_SCRIPT_NAME }}" }
             ]
 
+      - name: "🔐 Get Secrets"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
+        id: get-secrets
+        with:
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
+          DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
+
       - name: "🔩 Git config"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2.1
         with:
           GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
           GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
@@ -140,7 +170,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.ENV_REPO_NAME }}
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ env.GH_TOKEN }}
           ref: ${{ inputs.ENV_REPO_BRANCH }}
           path: ${{ inputs.ENV_REPO_PATH }}
 
@@ -202,7 +232,7 @@ jobs:
           cat ./${{ inputs.YAML_FILE }}
 
       - name: "🡢 Create environment PR in repo: ${{ inputs.ENV_REPO_NAME }}"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2
+        uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
         if: github.ref == 'refs/heads/master'
         with:
           env-repo-name: ${{ inputs.ENV_REPO_NAME }}
@@ -212,4 +242,4 @@ jobs:
           do-pr-merge: ${{ inputs.DO_PR_MERGE }}
           is-helm-chart: 'false'
           monorepo-app: ${{ inputs.MONOREPO_APP }}
-          gh-token: ${{ secrets.GH_TOKEN }}
+          gh-token: ${{ env.GH_TOKEN }}

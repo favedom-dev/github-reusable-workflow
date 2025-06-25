@@ -1,0 +1,36 @@
+name: "Setup Trivy"
+description: "Setup security values"
+
+inputs:
+  DO_TRIVY:
+    description: "Force Trivy run"
+    required: false
+
+outputs:
+  DO_TRIVY:
+    description: "Whether to run trivy"
+    value: ${{ steps.trivy-scan-prep.outputs.DO_TRIVY }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Trivy scan prep"
+      id: trivy-scan-prep
+      shell: bash
+      env:
+        DO_TRIVY: ${{ inputs.DO_TRIVY }}
+      run: |
+        # echo "input.DO_TRIVY : ${{ inputs.DO_TRIVY }}"
+        if [[ ${DO_TRIVY} == "true" ]]; then
+          # echo "Overrride"
+          DO_TRIVY='true'
+        else
+          # echo "Else"
+          DO_TRIVY='true'
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # echo "pull_request"
+            DO_TRIVY='false'
+          fi
+        fi
+        echo "DO_TRIVY : ${DO_TRIVY}"
+        echo "DO_TRIVY=${DO_TRIVY}" >> $GITHUB_OUTPUT

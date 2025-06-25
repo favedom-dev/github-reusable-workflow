@@ -109,7 +109,7 @@ jobs:
     steps:
 
       # - name: "📄 GITHUB INFO"
-      #   uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2
+      #   uses: favedom-dev/github-reusable-workflow/.github/actions/debug-github-info@v2.1
       #   with:
       #     github-context: ${{ toJSON(github) }}
       #     event-name: ${{ github.event_name }}
