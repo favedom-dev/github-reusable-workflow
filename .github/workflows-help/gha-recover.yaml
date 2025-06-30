@@ -1,0 +1,100 @@
+name: Recovering secrets
+
+# Assumption:
+# You've created the following GitHub secrets in your repository:
+# MY_SECRET - encode/decode with base64 - useful for private repositories
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  base64:
+    name: Recover With Base64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          MY_SECRET: ${{ secrets.MY_SECRET }}
+        id: base64
+        run: |
+          echo "MY_SECRET (***)    = ${MY_SECRET}"
+          echo "MY_SECRET (base64) = $(echo ${MY_SECRET} | base64)"
+          # recover=$(echo "MY_SECRET (base64) = $(echo ${MY_SECRET} | base64)")
+          # echo "${recover}"
+          # echo "recover=${recover}" >> $GITHUB_OUTPUT
+      - name: Recovery
+        run: |
+          echo "echo PASTE_HERE | base64 -D"
+
+  reverse:
+    name: Recover Reversed Base64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          MY_SECRET: ${{ secrets.MY_SECRET }}
+        id: rev-base64
+        run: |
+          echo "Reversed base64 (reverse to decode):"
+          echo ${MY_SECRET} | base64 | rev
+          # recover=$(echo ${MY_SECRET} | base64 | rev)
+          # echo "${recover}"
+          # echo "recover=${recover}" >> $GITHUB_OUTPUT
+      - name: Recovery
+        run: |
+          echo "echo PASTE_HERE | rev | base64 -d"
+
+  chunked-base64:
+    name: Recover With Chunked Base64
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          MY_SECRET: ${{ secrets.MY_SECRET }}
+        id: chunk-base64
+        run: |
+          echo "Chunking base64 output to avoid masking:"
+          echo ${MY_SECRET} | base64 | fold -w 50 | nl -v0 -nln
+          # recover=$(echo ${MY_SECRET} | base64 | fold -w 50 | nl -v0 -nln)
+          # echo "${recover}"
+          # echo "recover=${recover}" >> $GITHUB_OUTPUT
+      - name: Recovery
+        run: |
+          echo "Reconstruct by concatenating all lines in order with line number at the beginning"
+          echo "echo PASTE_HERE | cut -f2 | tr -d '\n' | base64 -d"
+
+  hex-encoding:
+    name: Recover With Hex
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          MY_SECRET: ${{ secrets.MY_SECRET }}
+        id: hex
+        run: |
+          echo "Hex encoded (decode with xxd -r -p):"
+          recover=$(echo ${MY_SECRET} | xxd -p | tr -d '\n')
+          echo "${recover}"
+          echo "recover=${recover}" >> $GITHUB_OUTPUT
+      - name: Recovery
+        run: |
+          echo "echo \"${{ steps.hex.outputs.recover }}\" | xxd -r -p"
+
+  base32:
+    name: Recover With Base32
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - env:
+          MY_SECRET: ${{ secrets.MY_SECRET }}
+        id: base32
+        run: |
+          echo "Base32 encoded (decode with base32 -d):"
+          echo ${MY_SECRET} | base32
+          # recover=$(echo ${MY_SECRET} | base32)
+          # echo "${recover}"
+          # echo "recover=${recover}" >> $GITHUB_OUTPUT
+      - name: Recovery
+        run: |
+          echo "echo PASTE_HERE | base32 -d"
