@@ -1,13 +1,5 @@
 # GitHub Reusable Workflow
 
-## TODO
-
-- update staging GitOps repo version on merge to master
-  - `deploy-env.yaml`
-  - should be done, but will need to make sure it works with Argo CD
-
----
-
 ## Helpful links
 
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
@@ -59,33 +51,36 @@ setup_branch_protection.sh ${REPO_TYPE}
 
 ## Secrets setup in GitHub
 
-- `GCP_CREDENTIALS`
-  - Google credentials
-  - **NOTE:** Not used in these workflows
-
-- `GCP_JSON_KEY`
-  - Google JSON Key used for "Google Auth JSON Key"
-
-- `GH_TOKEN`
-  - GitHub Token
-
-- `HAWK_API_KEY`
-  - Stackhawk API Key
-
-- `KEYCLOAK_PEEQ_USERS`
-  - Staging (favedom-dev)
-
-- `NPM_TOKEN`
-  - token used to generate `.npmrc`
-
-- `STACKHAWK_TEST_PASSWORD`
-  - password for Stackhawk Peeq (favedom-dev) staging test user
+Only need these secrets set in GitHub.  All others reside in Google Secret Manager
 
 - `WIF_PROVIDER`
   - Workload Identity Provider for GCP
 
 - `WIF_SERVICE_ACCOUNT`
   - Service account for GCP
+
+### Google Secret Manager (GSM)
+
+Secrets are added to the [core-services (core-services-370815)](https://console.cloud.google.com/security/secret-manager?inv=1&invt=Ab1l8w&project=core-services-370815) and they start with the prefix `cicd_`
+
+To get a secret from GSM to be used in the workflow set `SECRETS_TO_FETCH` for secrets specific to that 1 repo if more general and used by most repos set `DEFAULT_SECRETS_TO_FETCH`.
+
+Example
+
+```yaml
+      SECRETS_TO_FETCH: |
+        MVN_ARGS__AUTH_KEYCLOAK_CLIENTSECRET:projects/712323655295/secrets/fanfuze_KEYCLOAK_USERS_CLIENTSECRET,
+        MVN_ARGS__AUTH_KEYCLOAK_CLIENTID:projects/712323655295/secrets/fanfuze_KEYCLOAK_USERS_CLIENTID
+```
+
+```yaml
+      DEFAULT_SECRETS_TO_FETCH:
+        description: "Default secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+        default: |
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
+```
 
 ---
 
