@@ -85,6 +85,22 @@ on:  # yamllint disable-line rule:truthy
         type: string
         description: "Use the local common chart from the repo {{HELM_CHARTS_GIT_REPO}}.  Used typically for testing new non-merged helm changes"
 
+      PREVIEW_GIT_REPO:
+        default: 'argocd-previews'
+        required: false
+        type: string
+
+      PREVIEW_GIT_BRANCH:
+        default: 'master'
+        required: false
+        type: string
+        description: "Repo {{PREVIEW_GIT_REPO}} branch to use.  Used typically for previews"
+
+      PREVIEW_GIT_ORG:
+        default: 'favedom-dev'
+        required: false
+        type: string
+
       GH_USER_EMAIL:
         # default: 'github@powervz.com'
         default: ''
@@ -284,6 +300,14 @@ jobs:
           ref: ${{ inputs.HELM_CHARTS_GIT_BRANCH }}
           path: ${{ inputs.HELM_CHARTS_GIT_REPO }}
 
+      - name: "☁️ Checkout previews repository: ${{ inputs.PREVIEW_GIT_REPO }} branch: ${{ inputs.PREVIEW_GIT_BRANCH }}"
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.PREVIEW_GIT_ORG }}/${{ inputs.PREVIEW_GIT_REPO }}
+          token: ${{ env.GH_TOKEN }}
+          ref: ${{ inputs.PREVIEW_GIT_BRANCH }}
+          path: ${{ inputs.PREVIEW_GIT_REPO }}
+
       - name: "🏷️ Set up variables"
         id: setup-variables
         env:
@@ -298,6 +322,9 @@ jobs:
           HELM_REGISTRY_URL="${{ inputs.HELM_REGISTRY_BASE_URL }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_LOCATION }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}?project=${{ inputs.HELM_PROJECT_ID }}/"
           DOCKER_REPOSITORY=${{ inputs.DOCKER_REGISTRY }}/${{ inputs.DOCKER_PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY_NAME }}/${{ inputs.NAME }}
           CHARTS_WORKING_DIR=${{ inputs.HELM_CHARTS_GIT_REPO }}/${{ inputs.CHARTS_DIR }}
+          # PREVIEW_WORKING_DIR=${{ inputs.PREVIEW_GIT_REPO }}/apps/${app dir}
+          PREVIEW_WORKING_DIR=$(pwd)/${{ inputs.PREVIEW_GIT_REPO }}/apps/mono-web
+
           # echo "OVERRIDE_CHART_NAME: ${OVERRIDE_CHART_NAME}"
           if [ -n "${OVERRIDE_CHART_NAME}" ]; then
             CHART_NAME=${OVERRIDE_CHART_NAME}
@@ -353,6 +380,7 @@ jobs:
           echo "ARG_PREVIEW_GLOBALS_VALUES : ${ARG_PREVIEW_GLOBALS_VALUES}"
           echo "ARG_PREVIEW_TENANT_VALUES  : ${ARG_PREVIEW_TENANT_VALUES}"
           echo "ARG_PREVIEW_CHART_VALUES   : ${ARG_PREVIEW_CHART_VALUES}"
+          echo "PREVIEW_WORKING_DIR        : ${PREVIEW_WORKING_DIR}"
           echo "PREVIEW_CHART_VALUES       : ${PREVIEW_CHART_VALUES}"
           echo "PREVIEW_SUBDOMAIN          : ${PREVIEW_SUBDOMAIN}"
           echo "PREVIEW_DOMAIN             : ${PREVIEW_DOMAIN}"
@@ -382,6 +410,8 @@ jobs:
           echo "ARG_PREVIEW_TENANT_VALUES=${ARG_PREVIEW_TENANT_VALUES}" >> $GITHUB_OUTPUT
           echo "ARG_PREVIEW_CHART_VALUES=${ARG_PREVIEW_CHART_VALUES}" >> $GITHUB_ENV
           echo "ARG_PREVIEW_CHART_VALUES=${ARG_PREVIEW_CHART_VALUES}" >> $GITHUB_OUTPUT
+          echo "PREVIEW_WORKING_DIR=${PREVIEW_WORKING_DIR}" >> $GITHUB_ENV
+          echo "PREVIEW_WORKING_DIR=${PREVIEW_WORKING_DIR}" >> $GITHUB_OUTPUT
           echo "PREVIEW_CHART_VALUES=${PREVIEW_CHART_VALUES}" >> $GITHUB_ENV
           echo "PREVIEW_CHART_VALUES=${PREVIEW_CHART_VALUES}" >> $GITHUB_OUTPUT
           echo "PREVIEW_DOMAIN=${PREVIEW_DOMAIN}" >> $GITHUB_ENV
@@ -390,6 +420,14 @@ jobs:
           echo "PREVIEW_URL=${PREVIEW_URL}" >> $GITHUB_OUTPUT
           echo "HELM_VALUES_ISTIO_HOST=${HELM_VALUES_ISTIO_HOST}" >> $GITHUB_ENV
           echo "HELM_VALUES_ISTIO_HOST=${HELM_VALUES_ISTIO_HOST}" >> $GITHUB_OUTPUT
+
+          echo "pwd"
+          pwd
+          echo "ls"
+          ls -la
+
+          echo "ls PREVIEW_WORKING_DIR: ${PREVIEW_WORKING_DIR}"
+          ls -la ${PREVIEW_WORKING_DIR}
 
       - name: "🔧 Enable helm debug"
         if: inputs.HELM_ENABLE_DEBUG == true
@@ -404,7 +442,6 @@ jobs:
           version: ${{ inputs.HELM_VERSION }}
         id: install
 
-
       - name: "🔓 Get GKE Credentials cluster: ${{ inputs.CLUSTER_NAME }}"
         # if: ${{ !env.ACT }}
         id: 'get-credentials'
@@ -414,8 +451,8 @@ jobs:
           location: ${{ inputs.CLUSTER_LOCATION }}
           project_id: ${{ inputs.CLUSTER_PROJECT_ID }}
 
-      - name: '🔧 Set up Cloud SDK'
-        uses: 'google-github-actions/setup-gcloud@v2'
+      # - name: '🔧 Set up Cloud SDK'
+      #   uses: 'google-github-actions/setup-gcloud@v2'
 
       - name: "🔐 [GAR] (oci://): Helm login"
         # if: ${{ !env.ACT }}
@@ -455,6 +492,14 @@ jobs:
           echo ""
           echo "./charts/${PREVIEW_CHART_VALUES}:"
           cat "./charts/${PREVIEW_CHART_VALUES}" | yq
+
+          # TODO output to argocd-previews/apps/<app>/
+
+
+
+
+
+
 
       - name: "🏗️ PREVIEW: Create namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
         env:
@@ -552,6 +597,11 @@ jobs:
 
           echo "${_cmd[*]}"
           eval "${_cmd[@]}"
+
+
+
+
+
 
       - name: "⬇️ Get API path"
         id: get-api-path
