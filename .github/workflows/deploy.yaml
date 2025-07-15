@@ -306,7 +306,7 @@ jobs:
   preview:
     # TODO
     # uses:  favedom-dev/github-reusable-workflow/.github/workflows/deploy-helm-preview.yaml@v2.1
-    uses:  favedom-dev/github-reusable-workflow/.github/workflows/deploy-helm-preview.yaml@argocd-preivews
+    uses:  favedom-dev/github-reusable-workflow/.github/workflows/deploy-helm-preview.yaml@argocd-previews
     if: github.event_name == 'pull_request' && inputs.DO_PREVIEW == true
     with:
       NAME: ${{ inputs.NAME }}
