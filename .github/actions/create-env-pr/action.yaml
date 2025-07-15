@@ -150,13 +150,14 @@ runs:
         echo "TITLE         : ${TITLE}"
         echo "GH_BODY       : ${GH_BODY}"
         for ((i=1; i<=MAX_RETRIES; i++)); do
-          echo "for: ${MAX_RETRIES}"
-          PR_URL=$(gh pr create -R "${ENV_REPO_NAME}" --label "approved" --title "${TITLE}" --body "${GH_BODY}" 2>/dev/null)
+          echo "for: ${i}"
+          gh pr create -R "${ENV_REPO_NAME}" --label "approved" --title "${TITLE}" --body "${GH_BODY}"
+          # PR_URL=$(gh pr create -R "${ENV_REPO_NAME}" --label "approved" --title "${TITLE}" --body "${GH_BODY}" 2>/dev/null)
           rc=$?
           echo "rc = $rc"
           # if [ $? -eq 0 ]; then
           if [ $rc -eq 0 ]; then
-            echo "if: ${MAX_RETRIES}"
+            echo "if: ${i}"
             echo "Pull request created successfully at: ${PR_URL}"
             echo "## Pull Request" >> $GITHUB_STEP_SUMMARY
             echo "🡢 Updated in \`${ENV_REPO_NAME}\`: [${NAME} ${VERSION}](${PR_URL})" >> $GITHUB_STEP_SUMMARY
