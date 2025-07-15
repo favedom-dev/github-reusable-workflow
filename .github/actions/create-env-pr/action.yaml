@@ -103,7 +103,7 @@ runs:
           echo "Using input commit message...:"
           echo "${COMMIT_MSG}"
         elif [ "${IS_PREVIEW}" = "true" ]; then
-          COMMIT_MSG="chore: preview ${NAME} to ${VERSION}"
+          COMMIT_MSG="chore: preview ${NAME} ${VERSION}"
         elif [ "${IS_HELM_CHART}" = "true" ]; then
           COMMIT_MSG="chore: bump helm chart ${NAME} to ${VERSION}"
         else
