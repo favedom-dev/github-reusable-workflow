@@ -120,11 +120,10 @@ runs:
         if [ "${IS_PREVIEW}" = "true" ]; then
           echo "Repo         : ${{ github.server_url }}/${GITHUB_REPOSITORY}" >> ./GH_RELEASE_NOTES.txt
           echo "Version      : ${VERSION}" >> ./GH_RELEASE_NOTES.txt
-          # echo "CHANGES      :" >> ./GH_RELEASE_NOTES.txt
-          # git log master..HEAD \
-          # --pretty=format:'- [`%h`](${{ github.server_url }}/${GITHUB_REPOSITORY}/commit/%H) **%an** _(%ad)_ — %s' \
-          # --date=format:'%Y-%m-%d' >> ./GH_RELEASE_NOTES.txt
-        # if [ "${IS_HELM_CHART}" = "true" ]; then
+          echo "CHANGES      :" >> ./GH_RELEASE_NOTES.txt
+          git log master..HEAD \
+          --pretty=format:'- [`%h`](${{ github.server_url }}/${GITHUB_REPOSITORY}/commit/%H) **%an** _(%ad)_ — %s' \
+          --date=format:'%Y-%m-%d' >> ./GH_RELEASE_NOTES.txt
         elif [ "${IS_HELM_CHART}" = "true" ]; then
           echo "Helm chart   : [${NAME}](${{ github.server_url }}/${GITHUB_REPOSITORY}/tree/master/charts/${NAME})" > ./GH_RELEASE_NOTES.txt
           echo "Version      : [${VERSION}](${{ github.server_url }}/${GITHUB_REPOSITORY}/releases/tag/${NAME}%2Fv${VERSION})" >> ./GH_RELEASE_NOTES.txt
@@ -142,21 +141,16 @@ runs:
         echo "${GH_BODY}"
         git clean -fd
 
-        # set -x
 
         # Create PR with retry logic
-        echo "Create PR with retry logic"
-        echo "ENV_REPO_NAME : ${ENV_REPO_NAME}"
-        echo "TITLE         : ${TITLE}"
-        echo "GH_BODY       : ${GH_BODY}"
+        # echo "ENV_REPO_NAME : ${ENV_REPO_NAME}"
+        # echo "TITLE         : ${TITLE}"
+        # echo "GH_BODY       : ${GH_BODY}"
         for ((i=1; i<=MAX_RETRIES; i++)); do
-          echo "for: ${i}"
           PR_URL=$(gh pr create -R "${ENV_REPO_NAME}" --label "approved" --title "${TITLE}" --body "${GH_BODY}" 2>/dev/null)
           rc=$?
-          echo "rc = $rc"
-          # if [ $? -eq 0 ]; then
+          # echo "rc = $rc"
           if [ $rc -eq 0 ]; then
-            echo "if: ${i}"
             echo "Pull request created successfully at: ${PR_URL}"
             echo "## Pull Request" >> $GITHUB_STEP_SUMMARY
             echo "🡢 Updated in \`${ENV_REPO_NAME}\`: [${NAME} ${VERSION}](${PR_URL})" >> $GITHUB_STEP_SUMMARY
