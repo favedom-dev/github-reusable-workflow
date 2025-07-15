@@ -20,6 +20,10 @@ inputs:
     description: 'Version to use'
     required: true
 
+  commit-msg:
+    description: 'Git commit message'
+    default: ''
+
   do-pr-merge:
     description: 'Whether to auto-merge the PR'
     default: 'false'
@@ -44,15 +48,16 @@ runs:
       shell: bash
       working-directory: ${{ inputs.env-repo-path }}
       env:
-        NAME: ${{ inputs.name }}
-        VERSION: ${{ inputs.version }}
         BRANCH_NAME: ${{ inputs.is-helm-chart == 'true' && format('gha/helm-chart/{0}_{1}', inputs.name, inputs.version) || format('gha_{0}_{1}', inputs.name, inputs.version) }}
+        COMMIT_MSG: ${{ inputs.commit-msg }}
         DO_PR_MERGE: ${{ inputs.do-pr-merge }}
-        MONOREPO_APP: ${{ inputs.monorepo-app }}
-        IS_HELM_CHART: ${{ inputs.is-helm-chart }}
         ENV_REPO_NAME: ${{ inputs.env-repo-name }}
         GH_TOKEN: ${{ inputs.gh-token }}
         GITHUB_TOKEN: ${{ inputs.gh-token }}
+        IS_HELM_CHART: ${{ inputs.is-helm-chart }}
+        MONOREPO_APP: ${{ inputs.monorepo-app }}
+        NAME: ${{ inputs.name }}
+        VERSION: ${{ inputs.version }}
       run: |
         MAX_RETRIES=5
         SLEEP_TIME=10
@@ -61,6 +66,7 @@ runs:
         echo "NAME         : ${NAME}"
         echo "VERSION      : ${VERSION}"
         echo "MONOREPO_APP : ${MONOREPO_APP}"
+        echo "COMMIT_MSG   : ${COMMIT_MSG}"
         echo "BRANCH_NAME  : ${BRANCH_NAME}"
 
         # Check if branch exists and handle it
@@ -86,7 +92,11 @@ runs:
         fi
 
         # Set commit message based on IS_HELM_CHART
-        if [ "${IS_HELM_CHART}" = "true" ]; then
+        if [ ${#COMMIT_MSG} -gt 0 ]; then
+          echo "Uing input commit message...:"
+          echo "${COMMIT_MSG}"
+        # if [ "${IS_HELM_CHART}" = "true" ]; then
+        elif [ "${IS_HELM_CHART}" = "true" ]; then
           COMMIT_MSG="chore: bump helm chart ${NAME} to ${VERSION}"
         else
           COMMIT_MSG="chore: bump image.tag ${NAME} to ${VERSION}"
