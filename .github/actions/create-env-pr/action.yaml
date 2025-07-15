@@ -141,10 +141,13 @@ runs:
         echo "${GH_BODY}"
         git clean -fd
 
-        set -x
+        # set -x
 
         # Create PR with retry logic
         echo "Create PR with retry logic"
+        echo "ENV_REPO_NAME : ${ENV_REPO_NAME}"
+        echo "TITLE         : ${TITLE}"
+        echo "GH_BODY       : ${GH_BODY}"
         for ((i=1; i<=MAX_RETRIES; i++)); do
           echo "for: ${MAX_RETRIES}"
           PR_URL=$(gh pr create -R "${ENV_REPO_NAME}" --label "approved" --title "${TITLE}" --body "${GH_BODY}" 2>/dev/null)
