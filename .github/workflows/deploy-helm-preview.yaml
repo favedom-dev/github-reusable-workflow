@@ -85,6 +85,16 @@ on:  # yamllint disable-line rule:truthy
         type: string
         description: "Use the local common chart from the repo {{HELM_CHARTS_GIT_REPO}}.  Used typically for testing new non-merged helm changes"
 
+      DO_PR_MERGE:
+        default: 'true'
+        required: false
+        type: string
+
+      MONOREPO_APP:
+        default: ''
+        required: false
+        type: string
+
       PREVIEW_GIT_REPO:
         default: 'argocd-previews'
         required: false
@@ -499,30 +509,48 @@ jobs:
 
       - name: "DEBUG"
         # working-directory: ${{ inputs.HELM_CHARTS_GIT_REPO }}
-        env:
-          CHART_NAME: ${{ steps.setup-variables.outputs.CHART_NAME }}
-          VERSION: ${{ inputs.VERSION }}
-          IMAGE_VERSION: ${{ inputs.VERSION }}
-          HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
-          HELM_EXPERIMENTAL_OCI: 1
-          ARG_USE_LOCAL: ${{ steps.setup-variables.outputs.ARG_USE_LOCAL }}
-          PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.PREVIEW_CHART_VALUES }}
-          PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
-          DOCKER_REPOSITORY: ${{ steps.setup-variables.outputs.DOCKER_REPOSITORY }}
-          ARG_EXTRA_VARS: ${{ steps.setup-variables.outputs.ARG_EXTRA_VARS }}
+        # env:
+        #   CHART_NAME: ${{ steps.setup-variables.outputs.CHART_NAME }}
+        #   VERSION: ${{ inputs.VERSION }}
+        #   IMAGE_VERSION: ${{ inputs.VERSION }}
+        #   HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
+        #   HELM_EXPERIMENTAL_OCI: 1
+        #   ARG_USE_LOCAL: ${{ steps.setup-variables.outputs.ARG_USE_LOCAL }}
+        #   PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.PREVIEW_CHART_VALUES }}
+        #   PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
+        #   DOCKER_REPOSITORY: ${{ steps.setup-variables.outputs.DOCKER_REPOSITORY }}
+        #   ARG_EXTRA_VARS: ${{ steps.setup-variables.outputs.ARG_EXTRA_VARS }}
         run: |
-          echo "pwd"
-          pwd
-          echo "ls ${{ inputs.HELM_CHARTS_GIT_REPO }}"
-          ls -la ${{ inputs.HELM_CHARTS_GIT_REPO }}
-          echo "ls ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml"
-          ls -la ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml
+          # echo "pwd"
+          # pwd
+          # echo "ls ${{ inputs.HELM_CHARTS_GIT_REPO }}"
+          # ls -la ${{ inputs.HELM_CHARTS_GIT_REPO }}
+          # echo "ls ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml"
+          # ls -la ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml
+
           echo "cp"
-          cp ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml ${PREVIEW_WORKING_DIR}/pr-${CHART_NAME}-000.yaml
+          # cp ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml ${PREVIEW_WORKING_DIR}/pr-${CHART_NAME}-000.yaml
+          cp ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml
           echo "ls ${PREVIEW_WORKING_DIR}"
           ls -la ${PREVIEW_WORKING_DIR}
+          echo "cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml:"
+          cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml} | yq
+
+          # TODO
+          # git add
 
 
+      - name: "🡢 Create preview PR in repo: ${{ inputs.PREVIEW_GIT_REPO }}"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
+        with:
+          env-repo-name: ${{ inputs.PREVIEW_GIT_REPO }}
+          env-repo-path: ${PREVIEW_WORKING_DIR}
+          name: ${{ inputs.NAME }}
+          version: ${{ inputs.VERSION }}
+          do-pr-merge: ${{ inputs.DO_PR_MERGE }}
+          is-helm-chart: 'false'
+          monorepo-app: ${{ inputs.MONOREPO_APP }}
+          gh-token: ${{ env.GH_TOKEN }}
 
 
       # - name: "🏗️ PREVIEW: Create namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
