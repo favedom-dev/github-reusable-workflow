@@ -96,6 +96,11 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       PREVIEW_GIT_REPO:
+        default: 'favedom-dev/argocd-previews'
+        required: false
+        type: string
+
+      PREVIEW_GIT_PATH:
         default: 'argocd-previews'
         required: false
         type: string
@@ -544,7 +549,7 @@ jobs:
           # commit-msg: "chore: ${{ inputs.NAME }} preview ${{ inputs.PREVIEW_NAMESPACE }} ${{ inputs.VERSION }}"
           do-pr-merge: ${{ inputs.DO_PR_MERGE }}
           env-repo-name: ${{ inputs.PREVIEW_GIT_REPO }}
-          env-repo-path: ${{ inputs.PREVIEW_GIT_REPO }}
+          env-repo-path: ${{ inputs.PREVIEW_GIT_PATH }}
           gh-token: ${{ env.GH_TOKEN }}
           is-helm-chart: 'false'
           is-preview: 'true'
