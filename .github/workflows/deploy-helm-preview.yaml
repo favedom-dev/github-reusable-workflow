@@ -493,7 +493,7 @@ jobs:
           echo "./charts/${PREVIEW_CHART_VALUES}:"
           cat "./charts/${PREVIEW_CHART_VALUES}" | yq
 
-          # TODO output to argocd-previews/apps/<app>/
+          # TODO output yaml to argocd-previews/apps/<app>/
 
 
 
