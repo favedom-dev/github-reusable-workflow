@@ -534,7 +534,7 @@ jobs:
             name: ${{ inputs.PREVIEW_NAMESPACE }}
           EOF
           echo "cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}-namespace.yaml:"
-          cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}-namespace.yam | yq
+          cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}-namespace.yaml | yq
 
       - name: "🡢 Create preview PR in repo: ${{ inputs.PREVIEW_GIT_REPO }}"
         # TODO
