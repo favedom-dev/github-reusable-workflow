@@ -547,7 +547,7 @@ jobs:
           env-repo-path: ${{ inputs.PREVIEW_GIT_REPO }}
           gh-token: ${{ env.GH_TOKEN }}
           is-helm-chart: 'false'
-          is-preview: 'false'
+          is-preview: 'true'
           monorepo-app: ${{ inputs.MONOREPO_APP }}
           name: ${{ inputs.NAME }}
           version: ${{ inputs.VERSION }}
