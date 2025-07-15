@@ -32,6 +32,10 @@ inputs:
     description: 'Whether this is a Helm chart update'
     default: 'false'
 
+  is-preview:
+    description: 'Whether this is a preview update'
+    default: 'false'
+
   monorepo-app:
     description: 'Monorepo application name (if applicable)'
     default: ''
@@ -55,6 +59,7 @@ runs:
         GH_TOKEN: ${{ inputs.gh-token }}
         GITHUB_TOKEN: ${{ inputs.gh-token }}
         IS_HELM_CHART: ${{ inputs.is-helm-chart }}
+        IS_PREVIEW: ${{ inputs.is-preview }}
         MONOREPO_APP: ${{ inputs.monorepo-app }}
         NAME: ${{ inputs.name }}
         VERSION: ${{ inputs.version }}
@@ -63,11 +68,13 @@ runs:
         SLEEP_TIME=10
         MAIN_BRANCH="main"
 
-        echo "NAME         : ${NAME}"
-        echo "VERSION      : ${VERSION}"
-        echo "MONOREPO_APP : ${MONOREPO_APP}"
-        echo "COMMIT_MSG   : ${COMMIT_MSG}"
-        echo "BRANCH_NAME  : ${BRANCH_NAME}"
+        echo "NAME          : ${NAME}"
+        echo "VERSION       : ${VERSION}"
+        echo "MONOREPO_APP  : ${MONOREPO_APP}"
+        # echo "COMMIT_MSG    : ${COMMIT_MSG}"
+        echo "IS_HELM_CHART : ${IS_HELM_CHART}"
+        echo "IS_PREVIEW    : ${IS_PREVIEW}"
+        echo "BRANCH_NAME   : ${BRANCH_NAME}"
 
         # Check if branch exists and handle it
         if git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then
@@ -93,9 +100,10 @@ runs:
 
         # Set commit message based on IS_HELM_CHART
         if [ ${#COMMIT_MSG} -gt 0 ]; then
-          echo "Uing input commit message...:"
+          echo "Using input commit message...:"
           echo "${COMMIT_MSG}"
-        # if [ "${IS_HELM_CHART}" = "true" ]; then
+        elif [ "${IS_PREVIEW}" = "true" ]; then
+          COMMIT_MSG="chore: preview ${NAME} to ${VERSION}"
         elif [ "${IS_HELM_CHART}" = "true" ]; then
           COMMIT_MSG="chore: bump helm chart ${NAME} to ${VERSION}"
         else
@@ -109,7 +117,15 @@ runs:
         git push --force-with-lease origin "${BRANCH_NAME}"
 
         # Generate release notes based on type
-        if [ "${IS_HELM_CHART}" = "true" ]; then
+        if [ "${IS_PREVIEW}" = "true" ]; then
+          echo "Version      : [${VERSION}](${{ github.server_url }}/${GITHUB_REPOSITORY}/releases/tag/${NAME}%2Fv${VERSION})" >> ./GH_RELEASE_NOTES.txt
+          echo "Repo         : ${{ github.server_url }}/${GITHUB_REPOSITORY}" >> ./GH_RELEASE_NOTES.txt
+          echo "CHANGES      :" >> ./GH_RELEASE_NOTES.txt
+          git log master..HEAD \
+        --pretty=format:'- [`%h`](${{ github.server_url }}/${GITHUB_REPOSITORY}/commit/%H) **%an** _(%ad)_ — %s' \
+        --date=format:'%Y-%m-%d' >> ./GH_RELEASE_NOTES.txt
+        # if [ "${IS_HELM_CHART}" = "true" ]; then
+        elif [ "${IS_HELM_CHART}" = "true" ]; then
           echo "Helm chart   : [${NAME}](${{ github.server_url }}/${GITHUB_REPOSITORY}/tree/master/charts/${NAME})" > ./GH_RELEASE_NOTES.txt
           echo "Version      : [${VERSION}](${{ github.server_url }}/${GITHUB_REPOSITORY}/releases/tag/${NAME}%2Fv${VERSION})" >> ./GH_RELEASE_NOTES.txt
           echo "Repo         : ${{ github.server_url }}/${GITHUB_REPOSITORY}" >> ./GH_RELEASE_NOTES.txt
@@ -122,6 +138,8 @@ runs:
         fi
 
         GH_BODY=$(cat ./GH_RELEASE_NOTES.txt)
+        echo "GH_BODY:"
+        echo "${GH_BODY}"
         git clean -fd
 
         # Create PR with retry logic
