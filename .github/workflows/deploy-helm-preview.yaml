@@ -541,12 +541,13 @@ jobs:
         # uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
         uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@argocd-previews
         with:
-          commit-msg: "chore: ${{ inputs.NAME }} preview ${{ inputs.PREVIEW_NAMESPACE }} ${{ inputs.VERSION }}"
+          # commit-msg: "chore: ${{ inputs.NAME }} preview ${{ inputs.PREVIEW_NAMESPACE }} ${{ inputs.VERSION }}"
           do-pr-merge: ${{ inputs.DO_PR_MERGE }}
           env-repo-name: ${{ inputs.PREVIEW_GIT_REPO }}
           env-repo-path: ${{ inputs.PREVIEW_GIT_REPO }}
           gh-token: ${{ env.GH_TOKEN }}
           is-helm-chart: 'false'
+          is-preview: 'false'
           monorepo-app: ${{ inputs.MONOREPO_APP }}
           name: ${{ inputs.NAME }}
           version: ${{ inputs.VERSION }}
