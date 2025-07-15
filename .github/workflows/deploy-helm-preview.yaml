@@ -521,36 +521,35 @@ jobs:
         #   DOCKER_REPOSITORY: ${{ steps.setup-variables.outputs.DOCKER_REPOSITORY }}
         #   ARG_EXTRA_VARS: ${{ steps.setup-variables.outputs.ARG_EXTRA_VARS }}
         run: |
-          # echo "pwd"
-          # pwd
-          # echo "ls ${{ inputs.HELM_CHARTS_GIT_REPO }}"
-          # ls -la ${{ inputs.HELM_CHARTS_GIT_REPO }}
-          # echo "ls ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml"
-          # ls -la ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml
-
           echo "cp"
-          # cp ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml ${PREVIEW_WORKING_DIR}/pr-${CHART_NAME}-000.yaml
           cp ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml
-          echo "ls ${PREVIEW_WORKING_DIR}"
-          ls -la ${PREVIEW_WORKING_DIR}
           echo "cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml:"
           cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml | yq
 
-          # TODO
-          # git add
-
+          echo "Create namespace yaml"
+          cat <<EOF > ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}-namespace.yaml
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: ${{ inputs.PREVIEW_NAMESPACE }}
+          EOF
+          echo "cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}-namespace.yaml:"
+          cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}-namespace.yam | yq
 
       - name: "🡢 Create preview PR in repo: ${{ inputs.PREVIEW_GIT_REPO }}"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
+        # TODO
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
+        uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@argocd-previews
         with:
+          commit-msg: "chore: ${{ inputs.NAME }} preview ${{ inputs.PREVIEW_NAMESPACE }} ${{ inputs.VERSION }}"
+          do-pr-merge: ${{ inputs.DO_PR_MERGE }}
           env-repo-name: ${{ inputs.PREVIEW_GIT_REPO }}
           env-repo-path: ${{ inputs.PREVIEW_GIT_REPO }}
-          name: ${{ inputs.NAME }}
-          version: ${{ inputs.VERSION }}
-          do-pr-merge: ${{ inputs.DO_PR_MERGE }}
+          gh-token: ${{ env.GH_TOKEN }}
           is-helm-chart: 'false'
           monorepo-app: ${{ inputs.MONOREPO_APP }}
-          gh-token: ${{ env.GH_TOKEN }}
+          name: ${{ inputs.NAME }}
+          version: ${{ inputs.VERSION }}
 
 
       # - name: "🏗️ PREVIEW: Create namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
