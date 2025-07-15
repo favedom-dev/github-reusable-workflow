@@ -100,11 +100,6 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
-      PREVIEW_GIT_PATH:
-        default: 'argocd-previews'
-        required: false
-        type: string
-
       PREVIEW_GIT_BRANCH:
         default: 'master'
         required: false
@@ -513,18 +508,6 @@ jobs:
           # TODO output yaml to argocd-previews/apps/<app>/
 
       - name: "📦 Stage PR yaml file"
-        # working-directory: ${{ inputs.HELM_CHARTS_GIT_REPO }}
-        # env:
-        #   CHART_NAME: ${{ steps.setup-variables.outputs.CHART_NAME }}
-        #   VERSION: ${{ inputs.VERSION }}
-        #   IMAGE_VERSION: ${{ inputs.VERSION }}
-        #   HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
-        #   HELM_EXPERIMENTAL_OCI: 1
-        #   ARG_USE_LOCAL: ${{ steps.setup-variables.outputs.ARG_USE_LOCAL }}
-        #   PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.PREVIEW_CHART_VALUES }}
-        #   PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
-        #   DOCKER_REPOSITORY: ${{ steps.setup-variables.outputs.DOCKER_REPOSITORY }}
-        #   ARG_EXTRA_VARS: ${{ steps.setup-variables.outputs.ARG_EXTRA_VARS }}
         run: |
           echo "cp"
           cp ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml
@@ -548,8 +531,8 @@ jobs:
         with:
           # commit-msg: "chore: ${{ inputs.NAME }} preview ${{ inputs.PREVIEW_NAMESPACE }} ${{ inputs.VERSION }}"
           do-pr-merge: ${{ inputs.DO_PR_MERGE }}
-          env-repo-name: ${{ inputs.PREVIEW_GIT_REPO }}
-          env-repo-path: ${{ inputs.PREVIEW_GIT_PATH }}
+          env-repo-name: ${{ inputs.PREVIEW_GIT_ORG }}/${{ inputs.PREVIEW_GIT_REPO }}
+          env-repo-path: ${{ inputs.PREVIEW_GIT_REPO }}
           gh-token: ${{ env.GH_TOKEN }}
           is-helm-chart: 'false'
           is-preview: 'true'
