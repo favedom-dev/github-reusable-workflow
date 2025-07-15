@@ -96,7 +96,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       PREVIEW_GIT_REPO:
-        default: 'favedom-dev/argocd-previews'
+        default: 'argocd-previews'
         required: false
         type: string
 
