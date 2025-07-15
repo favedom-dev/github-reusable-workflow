@@ -534,7 +534,7 @@ jobs:
           echo "ls ${PREVIEW_WORKING_DIR}"
           ls -la ${PREVIEW_WORKING_DIR}
           echo "cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml:"
-          cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml} | yq
+          cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml | yq
 
           # TODO
           # git add
@@ -544,7 +544,7 @@ jobs:
         uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
         with:
           env-repo-name: ${{ inputs.PREVIEW_GIT_REPO }}
-          env-repo-path: ${PREVIEW_WORKING_DIR}
+          env-repo-path: ${{ inputs.PREVIEW_GIT_REPO }}
           name: ${{ inputs.NAME }}
           version: ${{ inputs.VERSION }}
           do-pr-merge: ${{ inputs.DO_PR_MERGE }}
