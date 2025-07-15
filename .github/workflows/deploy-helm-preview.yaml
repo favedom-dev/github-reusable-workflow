@@ -322,9 +322,10 @@ jobs:
           HELM_REGISTRY_URL="${{ inputs.HELM_REGISTRY_BASE_URL }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_LOCATION }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}?project=${{ inputs.HELM_PROJECT_ID }}/"
           DOCKER_REPOSITORY=${{ inputs.DOCKER_REGISTRY }}/${{ inputs.DOCKER_PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY_NAME }}/${{ inputs.NAME }}
           CHARTS_WORKING_DIR=${{ inputs.HELM_CHARTS_GIT_REPO }}/${{ inputs.CHARTS_DIR }}
-          BASE_DIR=$(dirname $(pwd))
           # PREVIEW_WORKING_DIR=${{ inputs.PREVIEW_GIT_REPO }}/apps/${app dir}
-          PREVIEW_WORKING_DIR=${BASE_DIR}/${{ inputs.PREVIEW_GIT_REPO }}/apps/mono-web
+          # BASE_DIR=$(dirname $(pwd))
+          # PREVIEW_WORKING_DIR=${BASE_DIR}/${{ inputs.PREVIEW_GIT_REPO }}/apps/mono-web
+          PREVIEW_WORKING_DIR=$(pwd)/${{ inputs.PREVIEW_GIT_REPO }}/apps/mono-web
 
           # echo "OVERRIDE_CHART_NAME: ${OVERRIDE_CHART_NAME}"
           if [ -n "${OVERRIDE_CHART_NAME}" ]; then
