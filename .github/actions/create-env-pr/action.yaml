@@ -122,7 +122,7 @@ runs:
           echo "Version      : ${VERSION}" >> ./GH_RELEASE_NOTES.txt
           echo "CHANGES      :" >> ./GH_RELEASE_NOTES.txt
           git log master..HEAD \
-          --pretty=format:"- [\`%h\`](${{ github.server_url }}/${GITHUB_REPOSITORY}/commit/%H) **%an** _(%ad)_ — %s" \
+          --pretty=format:"- [\`%h\`](${{ github.server_url }}/${{ github.repository }}/commit/%H) **%an** _(%ad)_ — %s" \
           --date=format:'%Y-%m-%d' >> ./GH_RELEASE_NOTES.txt
 
         elif [ "${IS_HELM_CHART}" = "true" ]; then
