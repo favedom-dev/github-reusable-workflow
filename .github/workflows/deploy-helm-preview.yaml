@@ -518,14 +518,19 @@ jobs:
           cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml | yq
 
           echo "Create namespace yaml"
-          cat <<EOF > ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}-namespace.yaml
+          # cat <<EOF > ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}-namespace.yaml
+          cat <<EOF >> ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml
           apiVersion: v1
           kind: Namespace
           metadata:
             name: ${{ inputs.PREVIEW_NAMESPACE }}
+              annotations:
+                argocd.argoproj.io/sync-wave: "-1"
           EOF
-          echo "cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}-namespace.yaml:"
-          cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}-namespace.yaml | yq
+          echo "cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml:"
+          cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml | yq
+          # echo "cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}-namespace.yaml:"
+          # cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}-namespace.yaml | yq
 
       - name: "🡢 Create preview PR in repo: ${{ inputs.PREVIEW_GIT_REPO }}"
         # TODO
