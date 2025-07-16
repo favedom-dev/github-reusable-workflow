@@ -520,13 +520,15 @@ jobs:
           echo "Create namespace yaml"
           # cat <<EOF > ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}-namespace.yaml
           cat <<EOF >> ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml
+          ---
           apiVersion: v1
           kind: Namespace
           metadata:
             name: ${{ inputs.PREVIEW_NAMESPACE }}
-              annotations:
-                argocd.argoproj.io/sync-wave: "\-1"
+
           EOF
+              # annotations:
+              #   argocd.argoproj.io/sync-wave: "\-1"
           echo "cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml:"
           cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml | yq
           # echo "cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}-namespace.yaml:"
