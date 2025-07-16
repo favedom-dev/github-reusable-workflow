@@ -276,6 +276,8 @@ jobs:
       # Not really used here to remove warning
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: "🔐 Get Secrets"
         uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
