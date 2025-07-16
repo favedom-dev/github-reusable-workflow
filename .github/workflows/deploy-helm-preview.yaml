@@ -75,7 +75,9 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       HELM_CHARTS_GIT_BRANCH:
-        default: 'master'
+        # TODO
+        # default: 'master'
+        default: 'FAN-7167/namespace'
         required: false
         type: string
         description: "Repo {{HELM_CHARTS_GIT_REPO}} branch to use.  Used typically for testing new non-merged helm changes"
@@ -500,7 +502,16 @@ jobs:
           echo "==============="
 
           # NOTE: script uses env vars CHART_NAME, VERSION, PREVIEW_NAMESPACE, DOCKER_REPOSITORY
-          ./.github/scripts/run-helm.sh ${HELM_DEBUG_SCRIPT_FLAG} ${ARG_USE_LOCAL} -t -p -c "${CHART_NAME}" -v "${VERSION}" -iv "${IMAGE_VERSION}" ${ARG_EXTRA_VARS}
+          ./.github/scripts/run-helm.sh \
+          ${HELM_DEBUG_SCRIPT_FLAG} \
+          ${ARG_USE_LOCAL} \
+          -t \
+          -p \
+          -c "${CHART_NAME}" \
+          -v "${VERSION}" \
+          -iv "${IMAGE_VERSION}" \
+          -ns "${{ inputs.PREVIEW_NAMESPACE }}"
+          ${ARG_EXTRA_VARS}
           echo ""
           echo "./charts/${PREVIEW_CHART_VALUES}:"
           cat "./charts/${PREVIEW_CHART_VALUES}" | yq
@@ -539,109 +550,6 @@ jobs:
           monorepo-app: ${{ inputs.MONOREPO_APP }}
           name: ${{ inputs.NAME }}
           version: ${{ inputs.VERSION }}
-
-
-      # - name: "🏗️ PREVIEW: Create namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
-      #   env:
-      #     PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
-      #   run: |
-      #     echo "Create Preview Namespace: ${PREVIEW_NAMESPACE}"
-      #     kubectl create namespace ${PREVIEW_NAMESPACE} --dry-run=client -o json | kubectl apply -f -
-      #     kubectl config set-context $(kubectl config current-context) --namespace ${PREVIEW_NAMESPACE}
-
-      # - name: "🔐 PREVIEW: Copy secrets"
-      #   working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
-      #   env:
-      #     CHART_NAME: ${{ steps.setup-variables.outputs.CHART_NAME }}
-      #     PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
-      #     FROM_NAMESPACE: ${{ inputs.SECRETS_FROM_NAMESPACE }}
-      #   run: |
-      #     ../.github/scripts/preview_copy_secrets.sh -c "${CHART_NAME}" -p "${PREVIEW_NAMESPACE}" -n "${FROM_NAMESPACE}"
-
-      # # Use for non front ends due to secret issue
-      # - name: "✍️ PREVIEW: kubectl apply preview yaml from helm output"
-      #   if: inputs.KUBECTL_APPLY == true
-      #   env:
-      #     PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
-      #   working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
-      #   run: |
-      #     kubectl apply -f .preview.yaml -n ${PREVIEW_NAMESPACE}
-
-      # - name: "☸ PREVIEW: Helm upgrade --install"
-      #   if: inputs.KUBECTL_APPLY == false
-      #   env:
-      #     CHART_NAME: ${{ steps.setup-variables.outputs.CHART_NAME }}
-      #     VALUES_GLOBALS_YAML: ${{ inputs.VALUES_GLOBALS_YAML }}
-      #     HELM_PREVIEW_ARGS: ${{ inputs.HELM_PREVIEW_ARGS }}
-      #     HELM_EXPERIMENTAL_OCI: 1
-      #     ARG_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_CHART_VALUES }}
-      #     ARG_COMMON_VALUES: ${{ steps.setup-variables.outputs.ARG_COMMON_VALUES }}
-      #     ARG_PREVIEW_GLOBALS_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_GLOBALS_VALUES }}
-      #     ARG_PREVIEW_TENANT_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_TENANT_VALUES }}
-      #     ARG_PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.ARG_PREVIEW_CHART_VALUES }}
-      #     HELM_VALUES_ISTIO_HOST: ${{ steps.setup-variables.outputs.HELM_VALUES_ISTIO_HOST }}
-      #     HELM_USE_LOCAL_COMMON: ${{ inputs.HELM_USE_LOCAL_COMMON }}
-      #   working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
-      #   run: |
-      #     CHART_YAML_PATH=./${CHART_NAME}/Chart.yaml
-
-      #     echo "CHART_NAME             : ${CHART_NAME}"
-      #     echo "CHART_YAML_PATH        : ${CHART_YAML_PATH}"
-      #     echo "HELM_DEBUG_FLAG        : ${HELM_DEBUG_FLAG}"
-
-      #     COLOR_INFO='\033[1;33m'
-      #     NOCOLOR='\033[0m'
-
-      #     use_local_common() {
-      #       echo "🛈 Using local common chart..."
-
-      #       CHART_YAML_COMMON_ORIG_VERSION=$(chart="common" yq '(.dependencies[] | select (.name == strenv(chart))).version' "${CHART_YAML_PATH}")
-      #       CHART_YAML_COMMON_ORIG_REPO=$(chart="common" yq '(.dependencies[] | select (.name == strenv(chart))).repository' "${CHART_YAML_PATH}")
-
-      #       echo "CHART_YAML_COMMON_ORIG_VERSION : ${CHART_YAML_COMMON_ORIG_VERSION}"
-      #       echo "CHART_YAML_COMMON_ORIG_REPO    : ${CHART_YAML_COMMON_ORIG_REPO}"
-
-      #       NEWVER=$(yq '.version' common/Chart.yaml)
-      #       NEWREPO="file://../common"
-      #       update_chart
-      #     }
-
-      #     update_chart() {
-      #       chart="common" newver="${NEWVER}" yq '(.dependencies[] | select (.name == strenv(chart))).version = strenv(newver)' -i "${CHART_YAML_PATH}"
-      #       chart="common" newrepo="${NEWREPO}" yq '(.dependencies[] | select (.name == strenv(chart))).repository = strenv(newrepo)' -i "${CHART_YAML_PATH}"
-      #       echo ""
-      #       echo -e "${COLOR_INFO}DUMP ${CHART_YAML_PATH}${NOCOLOR}"
-      #       cat "${CHART_YAML_PATH}" | yq
-      #       echo ""
-      #     }
-
-      #     if [ -n "${HELM_USE_LOCAL_COMMON}" ]; then
-      #       use_local_common
-      #       echo "Running: helm dependency update ./${CHART_NAME} ${HELM_DEBUG_FLAG}"
-      #       helm dependency update ./${CHART_NAME} "${HELM_DEBUG_FLAG}"
-      #       # helm dependency build ./${CHART_NAME} "${HELM_DEBUG_FLAG}"
-      #     fi
-
-      #     _cmd=(helm upgrade \
-      #     "${DRY_RUN}" \
-      #     --install "${CHART_NAME}" \
-      #     --set global.preview=true \
-      #     "${ARG_CHART_VALUES}" \
-      #     "${ARG_PREVIEW_GLOBALS_VALUES}" \
-      #     "${ARG_PREVIEW_TENANT_VALUES}" \
-      #     "${ARG_PREVIEW_CHART_VALUES}" \
-      #     "${HELM_VALUES_ISTIO_HOST}" \
-      #     "${HELM_PREVIEW_ARGS}" \
-      #     "./${CHART_NAME}" \
-      #     "${HELM_DEBUG_FLAG}")
-
-      #     echo "${_cmd[*]}"
-      #     eval "${_cmd[@]}"
-
-
-
-
-
 
       - name: "⬇️ Get API path"
         id: get-api-path
