@@ -524,8 +524,8 @@ jobs:
           kind: Namespace
           metadata:
             name: ${{ inputs.PREVIEW_NAMESPACE }}
-              annotations:
-                argocd.argoproj.io/sync-wave: "\-1"
+            annotations:
+              argocd.argoproj.io/sync-wave: "\-1"
 
           EOF
           echo "cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml:"
