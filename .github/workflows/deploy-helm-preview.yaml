@@ -490,15 +490,15 @@ jobs:
 
           # NOTE: script uses env vars CHART_NAME, VERSION, PREVIEW_NAMESPACE, DOCKER_REPOSITORY
           ./.github/scripts/run-helm.sh \
-          ${HELM_DEBUG_SCRIPT_FLAG} \
-          ${ARG_USE_LOCAL} \
-          -t \
-          -p \
-          -c "${CHART_NAME}" \
-          -v "${VERSION}" \
-          -iv "${IMAGE_VERSION}" \
-          -ns "${{ inputs.PREVIEW_NAMESPACE }}"
-          ${ARG_EXTRA_VARS}
+            ${HELM_DEBUG_SCRIPT_FLAG} \
+            ${ARG_USE_LOCAL} \
+            -t \
+            -p \
+            -c "${CHART_NAME}" \
+            -v "${VERSION}" \
+            -iv "${IMAGE_VERSION}" \
+            -ns "${{ inputs.PREVIEW_NAMESPACE }}" \
+            ${ARG_EXTRA_VARS}
           echo ""
           echo "./charts/${PREVIEW_CHART_VALUES}:"
           cat "./charts/${PREVIEW_CHART_VALUES}" | yq
