@@ -503,6 +503,7 @@ jobs:
             -v "${VERSION}" \
             -iv "${IMAGE_VERSION}" \
             -ns "${{ inputs.PREVIEW_NAMESPACE }}" \
+            -no "${{ inputs.PREVIEW_NAMESPACE }}" \
             ${ARG_EXTRA_VARS}
           echo ""
           echo "./charts/${PREVIEW_CHART_VALUES}:"
