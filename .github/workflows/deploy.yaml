@@ -85,7 +85,7 @@ on:  # yamllint disable-line rule:truthy
 
       HELM_USE_LOCAL_COMMON:
         required: false
-        type: boolean
+        type: string
         description: "Use the local common chart from the repo {{HELM_CHARTS_GIT_REPO}}. Used typically for testing new non-merged helm changes"
 
       GH_USER_EMAIL:
