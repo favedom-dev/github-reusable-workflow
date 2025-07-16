@@ -321,12 +321,13 @@ jobs:
       - name: "🏷️ Set up variables"
         id: setup-variables
         env:
-          GH_REF: ${{ github.ref }}
-          CHART_NAME: ${{ inputs.NAME }}
-          OVERRIDE_CHART_NAME: ${{ inputs.OVERRIDE_CHART_NAME }}
-          EXTRA_VARS: ${{ inputs.EXTRA_VARS }}
           ARG_PREVIEW_SUBDOMAIN: ${{ inputs.PREVIEW_SUBDOMAIN }}
           # ARG_VALUES_ISTIO_HOST: ${{ inputs.VALUES_ISTIO_HOST }}
+          CHART_NAME: ${{ inputs.NAME }}
+          EXTRA_VARS: ${{ inputs.EXTRA_VARS }}
+          GH_REF: ${{ github.ref }}
+          HELM_USE_LOCAL_COMMON: ${{ inputs.HELM_USE_LOCAL_COMMON }}
+          OVERRIDE_CHART_NAME: ${{ inputs.OVERRIDE_CHART_NAME }}
         run: |
           HELM_REGISTRY_LOCATION=${{ inputs.HELM_DOCKER_REGISTRY }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}
           HELM_REGISTRY_URL="${{ inputs.HELM_REGISTRY_BASE_URL }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_LOCATION }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}?project=${{ inputs.HELM_PROJECT_ID }}/"
