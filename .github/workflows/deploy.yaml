@@ -76,7 +76,9 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       HELM_CHARTS_GIT_BRANCH:
-        default: 'master'
+        # TODO
+        # default: 'master'
+        default: 'FAN-7167/namespace'
         required: false
         type: string
         description: "Repo {{HELM_CHARTS_GIT_REPO}} branch to use. Used typically for testing new non-merged helm changes"
