@@ -123,6 +123,7 @@ runs:
         # Generate release notes based on type
         if [ "${IS_PREVIEW}" = "true" ]; then
           echo "Repo         : ${{ github.server_url }}/${GITHUB_REPOSITORY}" >> ./GH_RELEASE_NOTES.txt
+          echo "Branch       : ${{ github.server_url }}/${GITHUB_REPOSITORY}/tree/${GITHUB_HEAD_REF}" >> ./GH_RELEASE_NOTES.txt
           echo "PR           : [${{ github.event.pull_request.number }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.pull_request.number }})" >> ./GH_RELEASE_NOTES.txt
           echo "Version      : ${VERSION}" >> ./GH_RELEASE_NOTES.txt
 

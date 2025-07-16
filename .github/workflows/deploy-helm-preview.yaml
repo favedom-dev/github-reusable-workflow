@@ -475,16 +475,16 @@ jobs:
       - name: "☸ Helm in ${{ inputs.HELM_CHARTS_GIT_REPO }}"
         working-directory: ${{ inputs.HELM_CHARTS_GIT_REPO }}
         env:
+          ARG_EXTRA_VARS: ${{ steps.setup-variables.outputs.ARG_EXTRA_VARS }}
+          ARG_USE_LOCAL: ${{ steps.setup-variables.outputs.ARG_USE_LOCAL }}
           CHART_NAME: ${{ steps.setup-variables.outputs.CHART_NAME }}
-          VERSION: ${{ inputs.VERSION }}
-          IMAGE_VERSION: ${{ inputs.VERSION }}
+          DOCKER_REPOSITORY: ${{ steps.setup-variables.outputs.DOCKER_REPOSITORY }}
           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
           HELM_EXPERIMENTAL_OCI: 1
-          ARG_USE_LOCAL: ${{ steps.setup-variables.outputs.ARG_USE_LOCAL }}
+          IMAGE_VERSION: ${{ inputs.VERSION }}
           PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.PREVIEW_CHART_VALUES }}
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
-          DOCKER_REPOSITORY: ${{ steps.setup-variables.outputs.DOCKER_REPOSITORY }}
-          ARG_EXTRA_VARS: ${{ steps.setup-variables.outputs.ARG_EXTRA_VARS }}
+          VERSION: ${{ inputs.VERSION }}
         run: |
           echo "ARG_USE_LOCAL         : ${ARG_USE_LOCAL}"
           echo "HELM_DEBUG_SCRIPT_FLAG: ${HELM_DEBUG_SCRIPT_FLAG}"
