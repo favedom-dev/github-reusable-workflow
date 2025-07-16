@@ -125,12 +125,14 @@ runs:
           echo "Repo         : ${{ github.server_url }}/${GITHUB_REPOSITORY}" >> ./GH_RELEASE_NOTES.txt
           echo "Version      : ${VERSION}" >> ./GH_RELEASE_NOTES.txt
 
-          if [ -d "${{ github.workspace }}/" ]; then
-            cd path/to/your/dir
+          if [ -d "${{ github.workspace }}" ]; then
             echo "CHANGES      :" >> ./GH_RELEASE_NOTES.txt
-            git log master..HEAD \
+            cd ${{ github.workspace }}
+            GIT_CHANGES=$(git log master..HEAD \
               --pretty=format:"- [\`%h\`](${{ github.server_url }}/${{ github.repository }}/commit/%H) **%an** _(%ad)_ — %s" \
-              --date=format:'%Y-%m-%d' >> ./GH_RELEASE_NOTES.txt
+              --date=format:'%Y-%m-%d')
+            cd -
+            echo "${GIT_CHANGES}" >> ./GH_RELEASE_NOTES.txt
           else
             echo "Directory does not exist"
           fi
