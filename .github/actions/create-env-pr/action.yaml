@@ -126,15 +126,27 @@ runs:
           echo "Version      : ${VERSION}" >> ./GH_RELEASE_NOTES.txt
 
           if [ -d "${{ github.workspace }}" ]; then
+            echo "pwd 1"
+            pwd
+            echo "================"
             echo "CHANGES      :" >> ./GH_RELEASE_NOTES.txt
-            cd ${{ github.workspace }}
+            cd "${{ github.workspace }}"
+            echo "pwd 2"
+            pwd
+            echo "================"
+            echo "ls -la"
+            ls -la
+            echo "================"
             GIT_CHANGES=$(git log master..HEAD \
               --pretty=format:"- [\`%h\`](${{ github.server_url }}/${{ github.repository }}/commit/%H) **%an** _(%ad)_ — %s" \
               --date=format:'%Y-%m-%d')
             cd -
+            echo "pwd 3"
+            pwd
+            echo "================"
             echo "${GIT_CHANGES}" >> ./GH_RELEASE_NOTES.txt
           else
-            echo "Directory does not exist"
+            echo "Directory does not exist: ${{ github.workspace }}"
           fi
 
         elif [ "${IS_HELM_CHART}" = "true" ]; then
