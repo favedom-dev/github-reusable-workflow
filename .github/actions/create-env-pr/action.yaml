@@ -123,6 +123,7 @@ runs:
         # Generate release notes based on type
         if [ "${IS_PREVIEW}" = "true" ]; then
           echo "Repo         : ${{ github.server_url }}/${GITHUB_REPOSITORY}" >> ./GH_RELEASE_NOTES.txt
+          echo "PR           : [${{ github.event.pull_request.number }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.pull_request.number }})" >> ./GH_RELEASE_NOTES.txt
           echo "Version      : ${VERSION}" >> ./GH_RELEASE_NOTES.txt
 
           if [ -d "${{ github.workspace }}" ]; then
@@ -132,9 +133,6 @@ runs:
             echo "CHANGES      :" >> ./GH_RELEASE_NOTES.txt
 
             cd "${{ github.workspace }}"
-            echo "pwd 2"
-            pwd
-            echo "================"
 
             # Detect base branch
             BASE_BRANCH="master"
@@ -144,7 +142,6 @@ runs:
             echo "BASE_BRANCH : ${BASE_BRANCH}"
 
             # Make sure it is fetched
-            echo "Make sure it is fetched"
             git fetch origin ${BASE_BRANCH}
 
             echo "Running git log against origin/${BASE_BRANCH}..HEAD"
@@ -154,24 +151,9 @@ runs:
             cd -
             echo "Captured changes:"
             echo "${GIT_CHANGES}" >> ./GH_RELEASE_NOTES.txt
-
-            # echo "ls -la"
-            # ls -la
-            # echo "================"
-            # GIT_CHANGES=$(git log master..HEAD \
-            #   --pretty=format:"- [\`%h\`](${{ github.server_url }}/${{ github.repository }}/commit/%H) **%an** _(%ad)_ — %s" \
-            #   --date=format:'%Y-%m-%d')
-            # cd -
-            echo "pwd 3"
-            pwd
-            echo "================"
-            echo "${GIT_CHANGES}" >> ./GH_RELEASE_NOTES.txt
           else
             echo "Directory does not exist: ${{ github.workspace }}"
           fi
-
-
-
 
         elif [ "${IS_HELM_CHART}" = "true" ]; then
           echo "Helm chart   : [${NAME}](${{ github.server_url }}/${GITHUB_REPOSITORY}/tree/master/charts/${NAME})" > ./GH_RELEASE_NOTES.txt
