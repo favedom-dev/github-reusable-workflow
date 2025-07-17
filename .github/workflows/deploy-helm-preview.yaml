@@ -273,7 +273,6 @@ jobs:
     #   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
 
-      # Not really used here to remove warning
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
         with:
@@ -448,18 +447,6 @@ jobs:
           version: ${{ inputs.HELM_VERSION }}
         id: install
 
-      - name: "🔓 Get GKE Credentials cluster: ${{ inputs.CLUSTER_NAME }}"
-        # if: ${{ !env.ACT }}
-        id: 'get-credentials'
-        uses: 'google-github-actions/get-gke-credentials@v2'
-        with:
-          cluster_name: ${{ inputs.CLUSTER_NAME }}
-          location: ${{ inputs.CLUSTER_LOCATION }}
-          project_id: ${{ inputs.CLUSTER_PROJECT_ID }}
-
-      # - name: '🔧 Set up Cloud SDK'
-      #   uses: 'google-github-actions/setup-gcloud@v2'
-
       - name: "🔐 [GAR] (oci://): Helm login"
         # if: ${{ !env.ACT }}
         working-directory: ${{ steps.setup-variables.outputs.CHARTS_WORKING_DIR }}
@@ -516,18 +503,15 @@ jobs:
           PR_DIR: ${{ env.PREVIEW_WORKING_DIR }}/${{ inputs.PREVIEW_NAMESPACE }}
           PR_YAML: application.yaml
         run: |
-          echo "PR_DIR  : ${PR_DIR}"
-          echo "PR_YAML : ${PR_YAML}"
-
           echo "mkdir: ${PR_DIR}"
           mkdir -p "${PR_DIR}"
 
-          echo "cp yaml..."
+          echo "cp yaml: ${PR_YAML}"
           cp ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml ${PR_DIR}/${PR_YAML}
-          echo "cat ${PR_DIR}/${PR_YAML}:"
-          cat ${PR_DIR}/${PR_YAML} | yq
+          # echo "cat ${PR_DIR}/${PR_YAML}:"
+          # cat ${PR_DIR}/${PR_YAML} | yq
 
-          echo "Append namespace yaml..."
+          echo "Append namespace to ${PR_YAML}..."
           cat <<EOF >> ${PR_DIR}/${PR_YAML}
           ---
           apiVersion: v1
