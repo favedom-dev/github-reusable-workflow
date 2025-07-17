@@ -512,14 +512,23 @@ jobs:
           # TODO output yaml to argocd-previews/apps/<app>/
 
       - name: "📦 Stage PR yaml file"
+        env:
+          PR_DIR: ${{ env.PREVIEW_WORKING_DIR }}/${{ inputs.PREVIEW_NAMESPACE }}
+          PR_YAML: application.yaml
         run: |
-          echo "cp"
-          cp ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml
-          echo "cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml:"
-          cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml | yq
+          echo "PR_DIR  : ${PR_DIR}"
+          echo "PR_YAML : ${PR_YAML}"
 
-          echo "Create namespace yaml"
-          cat <<EOF >> ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml
+          echo "mkdir: ${PR_DIR}"
+          mkdir -p "${PR_DIR}"
+
+          echo "cp yaml..."
+          cp ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml ${PR_DIR}/${PR_YAML}
+          echo "cat ${PR_DIR}/${PR_YAML}:"
+          cat ${PR_DIR}/${PR_YAML} | yq
+
+          echo "Append namespace yaml..."
+          cat <<EOF >> ${PR_DIR}/${PR_YAML}
           ---
           apiVersion: v1
           kind: Namespace
@@ -529,8 +538,8 @@ jobs:
               argocd.argoproj.io/sync-wave: "-1"
 
           EOF
-          echo "cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml:"
-          cat ${PREVIEW_WORKING_DIR}/${{ inputs.PREVIEW_NAMESPACE }}.yaml | yq
+          echo "cat ${PR_DIR}/${PR_YAML}:"
+          cat ${PR_DIR}/${PR_YAML} | yq
 
       - name: "🡢 Create preview PR in repo: ${{ inputs.PREVIEW_GIT_REPO }}"
         # TODO
