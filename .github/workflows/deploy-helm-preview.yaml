@@ -239,10 +239,6 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
     secrets:
-      # GH_TOKEN:
-      #   description: "GitHub token"
-      #   required: true
-
       WIF_PROVIDER:
         description: "Workload Identity Federation Provider"
         required: true
