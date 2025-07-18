@@ -516,6 +516,7 @@ jobs:
             name: ${{ inputs.PREVIEW_NAMESPACE }}
             annotations:
               argocd.argoproj.io/sync-wave: "-1"
+              link.argocd.argoproj.io/external-link: ${{ github.event.pull_request.html_url }}
 
           EOF
           echo "cat ${PR_DIR}/${PR_YAML}:"
