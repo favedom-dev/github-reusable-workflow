@@ -486,6 +486,7 @@ jobs:
             ${ARG_USE_LOCAL} \
             -t \
             -p \
+            -do \
             -c "${{ steps.setup-variables.outputs.CHART_NAME }}" \
             -v "${{ inputs.VERSION }}" \
             -iv "${{ inputs.VERSION }}" \
