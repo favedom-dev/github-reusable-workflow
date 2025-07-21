@@ -328,6 +328,7 @@ jobs:
         run: |
           HELM_REGISTRY_LOCATION=${{ inputs.HELM_DOCKER_REGISTRY }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}
           HELM_REGISTRY_URL="${{ inputs.HELM_REGISTRY_BASE_URL }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_LOCATION }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}?project=${{ inputs.HELM_PROJECT_ID }}/"
+          HELM_REGISTRY=oci://${{ inputs.HELM_DOCKER_REGISTRY }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_REGISTRY_NAME }}
           DOCKER_REPOSITORY=${{ inputs.DOCKER_REGISTRY }}/${{ inputs.DOCKER_PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY_NAME }}/${{ inputs.NAME }}
           CHARTS_WORKING_DIR=${{ inputs.HELM_CHARTS_GIT_REPO }}/${{ inputs.CHARTS_DIR }}
           PREVIEW_WORKING_DIR=$(pwd)/${{ inputs.PREVIEW_GIT_REPO }}/apps/mono-web
@@ -377,6 +378,8 @@ jobs:
           echo "ACT                        : ${ACT}"
           echo "HELM_REGISTRY_LOCATION     : ${HELM_REGISTRY_LOCATION}"
           echo "HELM_REGISTRY_URL          : ${HELM_REGISTRY_URL}"
+          echo "HELM_REGISTRY              : ${HELM_REGISTRY}"
+          echo "HELM_VALUES_ISTIO_HOST     : ${HELM_VALUES_ISTIO_HOST}"
           echo "DOCKER_REPOSITORY          : ${DOCKER_REPOSITORY}"
           echo "CHART_NAME                 : ${CHART_NAME}"
           echo "CHARTS_WORKING_DIR         : ${CHARTS_WORKING_DIR}"
@@ -392,13 +395,16 @@ jobs:
           echo "PREVIEW_SUBDOMAIN          : ${PREVIEW_SUBDOMAIN}"
           echo "PREVIEW_DOMAIN             : ${PREVIEW_DOMAIN}"
           echo "PREVIEW_URL                : ${PREVIEW_URL}"
-          echo "HELM_VALUES_ISTIO_HOST     : ${HELM_VALUES_ISTIO_HOST}"
 
           # set to output and env
           echo "HELM_REGISTRY_LOCATION=${HELM_REGISTRY_LOCATION}" >> $GITHUB_ENV
           echo "HELM_REGISTRY_LOCATION=${HELM_REGISTRY_LOCATION}" >> $GITHUB_OUTPUT
           echo "HELM_REGISTRY_URL=${HELM_REGISTRY_URL}" >> $GITHUB_ENV
           echo "HELM_REGISTRY_URL=${HELM_REGISTRY_URL}" >> $GITHUB_OUTPUT
+          echo "HELM_REGISTRY=${HELM_REGISTRY}" >> $GITHUB_OUTPUT
+          echo "HELM_REGISTRY=${HELM_REGISTRY}" >> $GITHUB_ENV
+          echo "HELM_VALUES_ISTIO_HOST=${HELM_VALUES_ISTIO_HOST}" >> $GITHUB_ENV
+          echo "HELM_VALUES_ISTIO_HOST=${HELM_VALUES_ISTIO_HOST}" >> $GITHUB_OUTPUT
           echo "DOCKER_REPOSITORY=${DOCKER_REPOSITORY}" >> $GITHUB_ENV
           echo "DOCKER_REPOSITORY=${DOCKER_REPOSITORY}" >> $GITHUB_OUTPUT
           echo "CHART_NAME=${CHART_NAME}" >> $GITHUB_ENV
@@ -427,8 +433,6 @@ jobs:
           echo "PREVIEW_DOMAIN=${PREVIEW_DOMAIN}" >> $GITHUB_OUTPUT
           echo "PREVIEW_URL=${PREVIEW_URL}" >> $GITHUB_ENV
           echo "PREVIEW_URL=${PREVIEW_URL}" >> $GITHUB_OUTPUT
-          echo "HELM_VALUES_ISTIO_HOST=${HELM_VALUES_ISTIO_HOST}" >> $GITHUB_ENV
-          echo "HELM_VALUES_ISTIO_HOST=${HELM_VALUES_ISTIO_HOST}" >> $GITHUB_OUTPUT
 
       - name: "🔧 Enable helm debug"
         if: inputs.HELM_ENABLE_DEBUG == true
@@ -482,61 +486,79 @@ jobs:
             ${ARG_USE_LOCAL} \
             -t \
             -p \
-            -c "${CHART_NAME}" \
-            -v "${VERSION}" \
-            -iv "${IMAGE_VERSION}" \
+            -c "${{ steps.setup-variables.outputs.CHART_NAME }}" \
+            -v "${{ inputs.VERSION }}" \
+            -iv "${{ inputs.VERSION }}" \
             -ns "${{ inputs.PREVIEW_NAMESPACE }}" \
             -no "${{ inputs.PREVIEW_NAMESPACE }}" \
             ${ARG_EXTRA_VARS}
           echo ""
-          echo "./charts/${PREVIEW_CHART_VALUES}:"
-          cat "./charts/${PREVIEW_CHART_VALUES}" | yq
+          echo "./charts/${{ steps.setup-variables.outputs.PREVIEW_CHART_VALUES }}:"
+          cat "./charts/${{ steps.setup-variables.outputs.PREVIEW_CHART_VALUES }}" | yq
 
           # TODO output yaml to argocd-previews/apps/<app>/
 
-      - name: "📦 Stage PR yaml file"
+      - name: "⬆️ Upload helm chart ${{ steps.setup-variables.outputs.CHART_NAME }} to ${{ steps.setup-variables.outputs.HELM_REGISTRY_NAME }}"
+        # if: ${{ github.ref == 'refs/heads/master' && inputs.CHART_DIR != 'charts' }}
+        working-directory: ${{ inputs.CHARTS_DIR }}
         env:
-          PR_DIR: ${{ env.PREVIEW_WORKING_DIR }}/${{ inputs.PREVIEW_NAMESPACE }}
-          PR_YAML: application.yaml
+          VERSION: ${{ inputs.VERSION }}
+          HELM_EXPERIMENTAL_OCI: 1
+          HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
+          HELM_REGISTRY_NAME: ${{ steps.setup-variables.outputs.HELM_REGISTRY_NAME }}
+          PROJECT_ID: ${{ inputs.HELM_PROJECT_ID }}
         run: |
-          echo "mkdir: ${PR_DIR}"
-          mkdir -p "${PR_DIR}"
+          _cmd=(helm push \
+          "${{ steps.setup-variables.outputs.CHART_NAME }}-${{ inputs.VERSION }}.tgz" \
+          "${{ steps.setup-variables.outputs.HELM_REGISTRY }}" \
+          "${HELM_DEBUG_FLAG}")
 
-          echo "cp yaml: ${PR_YAML}"
-          cp ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml ${PR_DIR}/${PR_YAML}
-          # echo "cat ${PR_DIR}/${PR_YAML}:"
-          # cat ${PR_DIR}/${PR_YAML} | yq
+          echo "${_cmd[*]}"
+          eval "${_cmd[@]}"
 
-          echo "Append namespace to ${PR_YAML}..."
-          cat <<EOF >> ${PR_DIR}/${PR_YAML}
-          ---
-          apiVersion: v1
-          kind: Namespace
-          metadata:
-            name: ${{ inputs.PREVIEW_NAMESPACE }}
-            annotations:
-              argocd.argoproj.io/sync-wave: "-1"
-              link.argocd.argoproj.io/external-link: ${{ github.event.pull_request.html_url }}
+      # - name: "📦 Stage PR yaml file"
+      #   env:
+      #     PR_DIR: ${{ env.PREVIEW_WORKING_DIR }}/${{ inputs.PREVIEW_NAMESPACE }}
+      #     PR_YAML: application.yaml
+      #   run: |
+      #     echo "mkdir: ${PR_DIR}"
+      #     mkdir -p "${PR_DIR}"
 
-          EOF
-          echo "cat ${PR_DIR}/${PR_YAML}:"
-          cat ${PR_DIR}/${PR_YAML} | yq
+      #     echo "cp yaml: ${PR_YAML}"
+      #     cp ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml ${PR_DIR}/${PR_YAML}
+      #     # echo "cat ${PR_DIR}/${PR_YAML}:"
+      #     # cat ${PR_DIR}/${PR_YAML} | yq
 
-      - name: "🡢 Create preview PR in repo: ${{ inputs.PREVIEW_GIT_REPO }}"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
-        uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@argocd-previews
-        with:
-          # commit-msg: "chore: ${{ inputs.NAME }} preview ${{ inputs.PREVIEW_NAMESPACE }} ${{ inputs.VERSION }}"
-          do-pr-merge: ${{ inputs.DO_PR_MERGE }}
-          env-repo-name: ${{ inputs.PREVIEW_GIT_ORG }}/${{ inputs.PREVIEW_GIT_REPO }}
-          env-repo-path: ${{ inputs.PREVIEW_GIT_REPO }}
-          gh-token: ${{ env.GH_TOKEN }}
-          is-helm-chart: 'false'
-          is-preview: 'true'
-          monorepo-app: ${{ inputs.MONOREPO_APP }}
-          name: ${{ inputs.NAME }}
-          version: ${{ inputs.VERSION }}
+      #     echo "Append namespace to ${PR_YAML}..."
+      #     cat <<EOF >> ${PR_DIR}/${PR_YAML}
+      #     ---
+      #     apiVersion: v1
+      #     kind: Namespace
+      #     metadata:
+      #       name: ${{ inputs.PREVIEW_NAMESPACE }}
+      #       annotations:
+      #         argocd.argoproj.io/sync-wave: "-1"
+      #         link.argocd.argoproj.io/external-link: ${{ github.event.pull_request.html_url }}
+
+      #     EOF
+      #     echo "cat ${PR_DIR}/${PR_YAML}:"
+      #     cat ${PR_DIR}/${PR_YAML} | yq
+
+      # - name: "🡢 Create preview PR in repo: ${{ inputs.PREVIEW_GIT_REPO }}"
+      #   # TODO
+      #   # uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
+      #   uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@argocd-previews
+      #   with:
+      #     # commit-msg: "chore: ${{ inputs.NAME }} preview ${{ inputs.PREVIEW_NAMESPACE }} ${{ inputs.VERSION }}"
+      #     do-pr-merge: ${{ inputs.DO_PR_MERGE }}
+      #     env-repo-name: ${{ inputs.PREVIEW_GIT_ORG }}/${{ inputs.PREVIEW_GIT_REPO }}
+      #     env-repo-path: ${{ inputs.PREVIEW_GIT_REPO }}
+      #     gh-token: ${{ env.GH_TOKEN }}
+      #     is-helm-chart: 'false'
+      #     is-preview: 'true'
+      #     monorepo-app: ${{ inputs.MONOREPO_APP }}
+      #     name: ${{ inputs.NAME }}
+      #     version: ${{ inputs.VERSION }}
 
       - name: "⬇️ Get API path"
         id: get-api-path
