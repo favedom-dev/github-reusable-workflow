@@ -501,7 +501,8 @@ jobs:
 
       - name: "⬆️ Upload helm chart ${{ steps.setup-variables.outputs.CHART_NAME }}-${{ inputs.VERSION }} to ${{ inputs.HELM_REGISTRY_NAME }}"
         if: github.event_name == 'pull_request'
-        working-directory: ${{ inputs.HELM_CHARTS_GIT_REPO }}
+        working-directory: ${{ inputs.HELM_CHARTS_GIT_REPO }}/charts
+        # working-directory: ${{ inputs.HELM_CHARTS_GIT_REPO }}/charts/${{ steps.setup-variables.outputs.CHART_NAME }}
         env:
           VERSION: ${{ inputs.VERSION }}
           HELM_EXPERIMENTAL_OCI: 1
@@ -515,6 +516,9 @@ jobs:
           echo "ls"
           ls -la
           echo "===="
+          echo" "tgz"
+          ls -laR | grep tgz
+          echo "++++"
           _cmd=(helm push \
           "${{ steps.setup-variables.outputs.CHART_NAME }}-${{ inputs.VERSION }}.tgz" \
           "${{ steps.setup-variables.outputs.HELM_REGISTRY }}" \
