@@ -498,16 +498,22 @@ jobs:
 
           # TODO output yaml to argocd-previews/apps/<app>/
 
-      - name: "⬆️ Upload helm chart ${{ steps.setup-variables.outputs.CHART_NAME }} to ${{ steps.setup-variables.outputs.HELM_REGISTRY_NAME }}"
-        # if: ${{ github.ref == 'refs/heads/master' && inputs.CHART_DIR != 'charts' }}
-        working-directory: ${{ inputs.CHARTS_DIR }}
+      - name: "⬆️ Upload helm chart ${{ steps.setup-variables.outputs.CHART_NAME }}-${{ inputs.VERSION }} to ${{ inputs.HELM_REGISTRY_NAME }}"
+        if: github.event_name == 'pull_request'
+        working-directory: ${{ inputs.HELM_CHARTS_GIT_REPO }}
         env:
           VERSION: ${{ inputs.VERSION }}
           HELM_EXPERIMENTAL_OCI: 1
           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
-          HELM_REGISTRY_NAME: ${{ steps.setup-variables.outputs.HELM_REGISTRY_NAME }}
+          HELM_REGISTRY_NAME: ${{ inputs.HELM_REGISTRY_NAME }}
           PROJECT_ID: ${{ inputs.HELM_PROJECT_ID }}
         run: |
+          echo "pwd"
+          pwd
+          echo "----"
+          echo "ls"
+          ls -la
+          echo "===="
           _cmd=(helm push \
           "${{ steps.setup-variables.outputs.CHART_NAME }}-${{ inputs.VERSION }}.tgz" \
           "${{ steps.setup-variables.outputs.HELM_REGISTRY }}" \
