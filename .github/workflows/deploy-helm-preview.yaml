@@ -516,7 +516,7 @@ jobs:
           echo "ls"
           ls -la
           echo "===="
-          echo" "tgz"
+          echo "tgz"
           ls -laR | grep tgz
           echo "++++"
           _cmd=(helm push \
