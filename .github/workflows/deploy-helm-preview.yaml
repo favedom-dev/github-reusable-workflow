@@ -355,28 +355,30 @@ jobs:
             ARG_PREVIEW_TENANT_VALUES=""
           fi
 
-          PREVIEW_SUBDOMAIN=${{ inputs.PREVIEW_NAMESPACE }}
+          RUN_NUMBER_ATTEMPT="-${{ github.run_number }}-${{ github.run_attempt }}"
+          PREVIEW_NAMESPACE="${{ inputs.PREVIEW_NAMESPACE }}"
+          NAMEOVERRIDE="${PREVIEW_NAMESPACE%"$RUN_NUMBER_ATTEMPT"}"
+
+          # PREVIEW_SUBDOMAIN=${{ inputs.PREVIEW_NAMESPACE }}
+          PREVIEW_SUBDOMAIN=${NAMEOVERRIDE}
           if [ -n "${ARG_PREVIEW_SUBDOMAIN}" ]; then
             # PREVIEW_SUBDOMAIN=${PREVIEW_SUBDOMAIN}-${CHART_NAME}
             PREVIEW_SUBDOMAIN=${PREVIEW_SUBDOMAIN}-${{ inputs.NAME }}
           fi
 
           PREVIEW_DOMAIN="${PREVIEW_SUBDOMAIN}.${{ inputs.PREVIEW_BASE_DOMAIN }}"
+          # PREVIEW_DOMAIN="${NAMEOVERRIDE}.${{ inputs.PREVIEW_BASE_DOMAIN }}"
           if [ -n "${ARG_PREVIEW_SUBDOMAIN}" ]; then
             HELM_VALUES_ISTIO_HOST="--set istio.host=${PREVIEW_DOMAIN}"
           fi
 
-          # PREVIEW_URL=https://${PREVIEW_SUBDOMAIN}.${{ inputs.PREVIEW_BASE_DOMAIN }}
-          PREVIEW_URL=https://${PREVIEW_DOMAIN}
+          PREVIEW_URL=https://${PREVIEW_SUBDOMAIN}.${{ inputs.PREVIEW_BASE_DOMAIN }}
+          # PREVIEW_URL=https://${PREVIEW_DOMAIN}
 
           ARG_USE_LOCAL=""
           if [ -n "${HELM_USE_LOCAL_COMMON}" ]; then
             ARG_USE_LOCAL="-ul"
           fi
-
-          RUN_NUMBER_ATTEMPT="-${{ github.run_number }}-${{ github.run_attempt }}"
-          PREVIEW_NAMESPACE="${{ inputs.PREVIEW_NAMESPACE }}"
-          NAMEOVERRIDE="${PREVIEW_NAMESPACE%"$RUN_NUMBER_ATTEMPT"}"
 
           # Display values
           echo "ACT                        : ${ACT}"
