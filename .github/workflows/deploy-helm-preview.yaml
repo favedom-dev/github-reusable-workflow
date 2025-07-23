@@ -374,7 +374,7 @@ jobs:
             ARG_USE_LOCAL="-ul"
           fi
 
-          RUN_NUMBER_ATTEMPT"-${{ github.run_number }}-${{ github.run_attempt }}"
+          RUN_NUMBER_ATTEMPT="-${{ github.run_number }}-${{ github.run_attempt }}"
           PREVIEW_NAMESPACE="${{ inputs.PREVIEW_NAMESPACE }}"
           NAMEOVERRIDE="${PREVIEW_NAMESPACE%"$RUN_NUMBER_ATTEMPT"}"
 
