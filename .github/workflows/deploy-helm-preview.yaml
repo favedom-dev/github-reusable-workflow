@@ -374,6 +374,10 @@ jobs:
             ARG_USE_LOCAL="-ul"
           fi
 
+          RUN_NUMBER_ATTEMPT"-${{ github.run_number }}-${{ github.run_attempt }}"
+          PREVIEW_NAMESPACE="${{ inputs.PREVIEW_NAMESPACE }}"
+          NAMEOVERRIDE="${PREVIEW_NAMESPACE%"$RUN_NUMBER_ATTEMPT"}"
+
           # Display values
           echo "ACT                        : ${ACT}"
           echo "HELM_REGISTRY_LOCATION     : ${HELM_REGISTRY_LOCATION}"
@@ -395,6 +399,7 @@ jobs:
           echo "PREVIEW_SUBDOMAIN          : ${PREVIEW_SUBDOMAIN}"
           echo "PREVIEW_DOMAIN             : ${PREVIEW_DOMAIN}"
           echo "PREVIEW_URL                : ${PREVIEW_URL}"
+          echo "NAMEOVERRIDE               : ${NAMEOVERRIDE}"
 
           # set to output and env
           echo "HELM_REGISTRY_LOCATION=${HELM_REGISTRY_LOCATION}" >> $GITHUB_ENV
@@ -433,6 +438,8 @@ jobs:
           echo "PREVIEW_DOMAIN=${PREVIEW_DOMAIN}" >> $GITHUB_OUTPUT
           echo "PREVIEW_URL=${PREVIEW_URL}" >> $GITHUB_ENV
           echo "PREVIEW_URL=${PREVIEW_URL}" >> $GITHUB_OUTPUT
+          echo "NAMEOVERRIDE=${NAMEOVERRIDE}" >> $GITHUB_ENV
+          echo "NAMEOVERRIDE=${NAMEOVERRIDE}" >> $GITHUB_OUTPUT
 
       - name: "🔧 Enable helm debug"
         if: inputs.HELM_ENABLE_DEBUG == true
@@ -469,6 +476,7 @@ jobs:
           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
           HELM_EXPERIMENTAL_OCI: 1
           IMAGE_VERSION: ${{ inputs.VERSION }}
+          NAMEOVERRIDE: ${{ steps.setup-variables.outputs.NAMEOVERRIDE }}
           PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.PREVIEW_CHART_VALUES }}
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           VERSION: ${{ inputs.VERSION }}
@@ -491,7 +499,7 @@ jobs:
             -v "${{ inputs.VERSION }}" \
             -iv "${{ inputs.VERSION }}" \
             -ns "${{ inputs.PREVIEW_NAMESPACE }}" \
-            -no "${{ inputs.PREVIEW_NAMESPACE }}" \
+            -no "${{ steps.setup-variables.outputs.NAMEOVERRIDE }}" \
             ${ARG_EXTRA_VARS}
           echo ""
           echo "./charts/${{ steps.setup-variables.outputs.PREVIEW_CHART_VALUES }}:"
@@ -520,7 +528,7 @@ jobs:
 
       - name: "📦 Stage PR yaml file"
         env:
-          PR_DIR: ${{ env.PREVIEW_WORKING_DIR }}/${{ inputs.PREVIEW_NAMESPACE }}
+          PR_DIR: ${{ env.PREVIEW_WORKING_DIR }}/${{ steps.setup-variables.outputs.NAMEOVERRIDE }}
           PR_YAML: application.yaml
         run: |
           echo "mkdir: ${PR_DIR}"
