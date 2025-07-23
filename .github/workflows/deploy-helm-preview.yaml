@@ -499,77 +499,68 @@ jobs:
 
           # TODO output yaml to argocd-previews/apps/<app>/
 
-      - name: "⬆️ Upload helm chart ${{ steps.setup-variables.outputs.CHART_NAME }}-${{ inputs.VERSION }} to ${{ inputs.HELM_REGISTRY_NAME }}"
-        if: github.event_name == 'pull_request'
-        working-directory: ${{ inputs.HELM_CHARTS_GIT_REPO }}/charts
-        # working-directory: ${{ inputs.HELM_CHARTS_GIT_REPO }}/charts/${{ steps.setup-variables.outputs.CHART_NAME }}
-        env:
-          VERSION: ${{ inputs.VERSION }}
-          HELM_EXPERIMENTAL_OCI: 1
-          HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
-          HELM_REGISTRY_NAME: ${{ inputs.HELM_REGISTRY_NAME }}
-          PROJECT_ID: ${{ inputs.HELM_PROJECT_ID }}
-        run: |
-          echo "pwd"
-          pwd
-          echo "----"
-          echo "ls"
-          ls -la
-          echo "===="
-          echo "tgz"
-          ls -laR | grep tgz
-          echo "++++"
-          _cmd=(helm push \
-          "${{ steps.setup-variables.outputs.CHART_NAME }}-${{ inputs.VERSION }}.tgz" \
-          "${{ steps.setup-variables.outputs.HELM_REGISTRY }}" \
-          "${HELM_DEBUG_FLAG}")
-
-          echo "${_cmd[*]}"
-          eval "${_cmd[@]}"
-
-      # - name: "📦 Stage PR yaml file"
+      # - name: "⬆️ Upload helm chart ${{ steps.setup-variables.outputs.CHART_NAME }}-${{ inputs.VERSION }} to ${{ inputs.HELM_REGISTRY_NAME }}"
+      #   if: github.event_name == 'pull_request'
+      #   working-directory: ${{ inputs.HELM_CHARTS_GIT_REPO }}/charts
+      #   # working-directory: ${{ inputs.HELM_CHARTS_GIT_REPO }}/charts/${{ steps.setup-variables.outputs.CHART_NAME }}
       #   env:
-      #     PR_DIR: ${{ env.PREVIEW_WORKING_DIR }}/${{ inputs.PREVIEW_NAMESPACE }}
-      #     PR_YAML: application.yaml
+      #     VERSION: ${{ inputs.VERSION }}
+      #     HELM_EXPERIMENTAL_OCI: 1
+      #     HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
+      #     HELM_REGISTRY_NAME: ${{ inputs.HELM_REGISTRY_NAME }}
+      #     PROJECT_ID: ${{ inputs.HELM_PROJECT_ID }}
       #   run: |
-      #     echo "mkdir: ${PR_DIR}"
-      #     mkdir -p "${PR_DIR}"
+      #     _cmd=(helm push \
+      #     "${{ steps.setup-variables.outputs.CHART_NAME }}-${{ inputs.VERSION }}.tgz" \
+      #     "${{ steps.setup-variables.outputs.HELM_REGISTRY }}" \
+      #     "${HELM_DEBUG_FLAG}")
 
-      #     echo "cp yaml: ${PR_YAML}"
-      #     cp ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml ${PR_DIR}/${PR_YAML}
-      #     # echo "cat ${PR_DIR}/${PR_YAML}:"
-      #     # cat ${PR_DIR}/${PR_YAML} | yq
+      #     echo "${_cmd[*]}"
+      #     eval "${_cmd[@]}"
 
-      #     echo "Append namespace to ${PR_YAML}..."
-      #     cat <<EOF >> ${PR_DIR}/${PR_YAML}
-      #     ---
-      #     apiVersion: v1
-      #     kind: Namespace
-      #     metadata:
-      #       name: ${{ inputs.PREVIEW_NAMESPACE }}
-      #       annotations:
-      #         argocd.argoproj.io/sync-wave: "-1"
-      #         link.argocd.argoproj.io/external-link: ${{ github.event.pull_request.html_url }}
+      - name: "📦 Stage PR yaml file"
+        env:
+          PR_DIR: ${{ env.PREVIEW_WORKING_DIR }}/${{ inputs.PREVIEW_NAMESPACE }}
+          PR_YAML: application.yaml
+        run: |
+          echo "mkdir: ${PR_DIR}"
+          mkdir -p "${PR_DIR}"
 
-      #     EOF
-      #     echo "cat ${PR_DIR}/${PR_YAML}:"
-      #     cat ${PR_DIR}/${PR_YAML} | yq
+          echo "cp yaml: ${PR_YAML}"
+          cp ${{ inputs.HELM_CHARTS_GIT_REPO }}/.output/${CHART_NAME}/${CHART_NAME}-*.yaml ${PR_DIR}/${PR_YAML}
+          # echo "cat ${PR_DIR}/${PR_YAML}:"
+          # cat ${PR_DIR}/${PR_YAML} | yq
 
-      # - name: "🡢 Create preview PR in repo: ${{ inputs.PREVIEW_GIT_REPO }}"
-      #   # TODO
-      #   # uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
-      #   uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@argocd-previews
-      #   with:
-      #     # commit-msg: "chore: ${{ inputs.NAME }} preview ${{ inputs.PREVIEW_NAMESPACE }} ${{ inputs.VERSION }}"
-      #     do-pr-merge: ${{ inputs.DO_PR_MERGE }}
-      #     env-repo-name: ${{ inputs.PREVIEW_GIT_ORG }}/${{ inputs.PREVIEW_GIT_REPO }}
-      #     env-repo-path: ${{ inputs.PREVIEW_GIT_REPO }}
-      #     gh-token: ${{ env.GH_TOKEN }}
-      #     is-helm-chart: 'false'
-      #     is-preview: 'true'
-      #     monorepo-app: ${{ inputs.MONOREPO_APP }}
-      #     name: ${{ inputs.NAME }}
-      #     version: ${{ inputs.VERSION }}
+          echo "Append namespace to ${PR_YAML}..."
+          cat <<EOF >> ${PR_DIR}/${PR_YAML}
+          ---
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: ${{ inputs.PREVIEW_NAMESPACE }}
+            annotations:
+              argocd.argoproj.io/sync-wave: "-1"
+              link.argocd.argoproj.io/external-link: ${{ github.event.pull_request.html_url }}
+
+          EOF
+          echo "cat ${PR_DIR}/${PR_YAML}:"
+          cat ${PR_DIR}/${PR_YAML} | yq
+
+      - name: "🡢 Create preview PR in repo: ${{ inputs.PREVIEW_GIT_REPO }}"
+        # TODO
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
+        uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@argocd-previews
+        with:
+          # commit-msg: "chore: ${{ inputs.NAME }} preview ${{ inputs.PREVIEW_NAMESPACE }} ${{ inputs.VERSION }}"
+          do-pr-merge: ${{ inputs.DO_PR_MERGE }}
+          env-repo-name: ${{ inputs.PREVIEW_GIT_ORG }}/${{ inputs.PREVIEW_GIT_REPO }}
+          env-repo-path: ${{ inputs.PREVIEW_GIT_REPO }}
+          gh-token: ${{ env.GH_TOKEN }}
+          is-helm-chart: 'false'
+          is-preview: 'true'
+          monorepo-app: ${{ inputs.MONOREPO_APP }}
+          name: ${{ inputs.NAME }}
+          version: ${{ inputs.VERSION }}
 
       - name: "⬇️ Get API path"
         id: get-api-path
