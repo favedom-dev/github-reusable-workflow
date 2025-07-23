@@ -366,8 +366,8 @@ jobs:
             PREVIEW_SUBDOMAIN=${PREVIEW_SUBDOMAIN}-${{ inputs.NAME }}
           fi
 
-          PREVIEW_DOMAIN="${PREVIEW_SUBDOMAIN}.${{ inputs.PREVIEW_BASE_DOMAIN }}"
-          # PREVIEW_DOMAIN="${NAMEOVERRIDE}.${{ inputs.PREVIEW_BASE_DOMAIN }}"
+          # PREVIEW_DOMAIN="${PREVIEW_SUBDOMAIN}.${{ inputs.PREVIEW_BASE_DOMAIN }}"
+          PREVIEW_DOMAIN="${NAMEOVERRIDE}.${{ inputs.PREVIEW_BASE_DOMAIN }}"
           if [ -n "${ARG_PREVIEW_SUBDOMAIN}" ]; then
             HELM_VALUES_ISTIO_HOST="--set istio.host=${PREVIEW_DOMAIN}"
           fi
