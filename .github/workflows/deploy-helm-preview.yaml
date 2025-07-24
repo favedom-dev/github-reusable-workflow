@@ -331,7 +331,7 @@ jobs:
           HELM_REGISTRY=oci://${{ inputs.HELM_DOCKER_REGISTRY }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_REGISTRY_NAME }}
           DOCKER_REPOSITORY=${{ inputs.DOCKER_REGISTRY }}/${{ inputs.DOCKER_PROJECT_ID }}/${{ inputs.DOCKER_REGISTRY_NAME }}/${{ inputs.NAME }}
           CHARTS_WORKING_DIR=${{ inputs.HELM_CHARTS_GIT_REPO }}/${{ inputs.CHARTS_DIR }}
-          PREVIEW_WORKING_DIR=$(pwd)/${{ inputs.PREVIEW_GIT_REPO }}/apps/mono-web
+          # PREVIEW_WORKING_DIR=$(pwd)/${{ inputs.PREVIEW_GIT_REPO }}/apps/mono-web
 
           # echo "OVERRIDE_CHART_NAME: ${OVERRIDE_CHART_NAME}"
           if [ -n "${OVERRIDE_CHART_NAME}" ]; then
@@ -342,6 +342,7 @@ jobs:
           else
             ARG_EXTRA_VARS=""
           fi
+          PREVIEW_WORKING_DIR=$(pwd)/${{ inputs.PREVIEW_GIT_REPO }}/apps/${CHART_NAME}
           ARG_CHART_VALUES="-f ./${CHART_NAME}/values.yaml"
           ARG_COMMON_VALUES="-f ./common/values.yaml"
           ARG_PREVIEW_GLOBALS_VALUES="-f ./${{ inputs.VALUES_PREVIEW_YAML }}"
