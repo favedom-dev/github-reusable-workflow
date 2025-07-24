@@ -86,6 +86,21 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      PREVIEW_REPO_NAME:
+        default: 'argocd-previews'
+        required: false
+        type: string
+
+      PREVIEW_REPO_ORG_NAME:
+        default: 'favedom-dev'
+        required: false
+        type: string
+
+      PREVIEW_MAIN_BRANCH:
+        default: 'master'
+        required: false
+        type: string
+
       TRIVY_REPO_NAME:
         default: 'trivy-scans'
         required: false
@@ -168,6 +183,16 @@ jobs:
           echo "DOCKER_TAG_PREFIX=${DOCKER_TAG_PREFIX}" >> $GITHUB_ENV
           echo "DOCKER_TAG_PREFIX=${DOCKER_TAG_PREFIX}" >> $GITHUB_OUTPUT
           # ===
+          PREVIEW_REPO_FULLNAME="${{ inputs.PREVIEW_REPO_ORG_NAME }}/${{ inputs.PREVIEW_REPO_NAME }}"
+          echo "PREVIEW_REPO_FULLNAME : ${PREVIEW_REPO_FULLNAME}"
+          echo "PREVIEW_REPO_FULLNAME=${PREVIEW_REPO_FULLNAME}" >> $GITHUB_ENV
+          echo "PREVIEW_REPO_FULLNAME=${PREVIEW_REPO_FULLNAME}" >> $GITHUB_OUTPUT
+          # ===
+          PREVIEW_WORKING_DIR="${{ inputs.PREVIEW_REPO_NAME }}/apps/${{ inputs.NAME }}/${{ inputs.PREVIEW_NAMESPACE }}"
+          echo "PREVIEW_WORKING_DIR : ${PREVIEW_WORKING_DIR}"
+          echo "PREVIEW_WORKING_DIR=${PREVIEW_WORKING_DIR}" >> $GITHUB_ENV
+          echo "PREVIEW_WORKING_DIR=${PREVIEW_WORKING_DIR}" >> $GITHUB_OUTPUT
+          # ===
           TRIVY_REPO_FULLNAME="${{ inputs.TRIVY_REPO_ORG_NAME }}/${{ inputs.TRIVY_REPO_NAME }}"
           echo "TRIVY_REPO_FULLNAME : ${TRIVY_REPO_FULLNAME}"
           echo "TRIVY_REPO_FULLNAME=${TRIVY_REPO_FULLNAME}" >> $GITHUB_ENV
@@ -178,17 +203,19 @@ jobs:
           echo "TRIVY_WORKING_DIR=${TRIVY_WORKING_DIR}" >> $GITHUB_ENV
           echo "TRIVY_WORKING_DIR=${TRIVY_WORKING_DIR}" >> $GITHUB_OUTPUT
 
-          echo "----------------------"
-          echo "GAR                  : ${GAR}"
-          echo "PR_NUM               : ${PR_NUM}"
-          echo "PR_VERSION           : ${PR_VERSION}"
-          echo "DOCKER_BASE_LOCATION : ${DOCKER_BASE_LOCATION}"
-          echo "DOCKER_LOCATION      : ${DOCKER_LOCATION}"
-          echo "DOCKER_URL           : ${DOCKER_URL}"
-          echo "DOCKER_TAG_PREFIX    : ${DOCKER_TAG_PREFIX}"
-          echo "TRIVY_REPO_FULLNAME  : ${TRIVY_REPO_FULLNAME}"
-          echo "TRIVY_WORKING_DIR    : ${TRIVY_WORKING_DIR}"
-          echo "======================"
+          echo "-----------------------"
+          echo "GAR                   : ${GAR}"
+          echo "PR_NUM                : ${PR_NUM}"
+          echo "PR_VERSION            : ${PR_VERSION}"
+          echo "DOCKER_BASE_LOCATION  : ${DOCKER_BASE_LOCATION}"
+          echo "DOCKER_LOCATION       : ${DOCKER_LOCATION}"
+          echo "DOCKER_URL            : ${DOCKER_URL}"
+          echo "DOCKER_TAG_PREFIX     : ${DOCKER_TAG_PREFIX}"
+          echo "PREVIEW_REPO_FULLNAME : ${PREVIEW_REPO_FULLNAME}"
+          echo "PREVIEW_WORKING_DIR   : ${PREVIEW_WORKING_DIR}"
+          echo "TRIVY_REPO_FULLNAME   : ${TRIVY_REPO_FULLNAME}"
+          echo "TRIVY_WORKING_DIR     : ${TRIVY_WORKING_DIR}"
+          echo "======================="
 
       - name: "🔐 Get Secrets"
         uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
@@ -262,32 +289,51 @@ jobs:
             echo "<<<  END  <<<"
           done
 
-      - name: "🔓 Get GKE Credentials cluster: ${{ inputs.CLUSTER_NAME }}"
-        id: 'get-credentials'
-        uses: 'google-github-actions/get-gke-credentials@v2'
-        with:
-          cluster_name: ${{ inputs.CLUSTER_NAME }}
-          location: ${{ inputs.LOCATION }}
-          project_id: ${{ inputs.CLUSTER_PROJECT_ID }}
-
-      - name: "🗑️ Delete namespace: ${{ inputs.PREVIEW_NAMESPACE }}"
-        env:
-          PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
-        run: |
-          echo "## 🗑️ Namespace: \`${{ inputs.PREVIEW_NAMESPACE }}\`" >> $GITHUB_STEP_SUMMARY
-          if [[ $(kubectl get ns | awk '{print $1}' | grep ^${PREVIEW_NAMESPACE}$) == ${PREVIEW_NAMESPACE} ]]; then
-            kubectl delete namespace ${PREVIEW_NAMESPACE}
-            echo "kubectl delete namespace ${PREVIEW_NAMESPACE}" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "SKIPPING: namespace \"${PREVIEW_NAMESPACE}\" does not exist"
-            echo "SKIPPING: namespace \"${PREVIEW_NAMESPACE}\" does not exist" >> $GITHUB_STEP_SUMMARY
-          fi
-
       - name: "🔩 Git config"
         uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2
         with:
           GH_USER_NAME: ${{ inputs.GH_USER_NAME }}
           GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
+
+      - name: "☁️ Checkout repository ${{ steps.setup-variables.outputs.PREVIEW_REPO_FULLNAME }}"
+        uses: actions/checkout@v4
+        with:
+          token: ${{ env.GH_TOKEN }}
+          repository: ${{ steps.setup-variables.outputs.PREVIEW_REPO_FULLNAME }}
+          path: '${{ inputs.PREVIEW_REPO_NAME }}'
+
+      - name: "🗑️ Delete ArgoCD preview files: ${{ steps.setup-variables.outputs.PR_VERSION }}*"
+        working-directory: ${{ inputs.PREVIEW_REPO_NAME }}
+        env:
+          PR_DIR: ./${{ steps.setup-variables.outputs.PREVIEW_WORKING_DIR }}
+        run: |
+          echo "PR_DIR : ${PR_DIR}"
+          echo "pwd"
+          pwd
+          echo "ls"
+          ls -la
+          echo "## 🗑️ ArgoCD Preview" >> $GITHUB_STEP_SUMMARY
+
+          if [ -d "${PR_DIR}" ]; then
+            echo "Directory exists: ${PR_DIR}"
+            rm -rf ${PR_DIR}
+
+            echo "git..."
+            git status
+            git add .
+            git commit -m "chore: ${{ inputs.NAME }} PR: ${{ steps.setup-variables.outputs.PR_NUM }} Delete: ${{ inputs.PREVIEW_NAMESPACE }}"
+
+            for i in {1..5}; do
+              git pull --rebase origin ${{ inputs.PREVIEW_MAIN_BRANCH }} && git push origin ${{ inputs.PREVIEW_MAIN_BRANCH }} && break
+              echo "Retrying push... attempt $i"
+              sleep 5
+            done
+            echo "-  \`${PR_DIR}\`" >> $GITHUB_STEP_SUMMARY
+
+          else
+            echo "Directory does not exist: ${PR_DIR}"
+            echo "Directory does not exist: ${PR_DIR}" >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: "☁️ Checkout repository ${{ steps.setup-variables.outputs.TRIVY_REPO_FULLNAME }}"
         uses: actions/checkout@v4
@@ -331,14 +377,13 @@ jobs:
           echo "Executing: $FIND_CMD"
           MATCHED_FILES=$(eval "$FIND_CMD")
 
-
           if [ -n "$MATCHED_FILES" ]; then
             echo "Deleting files:"
             echo "${MATCHED_FILES}"
             echo "${MATCHED_FILES}" >> $GITHUB_STEP_SUMMARY
             rm -f ${MATCHED_FILES}
-            git status
 
+            git status
             git add .
             git commit -m "chore: ${{ inputs.NAME }} PR ${{ steps.setup-variables.outputs.PR_NUM }} Delete Trivy scan results"
 

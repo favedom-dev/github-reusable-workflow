@@ -372,7 +372,8 @@ jobs:
             HELM_VALUES_ISTIO_HOST="--set istio.host=${PREVIEW_DOMAIN}"
           fi
 
-          PREVIEW_URL=https://${PREVIEW_SUBDOMAIN}.${{ inputs.PREVIEW_BASE_DOMAIN }}
+          # PREVIEW_URL=https://${PREVIEW_SUBDOMAIN}.${{ inputs.PREVIEW_BASE_DOMAIN }}
+          PREVIEW_URL=https://${NAMEOVERRIDE}.${{ inputs.PREVIEW_BASE_DOMAIN }}
           # PREVIEW_URL=https://${PREVIEW_DOMAIN}
 
           ARG_USE_LOCAL=""
