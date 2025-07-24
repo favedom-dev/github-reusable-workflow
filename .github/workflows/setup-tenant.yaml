@@ -187,21 +187,27 @@ jobs:
           fi
 
           if [ "${GH_REF}" != "refs/heads/master" ]; then
-            GH_PR_NUM=${{ github.event.number }}
-            if [ -n "${GH_PR_NUM}" ]; then
-              PR_NUM=${GH_PR_NUM}
-              echo "GH_PR_NUM: PR_NUM = ${PR_NUM}"
+            # GH_PR_NUM=${{ github.event.number }}
+            # if [ -n "${GH_PR_NUM}" ]; then
+            #   PR_NUM=${GH_PR_NUM}
+            #   echo "GH_PR_NUM: PR_NUM = ${PR_NUM}"
+            # else
+            #   INPUT_PR_NUMBER=${{ inputs.PR_NUMBER }}
+            #   if [ -n "${INPUT_PR_NUMBER}" ]; then
+            #     PR_NUM=${{ inputs.PR_NUMBER }}
+            #     echo "INPUT_PR_NUMBER: PR_NUM = ${PR_NUM}"
+            #   else
+            #     PR_NUM=${{ github.run_number }}
+            #     echo "run_number: PR_NUM = ${PR_NUM}"
+            #   fi
+            #   OVERRIDE_PREVIEW_NAMESPACE=pr-${OVERRIDE_NAME}-${PR_NUM}
+            #   echo "OVERRIDE_PREVIEW_NAMESPACE= ${OVERRIDE_PREVIEW_NAMESPACE}"
+            # fi
+            if [ -n "${OVERRIDE_PREVIEW_NAMESPACE}" ]; then
+              echo "OVERRIDE_PREVIEW_NAMESPACE : ${OVERRIDE_PREVIEW_NAMESPACE}"
             else
-              INPUT_PR_NUMBER=${{ inputs.PR_NUMBER }}
-              if [ -n "${INPUT_PR_NUMBER}" ]; then
-                PR_NUM=${{ inputs.PR_NUMBER }}
-                echo "INPUT_PR_NUMBER: PR_NUM = ${PR_NUM}"
-              else
-                PR_NUM=${{ github.run_number }}
-                echo "run_number: PR_NUM = ${PR_NUM}"
-              fi
-              OVERRIDE_PREVIEW_NAMESPACE=pr-${OVERRIDE_NAME}-${PR_NUM}
-              echo "OVERRIDE_PREVIEW_NAMESPACE= ${OVERRIDE_PREVIEW_NAMESPACE}"
+              OVERRIDE_PREVIEW_NAMESPACE="pr-${ARGOCD_APP_NAME}-${{ github.event.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
+              echo "OVERRIDE_PREVIEW_NAMESPACE = ${OVERRIDE_PREVIEW_NAMESPACE}"
             fi
           fi
 
