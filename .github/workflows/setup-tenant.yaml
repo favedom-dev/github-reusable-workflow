@@ -235,8 +235,10 @@ jobs:
         run: |
           echo "TENANT : ${{ steps.tenant.outputs.TENANT }}"
           echo "## TENANT : \`${{ steps.tenant.outputs.TENANT }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "OVERRIDE_NAME : ${OVERRIDE_NAME}" >> $GITHUB_STEP_SUMMARY
-          echo "OVERRIDE_PREVIEW_NAMESPACE : ${OVERRIDE_PREVIEW_NAMESPACE}" >> $GITHUB_STEP_SUMMARY
-          echo "OVERRIDE_CHART_APP_NAME : ${OVERRIDE_CHART_APP_NAME}" >> $GITHUB_STEP_SUMMARY
-          echo "ARGOCD_APP_NAME : ${ARGOCD_APP_NAME}" >> $GITHUB_STEP_SUMMARY
-          echo "DO_RELEASE_BUILD : ${DO_RELEASE_BUILD}" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| OVERRIDE_NAME | ${{ steps.tenant.outputs.OVERRIDE_NAME }}|" >> $GITHUB_STEP_SUMMARY
+          echo "| OVERRIDE_PREVIEW_NAMESPACE | ${{ steps.tenant.outputs.OVERRIDE_PREVIEW_NAMESPACE }}|" >> $GITHUB_STEP_SUMMARY
+          echo "| OVERRIDE_CHART_APP_NAME | ${{ steps.tenant.outputs.OVERRIDE_CHART_APP_NAME }}|" >> $GITHUB_STEP_SUMMARY
+          echo "| ARGOCD_APP_NAME | ${{ steps.tenant.outputs.ARGOCD_APP_NAME }}|" >> $GITHUB_STEP_SUMMARY
+          echo "| DO_RELEASE_BUILD | ${{ steps.tenant.outputs.DO_RELEASE_BUILD }}|" >> $GITHUB_STEP_SUMMARY
