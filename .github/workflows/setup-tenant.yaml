@@ -186,7 +186,7 @@ jobs:
             fi
           fi
 
-          if [ "${GH_REF}" != "refs/heads/master" ]; then
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
             # GH_PR_NUM=${{ github.event.number }}
             # if [ -n "${GH_PR_NUM}" ]; then
             #   PR_NUM=${GH_PR_NUM}
@@ -204,10 +204,10 @@ jobs:
             #   echo "OVERRIDE_PREVIEW_NAMESPACE= ${OVERRIDE_PREVIEW_NAMESPACE}"
             # fi
             if [ -n "${OVERRIDE_PREVIEW_NAMESPACE}" ]; then
-              echo "OVERRIDE_PREVIEW_NAMESPACE : ${OVERRIDE_PREVIEW_NAMESPACE}"
+              echo "OVERRIDE: OVERRIDE_PREVIEW_NAMESPACE : ${OVERRIDE_PREVIEW_NAMESPACE}"
             else
               OVERRIDE_PREVIEW_NAMESPACE="pr-${ARGOCD_APP_NAME}-${{ github.event.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
-              echo "OVERRIDE_PREVIEW_NAMESPACE = ${OVERRIDE_PREVIEW_NAMESPACE}"
+              echo "DEFAULT: OVERRIDE_PREVIEW_NAMESPACE : ${OVERRIDE_PREVIEW_NAMESPACE}"
             fi
           fi
 
