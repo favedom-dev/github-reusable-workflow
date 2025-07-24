@@ -235,3 +235,8 @@ jobs:
         run: |
           echo "TENANT : ${{ steps.tenant.outputs.TENANT }}"
           echo "## TENANT : \`${{ steps.tenant.outputs.TENANT }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "OVERRIDE_NAME : ${OVERRIDE_NAME}" >> $GITHUB_STEP_SUMMARY
+          echo "OVERRIDE_PREVIEW_NAMESPACE : ${OVERRIDE_PREVIEW_NAMESPACE}" >> $GITHUB_STEP_SUMMARY
+          echo "OVERRIDE_CHART_APP_NAME : ${OVERRIDE_CHART_APP_NAME}" >> $GITHUB_STEP_SUMMARY
+          echo "ARGOCD_APP_NAME : ${ARGOCD_APP_NAME}" >> $GITHUB_STEP_SUMMARY
+          echo "DO_RELEASE_BUILD : ${DO_RELEASE_BUILD}" >> $GITHUB_STEP_SUMMARY
