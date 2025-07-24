@@ -577,16 +577,27 @@ jobs:
       - name: "⬇️ Get API path"
         id: get-api-path
         env:
+          PR_DIR: ${{ env.PREVIEW_WORKING_DIR }}/${{ steps.setup-variables.outputs.NAMEOVERRIDE }}
+          PR_YAML: application.yaml
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           CHART_NAME: ${{ steps.setup-variables.outputs.CHART_NAME }}
         run: |
-          API_PATH=$(kubectl get virtualservice -n ${PREVIEW_NAMESPACE} -o yaml ${CHART_NAME} | yq -r '.spec.http[0].match[0].uri.prefix')
-          echo "API_PATH : ${API_PATH}"
-          if [ "${API_PATH}" = "null" ]; then
-            API_PATH=""
-          elif [[ "${API_PATH}" != */ ]]; then
-            API_PATH="${API_PATH}/"
-          fi
+          echo "PR_DIR                  : ${PR_DIR}"
+          echo "PR_YAML                 : ${PR_YAML}"
+
+          API_PATH=$(yq eval-all '
+            select(.kind == "VirtualService") |
+            .spec.http[]?.match[]?.uri.prefix
+          ' ${PR_DIR}/${PR_YAML})
+
+          # API_PATH=$(kubectl get virtualservice -n ${PREVIEW_NAMESPACE} -o yaml ${CHART_NAME} | yq -r '.spec.http[0].match[0].uri.prefix')
+          # echo "API_PATH : ${API_PATH}"
+          # if [ "${API_PATH}" = "null" ]; then
+          #   API_PATH=""
+          # elif [[ "${API_PATH}" != */ ]]; then
+          #   API_PATH="${API_PATH}/"
+          # fi
+
           echo "API_PATH                : ${API_PATH}"
           echo "#API_PATH               : ${#API_PATH}"
           echo "API_PATH=${API_PATH}" >> $GITHUB_OUTPUT
