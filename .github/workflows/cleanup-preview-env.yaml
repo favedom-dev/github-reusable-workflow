@@ -363,7 +363,7 @@ jobs:
               rm -rf "${CURRENT_PREVIEW}"
               echo "Deleted: ${CURRENT_PREVIEW}"
               echo "-  \`${CURRENT_PREVIEW}\`" >> $GITHUB_STEP_SUMMARY
-              PR_DELETED="true" >> $GITHUB_OUTPUT
+              echo "PR_DELETED=true" >> $GITHUB_OUTPUT
             else
               echo "Directory does NOT exists: ${CURRENT_PREVIEW}"
             fi
