@@ -1,5 +1,5 @@
 name: Repo Tag
-run-name: "Repo Tag: ${{ inputs.TAG_NAME }} ${{ inputs.BRANCH_NAME }}"
+run-name: "Repo Tag: ${{ inputs.TAG_NAME }} Branch: ${{ inputs.BRANCH_NAME }}"
 
 on: # yamllint disable-line rule:truthy
   workflow_dispatch:
