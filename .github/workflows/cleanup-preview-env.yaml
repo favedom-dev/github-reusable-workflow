@@ -189,7 +189,7 @@ jobs:
           echo "PREVIEW_REPO_FULLNAME=${PREVIEW_REPO_FULLNAME}" >> $GITHUB_ENV
           echo "PREVIEW_REPO_FULLNAME=${PREVIEW_REPO_FULLNAME}" >> $GITHUB_OUTPUT
           # ===
-          PREVIEW_BASE_DIR="${{ inputs.PREVIEW_REPO_NAME }}/apps
+          PREVIEW_BASE_DIR="${{ inputs.PREVIEW_REPO_NAME }}/apps"
           echo "PREVIEW_BASE_DIR : ${PREVIEW_BASE_DIR}"
           echo "PREVIEW_BASE_DIR=${PREVIEW_BASE_DIR}" >> $GITHUB_ENV
           echo "PREVIEW_BASE_DIR=${PREVIEW_BASE_DIR}" >> $GITHUB_OUTPUT
