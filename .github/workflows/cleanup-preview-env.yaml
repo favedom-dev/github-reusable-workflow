@@ -25,6 +25,12 @@ on:  # yamllint disable-line rule:truthy
         default: |
           GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
 
+      TENANT:
+        required: false
+        default: ''
+        type: string
+        description: "Tenant name (e.g., agilenetwork, speedofai, fanfuzenil, vtnil, nilgameplan)"
+
       PREVIEW_NAMESPACE:
         required: false
         type: string
@@ -176,7 +182,13 @@ jobs:
           echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_ENV
           echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_OUTPUT
           # ===
-          DOCKER_URL="https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.DOCKER_REGISTRY }}/${{ inputs.NAME }}?project=${{ inputs.PROJECT_ID }}/"
+          TENANT=${{ inputs.TENANT }}
+          if [ ${#TENANT} -gt 0 ]; then
+            DOCKER_NAME=${{ inputs.NAME }}-${{ inputs.TENANT }}
+          else
+            DOCKER_NAME=${{ inputs.NAME }}
+          fi
+          DOCKER_URL="https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.DOCKER_REGISTRY }}/${DOCKER_NAME}?project=${{ inputs.PROJECT_ID }}/"
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_ENV
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_OUTPUT
           # ===
