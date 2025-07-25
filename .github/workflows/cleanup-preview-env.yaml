@@ -369,24 +369,6 @@ jobs:
             fi
           done
 
-          # if [ "${PR_DELETED}" = "true" ]; then
-          #   echo "git..."
-          #   git status
-          #   git add .
-          #   git commit -m "chore: ${{ inputs.NAME }} PR: ${{ steps.setup-variables.outputs.PR_NUM }} Delete: ${ARR_PREVIEWS[@]}"
-
-          #   for i in {1..5}; do
-          #     git pull --rebase origin ${{ inputs.PREVIEW_MAIN_BRANCH }} && git push origin ${{ inputs.PREVIEW_MAIN_BRANCH }} && break
-          #     echo "Retrying push... attempt $i"
-          #     sleep 5
-          #   done
-          # else
-          #   echo "No directory deleted... tried:"
-          #   printf '%s\n' "${ARR_PREVIEWS[@]}"
-          #   echo "No directory deleted... tried:" >> $GITHUB_STEP_SUMMARY
-          #   printf '%s\n' "- ${ARR_PREVIEWS[@]}" >> $GITHUB_STEP_SUMMARY
-          # fi
-
       - name: "🡢 Delete preview PR in repo: ${{ inputs.PREVIEW_REPO_NAME }}"
         # TODO
         # uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
