@@ -173,7 +173,6 @@ jobs:
           OVERRIDE_NAME=${OVERRIDE_NAME_PREFIX}-${TENANT}
           OVERRIDE_CHART_APP_NAME=${OVERRIDE_CHART_APP_NAME_PREFIX}-${TENANT}
 
-          # INPUT_DO_RELEASE_BUILD=${{ inputs.RELEASE_BUILD }}
           if [ "${INPUT_DO_RELEASE_BUILD}" = "true" ]; then
             DO_RELEASE_BUILD="true"
           elif [ "${INPUT_DO_RELEASE_BUILD}" = "false" ]; then
@@ -187,22 +186,6 @@ jobs:
           fi
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            # GH_PR_NUM=${{ github.event.number }}
-            # if [ -n "${GH_PR_NUM}" ]; then
-            #   PR_NUM=${GH_PR_NUM}
-            #   echo "GH_PR_NUM: PR_NUM = ${PR_NUM}"
-            # else
-            #   INPUT_PR_NUMBER=${{ inputs.PR_NUMBER }}
-            #   if [ -n "${INPUT_PR_NUMBER}" ]; then
-            #     PR_NUM=${{ inputs.PR_NUMBER }}
-            #     echo "INPUT_PR_NUMBER: PR_NUM = ${PR_NUM}"
-            #   else
-            #     PR_NUM=${{ github.run_number }}
-            #     echo "run_number: PR_NUM = ${PR_NUM}"
-            #   fi
-            #   OVERRIDE_PREVIEW_NAMESPACE=pr-${OVERRIDE_NAME}-${PR_NUM}
-            #   echo "OVERRIDE_PREVIEW_NAMESPACE= ${OVERRIDE_PREVIEW_NAMESPACE}"
-            # fi
             if [ -n "${OVERRIDE_PREVIEW_NAMESPACE}" ]; then
               echo "OVERRIDE: OVERRIDE_PREVIEW_NAMESPACE : ${OVERRIDE_PREVIEW_NAMESPACE}"
             else
