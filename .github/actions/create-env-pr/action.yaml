@@ -20,6 +20,10 @@ inputs:
     description: 'Version to use'
     required: true
 
+  override-branch-name:
+    description: 'Git branch name override'
+    default: ''
+
   commit-msg:
     description: 'Git commit message'
     default: ''
@@ -53,6 +57,7 @@ runs:
       working-directory: ${{ inputs.env-repo-path }}
       env:
         BRANCH_NAME: ${{ inputs.is-helm-chart == 'true' && format('gha/helm-chart/{0}_{1}', inputs.name, inputs.version) || format('gha_{0}_{1}', inputs.name, inputs.version) }}
+        OVERRIDE_BRANCH_NAME: ${{ inputs.override-branch-name }}
         COMMIT_MSG: ${{ inputs.commit-msg }}
         DO_PR_MERGE: ${{ inputs.do-pr-merge }}
         ENV_REPO_NAME: ${{ inputs.env-repo-name }}
@@ -68,17 +73,23 @@ runs:
         SLEEP_TIME=10
         MAIN_BRANCH="main"
 
-        echo "NAME              : ${NAME}"
-        echo "VERSION           : ${VERSION}"
-        echo "MONOREPO_APP      : ${MONOREPO_APP}"
-        echo "COMMIT_MSG        : ${COMMIT_MSG}"
-        echo "IS_HELM_CHART     : ${IS_HELM_CHART}"
-        echo "IS_PREVIEW        : ${IS_PREVIEW}"
-        echo "BRANCH_NAME       : ${BRANCH_NAME}"
-        echo "GITHUB_REPOSITORY : ${GITHUB_REPOSITORY}"
-        echo "github.workspace  : ${{ github.workspace }}"
-        echo "github.server_url : ${{ github.server_url }}"
-        echo "github.repository : ${{ github.repository }}"
+        echo "NAME                 : ${NAME}"
+        echo "VERSION              : ${VERSION}"
+        echo "MONOREPO_APP         : ${MONOREPO_APP}"
+        echo "COMMIT_MSG           : ${COMMIT_MSG}"
+        echo "IS_HELM_CHART        : ${IS_HELM_CHART}"
+        echo "IS_PREVIEW           : ${IS_PREVIEW}"
+        echo "BRANCH_NAME          : ${BRANCH_NAME}"
+        echo "OVERRIDE_BRANCH_NAME : ${OVERRIDE_BRANCH_NAME}"
+        echo "GITHUB_REPOSITORY    : ${GITHUB_REPOSITORY}"
+        echo "github.workspace     : ${{ github.workspace }}"
+        echo "github.server_url    : ${{ github.server_url }}"
+        echo "github.repository    : ${{ github.repository }}"
+
+        if [ -n "${OVERRIDE_BRANCH_NAME}" ]; then
+          BRANCH_NAME=${OVERRIDE_BRANCH_NAME}
+          echo "Using OVERRIDE_BRANCH_NAME: ${BRANCH_NAME}"
+        fi
 
         # Check if branch exists and handle it
         if git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then

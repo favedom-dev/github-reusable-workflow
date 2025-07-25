@@ -318,6 +318,7 @@ jobs:
           path: '${{ inputs.PREVIEW_REPO_NAME }}'
 
       - name: "🗑️ Delete ArgoCD preview files: ${{ github.event.number }}"
+        id: delete-argocd-preview
         working-directory: ${{ inputs.PREVIEW_REPO_NAME }}
         env:
           NAME: ${{ inputs.NAME }}
@@ -362,29 +363,45 @@ jobs:
               rm -rf "${CURRENT_PREVIEW}"
               echo "Deleted: ${CURRENT_PREVIEW}"
               echo "-  \`${CURRENT_PREVIEW}\`" >> $GITHUB_STEP_SUMMARY
-              PR_DELETED="true"
+              PR_DELETED="true" >> $GITHUB_OUTPUT
             else
               echo "Directory does NOT exists: ${CURRENT_PREVIEW}"
             fi
           done
 
-          if [ "${PR_DELETED}" = "true" ]; then
-            echo "git..."
-            git status
-            git add .
-            git commit -m "chore: ${{ inputs.NAME }} PR: ${{ steps.setup-variables.outputs.PR_NUM }} Delete: ${ARR_PREVIEWS[@]}"
+          # if [ "${PR_DELETED}" = "true" ]; then
+          #   echo "git..."
+          #   git status
+          #   git add .
+          #   git commit -m "chore: ${{ inputs.NAME }} PR: ${{ steps.setup-variables.outputs.PR_NUM }} Delete: ${ARR_PREVIEWS[@]}"
 
-            for i in {1..5}; do
-              git pull --rebase origin ${{ inputs.PREVIEW_MAIN_BRANCH }} && git push origin ${{ inputs.PREVIEW_MAIN_BRANCH }} && break
-              echo "Retrying push... attempt $i"
-              sleep 5
-            done
-          else
-            echo "No directory deleted... tried:"
-            printf '%s\n' "${ARR_PREVIEWS[@]}"
-            echo "No directory deleted... tried:" >> $GITHUB_STEP_SUMMARY
-            printf '%s\n' "- ${ARR_PREVIEWS[@]}" >> $GITHUB_STEP_SUMMARY
-          fi
+          #   for i in {1..5}; do
+          #     git pull --rebase origin ${{ inputs.PREVIEW_MAIN_BRANCH }} && git push origin ${{ inputs.PREVIEW_MAIN_BRANCH }} && break
+          #     echo "Retrying push... attempt $i"
+          #     sleep 5
+          #   done
+          # else
+          #   echo "No directory deleted... tried:"
+          #   printf '%s\n' "${ARR_PREVIEWS[@]}"
+          #   echo "No directory deleted... tried:" >> $GITHUB_STEP_SUMMARY
+          #   printf '%s\n' "- ${ARR_PREVIEWS[@]}" >> $GITHUB_STEP_SUMMARY
+          # fi
+
+      - name: "🡢 Delete preview PR in repo: ${{ inputs.PREVIEW_REPO_NAME }}"
+        # TODO
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
+        uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@latest-v2.1
+        if: steps.delete-argocd-preview.outputs.PR_DELETED == 'true'
+        with:
+          do-pr-merge: 'true' # ${{ inputs.DO_PR_MERGE }}
+          env-repo-name: ${{ inputs.PREVIEW_REPO_ORG_NAME }}/${{ inputs.PREVIEW_REPO_NAME }}
+          env-repo-path: ${{ inputs.PREVIEW_REPO_NAME }}
+          gh-token: ${{ env.GH_TOKEN }}
+          is-helm-chart: 'false'
+          is-preview: 'false'
+          name: ${{ inputs.NAME }}
+          override-branch-name: gha/preview-delete/${{ inputs.NAME }}-${{ steps.setup-variables.outputs.PR_VERSION }}
+          version: PR${{ github.event.pull_request.number }}
 
       - name: "☁️ Checkout repository ${{ steps.setup-variables.outputs.TRIVY_REPO_FULLNAME }}"
         uses: actions/checkout@v4
