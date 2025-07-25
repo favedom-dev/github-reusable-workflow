@@ -135,7 +135,7 @@ jobs:
 
   app:
     # uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-app.yaml@v2.1
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-app.yaml@argocd-previews
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-app.yaml@latest-v2.1
     # needs: [runner]
     with:
       # DO_TRIVY: ${{ inputs.DO_TRIVY }}
