@@ -201,15 +201,11 @@ jobs:
           echo "PREVIEW_REPO_FULLNAME=${PREVIEW_REPO_FULLNAME}" >> $GITHUB_ENV
           echo "PREVIEW_REPO_FULLNAME=${PREVIEW_REPO_FULLNAME}" >> $GITHUB_OUTPUT
           # ===
-          PREVIEW_BASE_DIR="${{ inputs.PREVIEW_REPO_NAME }}/apps"
+          # PREVIEW_BASE_DIR="${{ inputs.PREVIEW_REPO_NAME }}/apps"
+          PREVIEW_BASE_DIR="apps"
           echo "PREVIEW_BASE_DIR : ${PREVIEW_BASE_DIR}"
           echo "PREVIEW_BASE_DIR=${PREVIEW_BASE_DIR}" >> $GITHUB_ENV
           echo "PREVIEW_BASE_DIR=${PREVIEW_BASE_DIR}" >> $GITHUB_OUTPUT
-          # ===
-          # PREVIEW_WORKING_DIR="${PREVIEW_BASE_DIR}/${{ inputs.NAME }}/${{ inputs.PREVIEW_NAMESPACE }}"
-          # echo "PREVIEW_WORKING_DIR : ${PREVIEW_WORKING_DIR}"
-          # echo "PREVIEW_WORKING_DIR=${PREVIEW_WORKING_DIR}" >> $GITHUB_ENV
-          # echo "PREVIEW_WORKING_DIR=${PREVIEW_WORKING_DIR}" >> $GITHUB_OUTPUT
           # ===
           TRIVY_REPO_FULLNAME="${{ inputs.TRIVY_REPO_ORG_NAME }}/${{ inputs.TRIVY_REPO_NAME }}"
           echo "TRIVY_REPO_FULLNAME : ${TRIVY_REPO_FULLNAME}"
