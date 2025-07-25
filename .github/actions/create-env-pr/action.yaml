@@ -28,6 +28,10 @@ inputs:
     description: 'Git commit message'
     default: ''
 
+  release-note:
+    description: 'Git PR release notes'
+    default: ''
+
   do-pr-merge:
     description: 'Whether to auto-merge the PR'
     default: 'false'
@@ -67,6 +71,7 @@ runs:
         IS_PREVIEW: ${{ inputs.is-preview }}
         MONOREPO_APP: ${{ inputs.monorepo-app }}
         NAME: ${{ inputs.name }}
+        RELEASE_NOTE: ${{ inputs.release-note }}
         VERSION: ${{ inputs.version }}
       run: |
         MAX_RETRIES=5
@@ -81,6 +86,7 @@ runs:
         echo "IS_PREVIEW           : ${IS_PREVIEW}"
         echo "BRANCH_NAME          : ${BRANCH_NAME}"
         echo "OVERRIDE_BRANCH_NAME : ${OVERRIDE_BRANCH_NAME}"
+        echo "RELEASE_NOTE         : ${RELEASE_NOTE}"
         echo "GITHUB_REPOSITORY    : ${GITHUB_REPOSITORY}"
         echo "github.workspace     : ${{ github.workspace }}"
         echo "github.server_url    : ${{ github.server_url }}"
@@ -132,7 +138,9 @@ runs:
         git push --force-with-lease origin "${BRANCH_NAME}"
 
         # Generate release notes based on type
-        if [ "${IS_PREVIEW}" = "true" ]; then
+        if [ "${#RELEASE_NOTE}" -gt 0 ]; then
+          echo "${RELEASE_NOTE}" >> ./GH_RELEASE_NOTES.txt
+        elif [ "${IS_PREVIEW}" = "true" ]; then
           echo "Repo         : ${{ github.server_url }}/${GITHUB_REPOSITORY}" >> ./GH_RELEASE_NOTES.txt
           echo "Branch       : ${{ github.server_url }}/${GITHUB_REPOSITORY}/tree/${GITHUB_HEAD_REF}" >> ./GH_RELEASE_NOTES.txt
           echo "PR           : [${{ github.event.pull_request.number }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.pull_request.number }})" >> ./GH_RELEASE_NOTES.txt
