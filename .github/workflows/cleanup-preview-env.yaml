@@ -357,11 +357,15 @@ jobs:
 
           # delete for each item in ARR_PREVIEWS
           for CURRENT_PREVIEW in "${ARR_PREVIEWS[@]}"; do
-            echo "Directory exists: ${CURRENT_PREVIEW}"
-            rm -rf "${CURRENT_PREVIEW}"
-            echo "Deleted: ${CURRENT_PREVIEW}"
-            echo "-  \`${CURRENT_PREVIEW}\`" >> $GITHUB_STEP_SUMMARY
-            PR_DELETED="true"
+            if [ -d "${CURRENT_PREVIEW}" ]; then
+              echo "Directory exists: ${CURRENT_PREVIEW}"
+              rm -rf "${CURRENT_PREVIEW}"
+              echo "Deleted: ${CURRENT_PREVIEW}"
+              echo "-  \`${CURRENT_PREVIEW}\`" >> $GITHUB_STEP_SUMMARY
+              PR_DELETED="true"
+            else
+              echo "Directory does NOT exists: ${CURRENT_PREVIEW}"
+            fi
           done
 
           if [ "${PR_DELETED}" = "true" ]; then
