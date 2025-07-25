@@ -329,6 +329,7 @@ jobs:
           echo "NAME   : ${NAME}"
           echo "NAMES  : ${NAMES}"
           echo "PR_DIR : ${PR_DIR}"
+          echo "PR#    : ${{ github.event.number }}"
           echo "## 🗑️ ArgoCD Preview" >> $GITHUB_STEP_SUMMARY
 
           declare -a ARR_PREVIEWS
