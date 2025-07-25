@@ -321,7 +321,7 @@ jobs:
           repository: ${{ steps.setup-variables.outputs.PREVIEW_REPO_FULLNAME }}
           path: '${{ inputs.PREVIEW_REPO_NAME }}'
 
-      - name: "🗑️ Delete ArgoCD preview files: ${{ steps.setup-variables.outputs.PR_VERSION }}*"
+      - name: "🗑️ Delete ArgoCD preview files: ${{ github.event.number }}"
         working-directory: ${{ inputs.PREVIEW_REPO_NAME }}
         env:
           NAME: ${{ inputs.NAME }}
