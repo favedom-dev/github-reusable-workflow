@@ -26,8 +26,9 @@ on:  # yamllint disable-line rule:truthy
           GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
 
       PREVIEW_NAMESPACE:
-        required: true
+        required: false
         type: string
+        description: "OBSOLETE"
 
       PR_PREFIX:
         default: '0.0.0-SNAPSHOT-PR-'
@@ -188,10 +189,15 @@ jobs:
           echo "PREVIEW_REPO_FULLNAME=${PREVIEW_REPO_FULLNAME}" >> $GITHUB_ENV
           echo "PREVIEW_REPO_FULLNAME=${PREVIEW_REPO_FULLNAME}" >> $GITHUB_OUTPUT
           # ===
-          PREVIEW_WORKING_DIR="${{ inputs.PREVIEW_REPO_NAME }}/apps/${{ inputs.NAME }}/${{ inputs.PREVIEW_NAMESPACE }}"
-          echo "PREVIEW_WORKING_DIR : ${PREVIEW_WORKING_DIR}"
-          echo "PREVIEW_WORKING_DIR=${PREVIEW_WORKING_DIR}" >> $GITHUB_ENV
-          echo "PREVIEW_WORKING_DIR=${PREVIEW_WORKING_DIR}" >> $GITHUB_OUTPUT
+          PREVIEW_BASE_DIR="${{ inputs.PREVIEW_REPO_NAME }}/apps
+          echo "PREVIEW_BASE_DIR : ${PREVIEW_BASE_DIR}"
+          echo "PREVIEW_BASE_DIR=${PREVIEW_BASE_DIR}" >> $GITHUB_ENV
+          echo "PREVIEW_BASE_DIR=${PREVIEW_BASE_DIR}" >> $GITHUB_OUTPUT
+          # ===
+          # PREVIEW_WORKING_DIR="${PREVIEW_BASE_DIR}/${{ inputs.NAME }}/${{ inputs.PREVIEW_NAMESPACE }}"
+          # echo "PREVIEW_WORKING_DIR : ${PREVIEW_WORKING_DIR}"
+          # echo "PREVIEW_WORKING_DIR=${PREVIEW_WORKING_DIR}" >> $GITHUB_ENV
+          # echo "PREVIEW_WORKING_DIR=${PREVIEW_WORKING_DIR}" >> $GITHUB_OUTPUT
           # ===
           TRIVY_REPO_FULLNAME="${{ inputs.TRIVY_REPO_ORG_NAME }}/${{ inputs.TRIVY_REPO_NAME }}"
           echo "TRIVY_REPO_FULLNAME : ${TRIVY_REPO_FULLNAME}"
@@ -212,7 +218,8 @@ jobs:
           echo "DOCKER_URL            : ${DOCKER_URL}"
           echo "DOCKER_TAG_PREFIX     : ${DOCKER_TAG_PREFIX}"
           echo "PREVIEW_REPO_FULLNAME : ${PREVIEW_REPO_FULLNAME}"
-          echo "PREVIEW_WORKING_DIR   : ${PREVIEW_WORKING_DIR}"
+          echo "PREVIEW_BASE_DIR      : ${PREVIEW_BASE_DIR}"
+          # echo "PREVIEW_WORKING_DIR   : ${PREVIEW_WORKING_DIR}"
           echo "TRIVY_REPO_FULLNAME   : ${TRIVY_REPO_FULLNAME}"
           echo "TRIVY_WORKING_DIR     : ${TRIVY_WORKING_DIR}"
           echo "======================="
@@ -305,34 +312,65 @@ jobs:
       - name: "🗑️ Delete ArgoCD preview files: ${{ steps.setup-variables.outputs.PR_VERSION }}*"
         working-directory: ${{ inputs.PREVIEW_REPO_NAME }}
         env:
-          PR_DIR: ./${{ steps.setup-variables.outputs.PREVIEW_WORKING_DIR }}
+          NAME: ${{ inputs.NAME }}
+          NAMES: ${{ inputs.NAMES }}
+          # PR_DIR: ./${{ steps.setup-variables.outputs.PREVIEW_WORKING_DIR }}
+          PR_DIR: ./${{ steps.setup-variables.outputs.PREVIEW_BASE_DIR }}
         run: |
-          echo "PR_DIR : ${PR_DIR}"
-          echo "pwd"
+          echo "DEBUG >>>"
+          echo "pwd:"
           pwd
-          echo "ls"
+          echo "ls:"
           ls -la
+          echo "<<< DEBUG"
+
+          name=${NAMES:-${NAME}}
+          echo "name   : ${name}"
+          echo "NAME   : ${NAME}"
+          echo "NAMES  : ${NAMES}"
+          echo "PR_DIR : ${PR_DIR}"
           echo "## 🗑️ ArgoCD Preview" >> $GITHUB_STEP_SUMMARY
 
-          if [ -d "${PR_DIR}" ]; then
-            echo "Directory exists: ${PR_DIR}"
-            rm -rf ${PR_DIR}
+          declare -a ARR_PREVIEWS
+          if [ "${#NAMES}" -gt 0 ]; then
+            read -a ARR_NAMES <<< "${NAMES}"
+            for name in "${ARR_NAMES[@]}"; do
+              echo "Adding \"names\" ${PR_DIR}/${name}/pr-${name}-${{ github.event.number }}"
+              ARR_PREVIEWS+=("${PR_DIR}/${name}")
+            done
+          else
+            echo "Adding \"name\" ${PR_DIR}/${name}/pr-${name}-${{ github.event.number }}"
+            ARR_PREVIEWS+=("${PR_DIR}/${name}/pr-${name}-${{ github.event.number }}")
+          fi
 
+          echo "ARR_PREVIEWS:"
+          printf '%s\n' "${ARR_PREVIEWS[@]}"
+
+          # delete for each item in ARR_PREVIEWS
+          for CURRENT_PREVIEW in "${ARR_PREVIEWS[@]}"; do
+            echo "Directory exists: ${CURRENT_PREVIEW}"
+            rm -rf "${CURRENT_PREVIEW}"
+            echo "Deleted: ${CURRENT_PREVIEW}"
+            echo "-  \`${CURRENT_PREVIEW}\`" >> $GITHUB_STEP_SUMMARY
+            PR_DELETED="true"
+          done
+
+          if [ "${PR_DELETED}" = "true" ]; then
             echo "git..."
             git status
             git add .
-            git commit -m "chore: ${{ inputs.NAME }} PR: ${{ steps.setup-variables.outputs.PR_NUM }} Delete: ${{ inputs.PREVIEW_NAMESPACE }}"
+            git commit -m "chore: ${{ inputs.NAME }} PR: ${{ steps.setup-variables.outputs.PR_NUM }} Delete: ${ARR_PREVIEWS[@]}"
 
             for i in {1..5}; do
               git pull --rebase origin ${{ inputs.PREVIEW_MAIN_BRANCH }} && git push origin ${{ inputs.PREVIEW_MAIN_BRANCH }} && break
               echo "Retrying push... attempt $i"
               sleep 5
             done
-            echo "-  \`${PR_DIR}\`" >> $GITHUB_STEP_SUMMARY
-
           else
-            echo "Directory does not exist: ${PR_DIR}"
-            echo "Directory does not exist: ${PR_DIR}" >> $GITHUB_STEP_SUMMARY
+            echo "No directory deleted... tried:"
+            printf '%s\n' "${ARR_PREVIEWS[@]}"
+            echo "No directory deleted... tried:" >> $GITHUB_STEP_SUMMARY
+            printf '%s\n' "- ${ARR_PREVIEWS[@]}" >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: "☁️ Checkout repository ${{ steps.setup-variables.outputs.TRIVY_REPO_FULLNAME }}"
