@@ -106,9 +106,7 @@ jobs:
       #     is-monorepo: ${{ inputs.IS_MONOREPO }}
 
       - name: "📝 Set Preview Namespace name"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-preview-namespace@v2.1
-        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-preview-namespace@latest-v2.1
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-preview-namespace@v2.1
         id: set-name-pr-namespace
         with:
           override-preview-namespace: ${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}

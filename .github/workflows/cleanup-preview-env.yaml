@@ -370,9 +370,7 @@ jobs:
           done
 
       - name: "🡢 Delete preview PR in repo: ${{ inputs.PREVIEW_REPO_NAME }}"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
-        uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@latest-v2.1
+        uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
         if: steps.delete-argocd-preview.outputs.PR_DELETED == 'true'
         with:
           commit-msg: "chore: ${{ inputs.NAME }} PR ${{ steps.setup-variables.outputs.PR_NUM }} Delete ArgoCD preview files"
