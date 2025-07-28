@@ -141,7 +141,7 @@ jobs:
       - name: "👀 Display values: ${{ steps.set-name.outputs.NAME }} "
         run: |
           echo "NAME                  : ${{ steps.set-name.outputs.NAME }}"
-          echo "HELM_USE_LOCAL_COMMON : ${{ steps.set-vars.outputs.STACKHAWK_DIRECTORY }}"
+          echo "HELM_USE_LOCAL_COMMON : ${{ steps.set-vars.outputs.HELM_USE_LOCAL_COMMON }}"
           echo "PREVIEW_NAMESPACE     : ${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}"
           echo "IS_STACKHAWK_READY    : ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}"
           echo "STACKHAWK_DIRECTORY   : ${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}"
@@ -150,7 +150,7 @@ jobs:
           echo "| Property              | Value |" >> $GITHUB_STEP_SUMMARY
           echo "| ---                   | --- |" >> $GITHUB_STEP_SUMMARY
           echo "| NAME                  | \`${{ steps.set-name.outputs.NAME }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| HELM_USE_LOCAL_COMMON | \`${{ steps.set-vars.outputs.STACKHAWK_DIRECTORY }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| HELM_USE_LOCAL_COMMON | \`${{ steps.set-vars.outputs.HELM_USE_LOCAL_COMMON }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| PREVIEW_NAMESPACE     | \`${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| IS_STACKHAWK_READY    | \`${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "| STACKHAWK_DIRECTORY   | \`${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}\` |" >> $GITHUB_STEP_SUMMARY
