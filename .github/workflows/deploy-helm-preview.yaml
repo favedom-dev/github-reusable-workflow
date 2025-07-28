@@ -557,9 +557,7 @@ jobs:
           cat ${PR_DIR}/${PR_YAML} | yq
 
       - name: "🡢 Create preview PR in repo: ${{ inputs.PREVIEW_GIT_REPO }}"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
-        uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@latest-v2.1
+        uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
         with:
           # commit-msg: "chore: ${{ inputs.NAME }} preview ${{ inputs.PREVIEW_NAMESPACE }} ${{ inputs.VERSION }}"
           do-pr-merge: ${{ inputs.DO_PR_MERGE }}

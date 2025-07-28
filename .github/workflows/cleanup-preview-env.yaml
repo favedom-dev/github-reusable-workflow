@@ -207,6 +207,15 @@ jobs:
           echo "PREVIEW_BASE_DIR=${PREVIEW_BASE_DIR}" >> $GITHUB_ENV
           echo "PREVIEW_BASE_DIR=${PREVIEW_BASE_DIR}" >> $GITHUB_OUTPUT
           # ===
+          PREVIEW_NAME="${{ inputs.NAME }}"
+          if [ "${#NAMES}" -gt 0 ]; then
+            PREVIEW_NAME="${{ github.event.repository.name }}}"
+          fi
+          echo "PREVIEW_NAME : ${PREVIEW_NAME}"
+          echo "PREVIEW_NAME=${PREVIEW_NAME}" >> $GITHUB_ENV
+          echo "PREVIEW_NAME=${PREVIEW_NAME}" >> $GITHUB_OUTPUT
+
+          # ===
           TRIVY_REPO_FULLNAME="${{ inputs.TRIVY_REPO_ORG_NAME }}/${{ inputs.TRIVY_REPO_NAME }}"
           echo "TRIVY_REPO_FULLNAME : ${TRIVY_REPO_FULLNAME}"
           echo "TRIVY_REPO_FULLNAME=${TRIVY_REPO_FULLNAME}" >> $GITHUB_ENV
@@ -228,6 +237,7 @@ jobs:
           echo "PREVIEW_REPO_FULLNAME : ${PREVIEW_REPO_FULLNAME}"
           echo "PREVIEW_BASE_DIR      : ${PREVIEW_BASE_DIR}"
           # echo "PREVIEW_WORKING_DIR   : ${PREVIEW_WORKING_DIR}"
+          echo "PREVIEW_NAME          : ${PREVIEW_NAME}"
           echo "TRIVY_REPO_FULLNAME   : ${TRIVY_REPO_FULLNAME}"
           echo "TRIVY_WORKING_DIR     : ${TRIVY_WORKING_DIR}"
           echo "======================="
@@ -370,9 +380,7 @@ jobs:
           done
 
       - name: "🡢 Delete preview PR in repo: ${{ inputs.PREVIEW_REPO_NAME }}"
-        # TODO
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
-        uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@latest-v2.1
+        uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
         if: steps.delete-argocd-preview.outputs.PR_DELETED == 'true'
         with:
           commit-msg: "chore: ${{ inputs.NAME }} PR ${{ steps.setup-variables.outputs.PR_NUM }} Delete ArgoCD preview files"
@@ -382,7 +390,8 @@ jobs:
           gh-token: ${{ env.GH_TOKEN }}
           is-helm-chart: 'false'
           is-preview: 'false'
-          name: ${{ inputs.NAME }}
+          # name: ${{ inputs.NAME }}
+          name: ${{ steps.setup-variables.outputs.PREVIEW_NAME }}
           override-branch-name: gha/preview-delete/${{ inputs.NAME }}-${{ steps.setup-variables.outputs.PR_NUM }}
           release-note: "Delete ArgoCD preview files for ${{ inputs.NAME }} PR ${{ steps.setup-variables.outputs.PR_NUM }}"
           version: PR${{ steps.setup-variables.outputs.PR_NUM }}
