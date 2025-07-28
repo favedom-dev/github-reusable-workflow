@@ -630,7 +630,8 @@ jobs:
           if [ ${#API_PATH} -gt 1 ]; then
             echo "| 💓 Healthcheck | [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL}) |" >> ${PR_BODY}
           fi
-          echo "| ☸ Preview Namespace | \`kubectl config set-context gke_development-375017_us-central1-a_fanfuzenil --namespace=${PREVIEW_NAMESPACE}\` |" >> ${PR_BODY}
+          # echo "| ☸ Preview Namespace | \`kubectl config set-context gke_development-375017_us-central1-a_fanfuzenil --namespace=${PREVIEW_NAMESPACE}\` |" >> ${PR_BODY}
+          echo "| ☸ Preview Namespace | \`${PREVIEW_NAMESPACE}\` |" >> ${PR_BODY}
           echo "| 🐙 ArgoCD App | [${NAMEOVERRIDE}](${ARGOCD_URL}) |" >> ${PR_BODY}
           echo "===="
           echo "PR_BODY:"
