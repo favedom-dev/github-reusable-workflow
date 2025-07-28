@@ -387,7 +387,7 @@ jobs:
         uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
         if: steps.delete-argocd-preview.outputs.PR_DELETED == 'true'
         with:
-          commit-msg: "chore: ${{ inputs.NAME }} PR ${{ steps.setup-variables.outputs.PR_NUM }} Delete ArgoCD preview files"
+          commit-msg: "chore: ${{ steps.setup-variables.outputs.PREVIEW_NAME }} PR ${{ steps.setup-variables.outputs.PR_NUM }} Delete ArgoCD preview files"
           do-pr-merge: 'true' # ${{ inputs.DO_PR_MERGE }}
           env-repo-name: ${{ inputs.PREVIEW_REPO_ORG_NAME }}/${{ inputs.PREVIEW_REPO_NAME }}
           env-repo-path: ${{ inputs.PREVIEW_REPO_NAME }}
@@ -396,8 +396,8 @@ jobs:
           is-preview: 'false'
           # name: ${{ inputs.NAME }}
           name: ${{ steps.setup-variables.outputs.PREVIEW_NAME }}
-          override-branch-name: gha/preview-delete/${{ inputs.NAME }}-${{ steps.setup-variables.outputs.PR_NUM }}
-          release-note: "Delete ArgoCD preview files for ${{ inputs.NAME }} PR ${{ steps.setup-variables.outputs.PR_NUM }}"
+          override-branch-name: gha/preview-delete/${{ steps.setup-variables.outputs.PREVIEW_NAME }}-${{ steps.setup-variables.outputs.PR_NUM }}
+          release-note: "Delete ArgoCD preview files for ${{ steps.setup-variables.outputs.PREVIEW_NAME }} PR ${{ steps.setup-variables.outputs.PR_NUM }}"
           version: PR${{ steps.setup-variables.outputs.PR_NUM }}
 
       - name: "☁️ Checkout repository ${{ steps.setup-variables.outputs.TRIVY_REPO_FULLNAME }}"
