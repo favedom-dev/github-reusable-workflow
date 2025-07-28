@@ -355,12 +355,14 @@ jobs:
           if [ "${#NAMES}" -gt 0 ]; then
             read -a ARR_NAMES <<< "${NAMES}"
             for name in "${ARR_NAMES[@]}"; do
-              echo "Adding \"names\" ${PR_DIR}/${name}/pr-${name}-${{ github.event.number }}"
-              ARR_PREVIEWS+=("${PR_DIR}/${name}")
+              dir_name=${PR_DIR}/${name}/pr-${name}-${{ github.event.number }}
+              echo "Adding \"names\" ${dir_name}"
+              ARR_PREVIEWS+=("${dir_name}")
             done
           else
-            echo "Adding \"name\" ${PR_DIR}/${name}/pr-${name}-${{ github.event.number }}"
-            ARR_PREVIEWS+=("${PR_DIR}/${name}/pr-${name}-${{ github.event.number }}")
+            dir_name=${PR_DIR}/${name}/pr-${name}-${{ github.event.number }}
+            echo "Adding \"name\" ${dir_name}"
+            ARR_PREVIEWS+=("${dir_name}")
           fi
 
           echo "ARR_PREVIEWS:"
