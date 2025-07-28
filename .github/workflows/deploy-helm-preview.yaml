@@ -616,6 +616,7 @@ jobs:
           PREVIEW_API_HEALTHCHECK="${API_PATH}${{ inputs.PREVIEW_HEALTHCHECK }}"
           PREVIEW_HEALTHCHECK_URL="${PREVIEW_URL}${PREVIEW_API_HEALTHCHECK}"
           echo "API_PATH                : ${API_PATH}"
+          echo "ARGOCD_URL              : ${ARGOCD_URL}"
           echo "PREVIEW_NAMESPACE       : ${PREVIEW_NAMESPACE}"
           echo "PREVIEW_URL             : ${PREVIEW_URL}"
           echo "PREVIEW_API_HEALTHCHECK : ${PREVIEW_API_HEALTHCHECK}"
