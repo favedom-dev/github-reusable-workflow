@@ -211,7 +211,7 @@ jobs:
           # ===
           PREVIEW_NAME="${{ inputs.NAME }}"
           if [ "${#NAMES}" -gt 0 ]; then
-            PREVIEW_NAME="${{ github.event.repository.name }}}"
+            PREVIEW_NAME="${{ github.event.repository.name }}"
           fi
           echo "PREVIEW_NAME : ${PREVIEW_NAME}"
           echo "PREVIEW_NAME=${PREVIEW_NAME}" >> $GITHUB_ENV
