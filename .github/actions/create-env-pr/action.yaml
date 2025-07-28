@@ -20,12 +20,28 @@ inputs:
     description: 'Version to use'
     required: true
 
+  override-branch-name:
+    description: 'Git branch name override'
+    default: ''
+
+  commit-msg:
+    description: 'Git commit message'
+    default: ''
+
+  release-note:
+    description: 'Git PR release notes'
+    default: ''
+
   do-pr-merge:
     description: 'Whether to auto-merge the PR'
     default: 'false'
 
   is-helm-chart:
     description: 'Whether this is a Helm chart update'
+    default: 'false'
+
+  is-preview:
+    description: 'Whether this is a preview update'
     default: 'false'
 
   monorepo-app:
@@ -44,24 +60,42 @@ runs:
       shell: bash
       working-directory: ${{ inputs.env-repo-path }}
       env:
-        NAME: ${{ inputs.name }}
-        VERSION: ${{ inputs.version }}
         BRANCH_NAME: ${{ inputs.is-helm-chart == 'true' && format('gha/helm-chart/{0}_{1}', inputs.name, inputs.version) || format('gha_{0}_{1}', inputs.name, inputs.version) }}
+        OVERRIDE_BRANCH_NAME: ${{ inputs.override-branch-name }}
+        COMMIT_MSG: ${{ inputs.commit-msg }}
         DO_PR_MERGE: ${{ inputs.do-pr-merge }}
-        MONOREPO_APP: ${{ inputs.monorepo-app }}
-        IS_HELM_CHART: ${{ inputs.is-helm-chart }}
         ENV_REPO_NAME: ${{ inputs.env-repo-name }}
         GH_TOKEN: ${{ inputs.gh-token }}
         GITHUB_TOKEN: ${{ inputs.gh-token }}
+        IS_HELM_CHART: ${{ inputs.is-helm-chart }}
+        IS_PREVIEW: ${{ inputs.is-preview }}
+        MONOREPO_APP: ${{ inputs.monorepo-app }}
+        NAME: ${{ inputs.name }}
+        RELEASE_NOTE: ${{ inputs.release-note }}
+        VERSION: ${{ inputs.version }}
       run: |
         MAX_RETRIES=5
         SLEEP_TIME=10
         MAIN_BRANCH="main"
 
-        echo "NAME         : ${NAME}"
-        echo "VERSION      : ${VERSION}"
-        echo "MONOREPO_APP : ${MONOREPO_APP}"
-        echo "BRANCH_NAME  : ${BRANCH_NAME}"
+        echo "NAME                 : ${NAME}"
+        echo "VERSION              : ${VERSION}"
+        echo "MONOREPO_APP         : ${MONOREPO_APP}"
+        echo "COMMIT_MSG           : ${COMMIT_MSG}"
+        echo "IS_HELM_CHART        : ${IS_HELM_CHART}"
+        echo "IS_PREVIEW           : ${IS_PREVIEW}"
+        echo "BRANCH_NAME          : ${BRANCH_NAME}"
+        echo "OVERRIDE_BRANCH_NAME : ${OVERRIDE_BRANCH_NAME}"
+        echo "RELEASE_NOTE         : ${RELEASE_NOTE}"
+        echo "GITHUB_REPOSITORY    : ${GITHUB_REPOSITORY}"
+        echo "github.workspace     : ${{ github.workspace }}"
+        echo "github.server_url    : ${{ github.server_url }}"
+        echo "github.repository    : ${{ github.repository }}"
+
+        if [ -n "${OVERRIDE_BRANCH_NAME}" ]; then
+          BRANCH_NAME=${OVERRIDE_BRANCH_NAME}
+          echo "Using OVERRIDE_BRANCH_NAME: ${BRANCH_NAME}"
+        fi
 
         # Check if branch exists and handle it
         if git ls-remote --exit-code --heads origin "${BRANCH_NAME}"; then
@@ -86,7 +120,12 @@ runs:
         fi
 
         # Set commit message based on IS_HELM_CHART
-        if [ "${IS_HELM_CHART}" = "true" ]; then
+        if [ ${#COMMIT_MSG} -gt 0 ]; then
+          echo "Using input commit message...:"
+          echo "${COMMIT_MSG}"
+        elif [ "${IS_PREVIEW}" = "true" ]; then
+          COMMIT_MSG="chore: preview ${NAME} ${VERSION}"
+        elif [ "${IS_HELM_CHART}" = "true" ]; then
           COMMIT_MSG="chore: bump helm chart ${NAME} to ${VERSION}"
         else
           COMMIT_MSG="chore: bump image.tag ${NAME} to ${VERSION}"
@@ -99,7 +138,44 @@ runs:
         git push --force-with-lease origin "${BRANCH_NAME}"
 
         # Generate release notes based on type
-        if [ "${IS_HELM_CHART}" = "true" ]; then
+        if [ "${#RELEASE_NOTE}" -gt 0 ]; then
+          echo "${RELEASE_NOTE}" >> ./GH_RELEASE_NOTES.txt
+        elif [ "${IS_PREVIEW}" = "true" ]; then
+          echo "Repo         : ${{ github.server_url }}/${GITHUB_REPOSITORY}" >> ./GH_RELEASE_NOTES.txt
+          echo "Branch       : ${{ github.server_url }}/${GITHUB_REPOSITORY}/tree/${GITHUB_HEAD_REF}" >> ./GH_RELEASE_NOTES.txt
+          echo "PR           : [${{ github.event.pull_request.number }}](${{ github.server_url }}/${{ github.repository }}/pull/${{ github.event.pull_request.number }})" >> ./GH_RELEASE_NOTES.txt
+          echo "Version      : ${VERSION}" >> ./GH_RELEASE_NOTES.txt
+
+          if [ -d "${{ github.workspace }}" ]; then
+            echo "pwd 1"
+            pwd
+            echo "================"
+            echo "CHANGES      :" >> ./GH_RELEASE_NOTES.txt
+
+            cd "${{ github.workspace }}"
+
+            # Detect base branch
+            BASE_BRANCH="master"
+            if git show-ref --verify --quiet refs/remotes/origin/main; then
+              BASE_BRANCH="main"
+            fi
+            echo "BASE_BRANCH : ${BASE_BRANCH}"
+
+            # Make sure it is fetched
+            git fetch origin ${BASE_BRANCH}
+
+            echo "Running git log against origin/${BASE_BRANCH}..HEAD"
+            GIT_CHANGES=$(git log origin/${BASE_BRANCH}..HEAD \
+              --pretty=format:"- [\`%h\`](${{ github.server_url }}/${{ github.repository }}/commit/%H) **%an** _(%ad)_ — %s" \
+              --date=format:'%Y-%m-%d')
+            cd -
+            echo "Captured changes:"
+            echo "${GIT_CHANGES}" >> ./GH_RELEASE_NOTES.txt
+          else
+            echo "Directory does not exist: ${{ github.workspace }}"
+          fi
+
+        elif [ "${IS_HELM_CHART}" = "true" ]; then
           echo "Helm chart   : [${NAME}](${{ github.server_url }}/${GITHUB_REPOSITORY}/tree/master/charts/${NAME})" > ./GH_RELEASE_NOTES.txt
           echo "Version      : [${VERSION}](${{ github.server_url }}/${GITHUB_REPOSITORY}/releases/tag/${NAME}%2Fv${VERSION})" >> ./GH_RELEASE_NOTES.txt
           echo "Repo         : ${{ github.server_url }}/${GITHUB_REPOSITORY}" >> ./GH_RELEASE_NOTES.txt
@@ -112,12 +188,20 @@ runs:
         fi
 
         GH_BODY=$(cat ./GH_RELEASE_NOTES.txt)
+        echo "GH_BODY:"
+        echo "${GH_BODY}"
         git clean -fd
 
+
         # Create PR with retry logic
+        # echo "ENV_REPO_NAME : ${ENV_REPO_NAME}"
+        # echo "TITLE         : ${TITLE}"
+        # echo "GH_BODY       : ${GH_BODY}"
         for ((i=1; i<=MAX_RETRIES; i++)); do
           PR_URL=$(gh pr create -R "${ENV_REPO_NAME}" --label "approved" --title "${TITLE}" --body "${GH_BODY}" 2>/dev/null)
-          if [ $? -eq 0 ]; then
+          rc=$?
+          # echo "rc = $rc"
+          if [ $rc -eq 0 ]; then
             echo "Pull request created successfully at: ${PR_URL}"
             echo "## Pull Request" >> $GITHUB_STEP_SUMMARY
             echo "🡢 Updated in \`${ENV_REPO_NAME}\`: [${NAME} ${VERSION}](${PR_URL})" >> $GITHUB_STEP_SUMMARY
@@ -128,6 +212,7 @@ runs:
         done
 
         # Auto-merge if enabled
+        echo "Auto-merge if enabled"
         if [ "${DO_PR_MERGE}" = "true" ]; then
           echo "Auto Squash & Merge PR..."
           for ((i=1; i<=MAX_RETRIES; i++)); do

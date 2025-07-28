@@ -69,6 +69,9 @@ on:  # yamllint disable-line rule:truthy
       STACKHAWK_DIRECTORY:
         value: ${{ jobs.app-setup.outputs.STACKHAWK_DIRECTORY }}
 
+      HELM_USE_LOCAL_COMMON:
+        value: $${{ jobs.app-setup.outputs.HELM_USE_LOCAL_COMMON }}
+
       # DO_TRIVY:
       #   value: ${{ jobs.app-setup.outputs.DO_TRIVY }}
 
@@ -79,6 +82,7 @@ jobs:
     runs-on: ${{ inputs.GH_RUNS_ON }}
     outputs:
       NAME: ${{ steps.set-name.outputs.NAME }}
+      HELM_USE_LOCAL_COMMON: ${{ steps.set-vars.outputs.HELM_USE_LOCAL_COMMON }}
       PREVIEW_NAMESPACE: ${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}
       IS_STACKHAWK_READY: ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}
       STACKHAWK_DIRECTORY: ${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}
@@ -102,7 +106,9 @@ jobs:
       #     is-monorepo: ${{ inputs.IS_MONOREPO }}
 
       - name: "📝 Set Preview Namespace name"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-preview-namespace@v2.1
+        # TODO
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-preview-namespace@v2.1
+        uses: favedom-dev/github-reusable-workflow/.github/actions/setup-set-preview-namespace@latest-v2.1
         id: set-name-pr-namespace
         with:
           override-preview-namespace: ${{ inputs.OVERRIDE_PREVIEW_NAMESPACE }}
@@ -110,6 +116,17 @@ jobs:
           repo-full-name: ${{ github.repository }}
           event-number: ${{ github.event.number }}
           name: ${{ steps.set-name.outputs.NAME }}
+
+      - name: "📝 Set Vars"
+        id: set-vars
+        run: |
+          if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]; then
+            HELM_USE_LOCAL_COMMON="true"
+          else
+            HELM_USE_LOCAL_COMMON=""
+          fi
+          echo "HELM_USE_LOCAL_COMMON=${HELM_USE_LOCAL_COMMON}" >> $GITHUB_ENV
+          echo "HELM_USE_LOCAL_COMMON=${HELM_USE_LOCAL_COMMON}" >> $GITHUB_OUTPUT
 
       - name: "☁️ Checkout repository"
         uses: actions/checkout@v4
@@ -125,17 +142,19 @@ jobs:
 
       - name: "👀 Display values: ${{ steps.set-name.outputs.NAME }} "
         run: |
-          echo "NAME                : ${{ steps.set-name.outputs.NAME }}"
-          echo "PREVIEW_NAMESPACE   : ${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}"
-          echo "IS_STACKHAWK_READY  : ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}"
-          echo "STACKHAWK_DIRECTORY : ${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}"
+          echo "NAME                  : ${{ steps.set-name.outputs.NAME }}"
+          echo "HELM_USE_LOCAL_COMMON : ${{ steps.set-vars.outputs.STACKHAWK_DIRECTORY }}"
+          echo "PREVIEW_NAMESPACE     : ${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}"
+          echo "IS_STACKHAWK_READY    : ${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}"
+          echo "STACKHAWK_DIRECTORY   : ${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}"
           #
           # echo "## App Values" >> $GITHUB_STEP_SUMMARY
-          echo "| Property            | Value |" >> $GITHUB_STEP_SUMMARY
-          echo "| ---                 | --- |" >> $GITHUB_STEP_SUMMARY
-          echo "| NAME                | \`${{ steps.set-name.outputs.NAME }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| PREVIEW_NAMESPACE   | \`${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| IS_STACKHAWK_READY  | \`${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| STACKHAWK_DIRECTORY | \`${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Property              | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "| ---                   | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| NAME                  | \`${{ steps.set-name.outputs.NAME }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| HELM_USE_LOCAL_COMMON | \`${{ steps.set-vars.outputs.STACKHAWK_DIRECTORY }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| PREVIEW_NAMESPACE     | \`${{ steps.set-name-pr-namespace.outputs.PREVIEW_NAMESPACE }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| IS_STACKHAWK_READY    | \`${{ steps.stackhawk-ready-repo.outputs.IS_STACKHAWK_READY }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| STACKHAWK_DIRECTORY   | \`${{ steps.stackhawk-ready-repo.outputs.STACKHAWK_DIRECTORY }}\` |" >> $GITHUB_STEP_SUMMARY
 
 

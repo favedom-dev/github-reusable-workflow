@@ -32,18 +32,23 @@ runs:
       env:
         OVERRIDE_PREVIEW_NAMESPACE: ${{ inputs.override-preview-namespace }}
         GH_EVENT_NUMBER: ${{ inputs.event-number }}
+        GH_RUN_NUMBER: ${{ github.run_number }}
+        GH_RUN_ATTEMPT: ${{ github.run_attempt }}
         USE_REPO_NAME_PREVIEW_NAMESPACE: ${{ inputs.use-repo-name-preview-namespace }}
       run: |
         echo "DEBUG: OVERRIDE_PREVIEW_NAMESPACE = ${OVERRIDE_PREVIEW_NAMESPACE}"
         echo "DEBUG: GH_EVENT_NUMBER = ${GH_EVENT_NUMBER}"
+        echo "DEBUG: GH_RUN_NUMBER   = ${GH_RUN_NUMBER}"
+        echo "DEBUG: GH_RUN_ATTEMPT  = ${GH_RUN_ATTEMPT}"
         if [ -n "${OVERRIDE_PREVIEW_NAMESPACE}" ]; then
           PREVIEW_NAMESPACE="${{ inputs.override-preview-namespace }}"
           echo "OVERRIDE: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
-        elif [ -n "${USE_REPO_NAME_PREVIEW_NAMESPACE}" ]; then
-          PREVIEW_NAMESPACE=pr-$(basename "${{ inputs.repo-full-name }}")-${{ inputs.event-number }}
+        # elif [ -n "${USE_REPO_NAME_PREVIEW_NAMESPACE}" ]; then
+        elif [ "${USE_REPO_NAME_PREVIEW_NAMESPACE}" = "true" ]; then
+          PREVIEW_NAMESPACE=pr-$(basename "${{ inputs.repo-full-name }}")-${{ inputs.event-number }}-${{ github.run_number }}-${{ github.run_attempt }}
           echo "REPO NAME: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
         else
-          PREVIEW_NAMESPACE=pr-${{ inputs.name }}-${{ inputs.event-number }}
+          PREVIEW_NAMESPACE=pr-${{ inputs.name }}-${{ inputs.event-number }}-${{ github.run_number }}-${{ github.run_attempt }}
           echo "DEFAULT: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
         fi
         echo "PREVIEW_NAMESPACE: ${PREVIEW_NAMESPACE}"

@@ -235,11 +235,11 @@ jobs:
         uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
         if: github.ref == 'refs/heads/master'
         with:
+          do-pr-merge: ${{ inputs.DO_PR_MERGE }}
           env-repo-name: ${{ inputs.ENV_REPO_NAME }}
           env-repo-path: ${{ inputs.ENV_REPO_PATH }}
-          name: ${{ inputs.NAME }}
-          version: ${{ inputs.VERSION }}
-          do-pr-merge: ${{ inputs.DO_PR_MERGE }}
+          gh-token: ${{ env.GH_TOKEN }}
           is-helm-chart: 'false'
           monorepo-app: ${{ inputs.MONOREPO_APP }}
-          gh-token: ${{ env.GH_TOKEN }}
+          name: ${{ inputs.NAME }}
+          version: ${{ inputs.VERSION }}
