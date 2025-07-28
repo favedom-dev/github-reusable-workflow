@@ -437,6 +437,8 @@ jobs:
           echo "ARG_PREVIEW_CHART_VALUES=${ARG_PREVIEW_CHART_VALUES}" >> $GITHUB_OUTPUT
           echo "ARG_USE_LOCAL=${ARG_USE_LOCAL}" >> $GITHUB_ENV
           echo "ARG_USE_LOCAL=${ARG_USE_LOCAL}" >> $GITHUB_OUTPUT
+          echo "ARGOCD_URL=${ARGOCD_URL}" >> $GITHUB_ENV
+          echo "ARGOCD_URL=${ARGOCD_URL}" >> $GITHUB_OUTPUT
           echo "PREVIEW_WORKING_DIR=${PREVIEW_WORKING_DIR}" >> $GITHUB_ENV
           echo "PREVIEW_WORKING_DIR=${PREVIEW_WORKING_DIR}" >> $GITHUB_OUTPUT
           echo "PREVIEW_CHART_VALUES=${PREVIEW_CHART_VALUES}" >> $GITHUB_ENV
@@ -445,6 +447,7 @@ jobs:
           echo "PREVIEW_DOMAIN=${PREVIEW_DOMAIN}" >> $GITHUB_OUTPUT
           echo "PREVIEW_URL=${PREVIEW_URL}" >> $GITHUB_ENV
           echo "PREVIEW_URL=${PREVIEW_URL}" >> $GITHUB_OUTPUT
+
           echo "NAMEOVERRIDE=${NAMEOVERRIDE}" >> $GITHUB_ENV
           echo "NAMEOVERRIDE=${NAMEOVERRIDE}" >> $GITHUB_OUTPUT
 
@@ -606,6 +609,7 @@ jobs:
       - name: "🔗 PREVIEW: Link to Preview"
         env:
           API_PATH: ${{ steps.get-api-path.outputs.API_PATH }}
+          # ARGOCD_URL: ${{ steps.setup-variables.outputs.ARGOCD_URL }}
           ARGOCD_URL: ${{ steps.setup-variables.outputs.ARGOCD_URL }}
           GH_TOKEN: ${{ env.GH_TOKEN }}
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
