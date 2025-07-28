@@ -197,17 +197,20 @@ jobs:
           DOCKER_TAG_PREFIX="${PR_VERSION}-"
           echo "DOCKER_TAG_PREFIX=${DOCKER_TAG_PREFIX}" >> $GITHUB_ENV
           echo "DOCKER_TAG_PREFIX=${DOCKER_TAG_PREFIX}" >> $GITHUB_OUTPUT
+
           # ===
           PREVIEW_REPO_FULLNAME="${{ inputs.PREVIEW_REPO_ORG_NAME }}/${{ inputs.PREVIEW_REPO_NAME }}"
           echo "PREVIEW_REPO_FULLNAME : ${PREVIEW_REPO_FULLNAME}"
           echo "PREVIEW_REPO_FULLNAME=${PREVIEW_REPO_FULLNAME}" >> $GITHUB_ENV
           echo "PREVIEW_REPO_FULLNAME=${PREVIEW_REPO_FULLNAME}" >> $GITHUB_OUTPUT
+
           # ===
           # PREVIEW_BASE_DIR="${{ inputs.PREVIEW_REPO_NAME }}/apps"
           PREVIEW_BASE_DIR="apps"
           echo "PREVIEW_BASE_DIR : ${PREVIEW_BASE_DIR}"
           echo "PREVIEW_BASE_DIR=${PREVIEW_BASE_DIR}" >> $GITHUB_ENV
           echo "PREVIEW_BASE_DIR=${PREVIEW_BASE_DIR}" >> $GITHUB_OUTPUT
+
           # ===
           PREVIEW_NAME="${{ inputs.NAME }}"
           if [ "${#NAMES}" -gt 0 ]; then
@@ -222,6 +225,7 @@ jobs:
           echo "TRIVY_REPO_FULLNAME : ${TRIVY_REPO_FULLNAME}"
           echo "TRIVY_REPO_FULLNAME=${TRIVY_REPO_FULLNAME}" >> $GITHUB_ENV
           echo "TRIVY_REPO_FULLNAME=${TRIVY_REPO_FULLNAME}" >> $GITHUB_OUTPUT
+
           # ===
           TRIVY_WORKING_DIR="${{ inputs.TRIVY_REPO_NAME }}/${{ inputs.NAME }}/PR"
           echo "TRIVY_WORKING_DIR : ${TRIVY_WORKING_DIR}"
@@ -238,7 +242,6 @@ jobs:
           echo "DOCKER_TAG_PREFIX     : ${DOCKER_TAG_PREFIX}"
           echo "PREVIEW_REPO_FULLNAME : ${PREVIEW_REPO_FULLNAME}"
           echo "PREVIEW_BASE_DIR      : ${PREVIEW_BASE_DIR}"
-          # echo "PREVIEW_WORKING_DIR   : ${PREVIEW_WORKING_DIR}"
           echo "PREVIEW_NAME          : ${PREVIEW_NAME}"
           echo "TRIVY_REPO_FULLNAME   : ${TRIVY_REPO_FULLNAME}"
           echo "TRIVY_WORKING_DIR     : ${TRIVY_WORKING_DIR}"
@@ -335,7 +338,6 @@ jobs:
         env:
           NAME: ${{ inputs.NAME }}
           NAMES: ${{ inputs.NAMES }}
-          # PR_DIR: ./${{ steps.setup-variables.outputs.PREVIEW_WORKING_DIR }}
           PR_DIR: ./${{ steps.setup-variables.outputs.PREVIEW_BASE_DIR }}
         run: |
           echo "DEBUG >>>"
