@@ -161,6 +161,8 @@ jobs:
 
       - name: "🏷️ Set up variables"
         id: setup-variables
+        env:
+          NAMES: ${{ inputs.NAMES }}
         run: |
           PR_NUM=${{ github.event.pull_request.number }}
           echo "PR_NUM=${PR_NUM}" >> $GITHUB_ENV
