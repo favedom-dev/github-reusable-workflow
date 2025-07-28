@@ -377,6 +377,8 @@ jobs:
           PREVIEW_URL=https://${NAMEOVERRIDE}.${{ inputs.PREVIEW_BASE_DOMAIN }}
           # PREVIEW_URL=https://${PREVIEW_DOMAIN}
 
+          ARGOCD_URL=https://argocd.core.joinpeeq.com/applications/argocd/${NAMEOVERRIDE}
+
           ARG_USE_LOCAL=""
           if [ -n "${HELM_USE_LOCAL_COMMON}" ]; then
             ARG_USE_LOCAL="-ul"
@@ -403,6 +405,7 @@ jobs:
           echo "PREVIEW_SUBDOMAIN          : ${PREVIEW_SUBDOMAIN}"
           echo "PREVIEW_DOMAIN             : ${PREVIEW_DOMAIN}"
           echo "PREVIEW_URL                : ${PREVIEW_URL}"
+          echo "ARGOCD_URL                 : ${ARGOCD_URL}"
           echo "NAMEOVERRIDE               : ${NAMEOVERRIDE}"
 
           # set to output and env
@@ -627,6 +630,7 @@ jobs:
             echo "| 💓 Healthcheck | [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL}) |" >> ${PR_BODY}
           fi
           echo "| ☸ Preview Namespace | \`kubectl config set-context gke_development-375017_us-central1-a_fanfuzenil --namespace=${PREVIEW_NAMESPACE}\` |" >> ${PR_BODY}
+          echo "| 🐙 ArgoCD App | [${NAMEOVERRIDE}](${ARGOCD_URL}) |" >> ${PR_BODY}
           echo "===="
           echo "PR_BODY:"
           cat ${PR_BODY}
