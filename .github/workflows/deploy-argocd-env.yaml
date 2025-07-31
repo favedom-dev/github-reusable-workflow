@@ -11,6 +11,11 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
 
+      DEPENDENCY_NAME:
+        default: ''
+        required: false
+        type: string
+
       SECRETS_TO_FETCH:
         description: "Secrets to fetch from Google Secret Manager"
         required: false
@@ -206,21 +211,40 @@ jobs:
         if: github.ref == 'refs/heads/master'
         working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }}
         env:
-          VERSION_SCRIPT_DIR_URL: ${{ inputs.VERSION_SCRIPT_BASE_URL }}/${{ inputs.VERSION_SCRIPT_BRANCH }}/${{ inputs.VERSION_SCRIPT_DIR }}
-          VERSION_SCRIPT_NAME: ${{ inputs.VERSION_SCRIPT_NAME }}
+          DEPENDENCY_NAME: ${{ inputs.DEPENDENCY_NAME }}
           NAME: ${{ inputs.NAME }}
           VERSION: ${{ inputs.VERSION }}
+          VERSION_SCRIPT_DIR_URL: ${{ inputs.VERSION_SCRIPT_BASE_URL }}/${{ inputs.VERSION_SCRIPT_BRANCH }}/${{ inputs.VERSION_SCRIPT_DIR }}
+          VERSION_SCRIPT_NAME: ${{ inputs.VERSION_SCRIPT_NAME }}
           YAML_FILE: ${{ inputs.YAML_FILE }}
         run: |
           echo "Update values.yaml ${NAME}.image.tag"
           if [ -f "${{ github.workspace }}/../${{ inputs.VERSION_SCRIPT_NAME }}" ]; then
+            echo "Copying ${{ inputs.VERSION_SCRIPT_NAME }}"
             cp ${{ github.workspace }}/../${{ inputs.VERSION_SCRIPT_NAME }} ./${{ inputs.VERSION_SCRIPT_NAME }}
-            echo "Copied ${{ inputs.VERSION_SCRIPT_NAME }}"
           else
             echo "File does not exist: ${{ github.workspace }}/../${{ inputs.VERSION_SCRIPT_NAME }}"
           fi
-          ./${{ inputs.VERSION_SCRIPT_NAME }} "." "${{ inputs.NAME }}" "${{ inputs.VERSION }}"
+
+          UPDATE_NAME="${NAME}"
+          if [ ${{ inputs.VERSION_SCRIPT_NAME }} == 'update-values-tag.sh' ]; then
+            echo "Using update-values-tag.sh script"
+            if [ -n "${DEPENDENCY_NAME}" ]; then
+              echo "Using dependency name: ${DEPENDENCY_NAME}"
+              UPDATE_NAME="${DEPENDENCY_NAME}"
+            fi
+          else
+            echo "Using custom script: ${{ inputs.VERSION_SCRIPT_NAME }}"
+          fi
+
+          TARGET_DIR="."
+
+          echo "Running script: ./${{ inputs.VERSION_SCRIPT_NAME }} ${TARGET_DIR} ${UPDATE_NAME} ${{ inputs.VERSION }}"
+          ./${{ inputs.VERSION_SCRIPT_NAME }} "${TARGET_DIR}" "${UPDATE_NAME}" "${{ inputs.VERSION }}"
+
+          echo "Cleaning up script file"
           rm ./${{ inputs.VERSION_SCRIPT_NAME }}
+
           echo ""
           echo "🛈 NOTE: MAY NEED TO EXPAND THIS!!!"
 
