@@ -230,15 +230,15 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: ../${ARTIFACT_LINK_SCRIPT_NAME}
 
-      - name: "⬇️ Download Qwiet CLI"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2.1
-        with:
-          shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
+      # - name: "⬇️ Download Qwiet CLI"
+      #   uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-download-cli@v2.1
+      #   with:
+      #     shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
 
-      - name: "🔍 Qwiet Analyze with NextGen Static Analysis"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@v2.1
-        with:
-          shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
-          name: ${{ inputs.NAME }}
-          vcs-prefix-correction: ${{ inputs.VCS_PREFIX_CORRECTION }}
-          scan-jar: ${{ inputs.SCAN_JAR }}
+      # - name: "🔍 Qwiet Analyze with NextGen Static Analysis"
+      #   uses: favedom-dev/github-reusable-workflow/.github/actions/qwiet-analyze@v2.1
+      #   with:
+      #     shiftleft-access-token: ${{ env.SHIFTLEFT_ACCESS_TOKEN }}
+      #     name: ${{ inputs.NAME }}
+      #     vcs-prefix-correction: ${{ inputs.VCS_PREFIX_CORRECTION }}
+      #     scan-jar: ${{ inputs.SCAN_JAR }}
