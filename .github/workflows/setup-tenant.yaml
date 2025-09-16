@@ -63,7 +63,8 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       USE_FULL_PR_VERSION:
-        default: ""
+        # TODO change default to false when using keda
+        default: "true"
         required: false
         type: string
 
