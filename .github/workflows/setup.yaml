@@ -134,9 +134,7 @@ jobs:
   #   secrets: inherit
 
   app:
-    # TODO FAN-7482 revert to v2.1
-    # uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-app.yaml@v2.1
-    uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-app.yaml@FAN-7482/keda
+    uses: favedom-dev/github-reusable-workflow/.github/workflows/setup-app.yaml@v2.1
     # needs: [runner]
     with:
       # DO_TRIVY: ${{ inputs.DO_TRIVY }}
