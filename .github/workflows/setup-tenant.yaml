@@ -62,6 +62,12 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      USE_FULL_PR_VERSION:
+        default: "false"
+        required: false
+        type: string
+        description: "true for Knative to create a new namespace per PR run"
+
       GH_RUNS_ON:
         default: 'ubuntu-latest'
         # default: 'core'
@@ -120,15 +126,16 @@ jobs:
       - name: "☁️ Set tenant via PR label or input"
         id: tenant
         env:
+          ARGOCD_APP_NAME: ${{ inputs.ARGOCD_APP_NAME }}
+          DEFAULT_APP_NAME: ${{ inputs.DEFAULT_APP_NAME }}
+          DEFAULT_TENANT: ${{ inputs.DEFAULT_TENANT }}
           GH_REF: ${{ github.ref }}
           GITHUB_CONTEXT: ${{ toJSON(github) }}
-          DEFAULT_TENANT: ${{ inputs.DEFAULT_TENANT }}
-          DEFAULT_APP_NAME: ${{ inputs.DEFAULT_APP_NAME }}
-          ARGOCD_APP_NAME: ${{ inputs.ARGOCD_APP_NAME }}
-          OVERRIDE_NAME_PREFIX: ${{ inputs.OVERRIDE_NAME_PREFIX }}
-          OVERRIDE_CHART_APP_NAME_PREFIX: ${{ inputs.OVERRIDE_CHART_APP_NAME_PREFIX }}
-          INPUT_TENANT: ${{ inputs.TENANT }}
           INPUT_DO_RELEASE_BUILD: ${{ inputs.RELEASE_BUILD }}
+          INPUT_TENANT: ${{ inputs.TENANT }}
+          OVERRIDE_CHART_APP_NAME_PREFIX: ${{ inputs.OVERRIDE_CHART_APP_NAME_PREFIX }}
+          OVERRIDE_NAME_PREFIX: ${{ inputs.OVERRIDE_NAME_PREFIX }}
+          USE_FULL_PR_VERSION: ${{ inputs.USE_FULL_PR_VERSION }}
         run: |
           if [ -n "${DEFAULT_APP_NAME}" ]; then
             echo "Using DEFAULT_APP_NAME : ${DEFAULT_APP_NAME}"
@@ -186,10 +193,15 @@ jobs:
           fi
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
+            if [ "${USE_FULL_PR_VERSION}" = "true" ]; then
+              PR_VERSION=${{ github.event.number }}-${{ github.run_number }}-${{ github.run_attempt }}
+            else
+              PR_VERSION=${{ github.event.number }}
+            fi
             if [ -n "${OVERRIDE_PREVIEW_NAMESPACE}" ]; then
               echo "OVERRIDE: OVERRIDE_PREVIEW_NAMESPACE : ${OVERRIDE_PREVIEW_NAMESPACE}"
             else
-              OVERRIDE_PREVIEW_NAMESPACE="pr-${ARGOCD_APP_NAME}-${{ github.event.number }}-${{ github.run_number }}-${{ github.run_attempt }}"
+              OVERRIDE_PREVIEW_NAMESPACE="pr-${ARGOCD_APP_NAME}-${PR_VERSION}"
               echo "DEFAULT: OVERRIDE_PREVIEW_NAMESPACE : ${OVERRIDE_PREVIEW_NAMESPACE}"
             fi
           fi
@@ -203,6 +215,8 @@ jobs:
           echo "OVERRIDE_CHART_APP_NAME        : ${OVERRIDE_CHART_APP_NAME}"
           echo "ARGOCD_APP_NAME                : ${ARGOCD_APP_NAME}"
           echo "DO_RELEASE_BUILD               : ${DO_RELEASE_BUILD}"
+          echo "USE_FULL_PR_VERSION            : ${USE_FULL_PR_VERSION}"
+          echo "PR_VERSION                     : ${PR_VERSION}"
           echo "======================================"
 
           echo "TENANT=${TENANT}" >> $GITHUB_OUTPUT

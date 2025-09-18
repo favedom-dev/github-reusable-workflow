@@ -6,18 +6,27 @@ inputs:
     description: "Optional override for the preview namespace"
     required: false
     default: ""
+
   use-repo-name-preview-namespace:
     description: "Whether to use the repository name for the preview namespace"
     required: true
+
   repo-full-name:
     description: "Full repository name (e.g., owner/repo)"
     required: true
+
   event-number:
     description: "GitHub event number (e.g., PR number)"
     required: true
+
   name:
     description: "NAME value from previous step (e.g., set-name output)"
     required: true
+
+  use-full-version:
+    description: "Use the full PR <version event-number>-<run_number>-<run_attempt>"
+    default: 'false'
+    required: false
 
 outputs:
   PREVIEW_NAMESPACE:
@@ -34,21 +43,28 @@ runs:
         GH_EVENT_NUMBER: ${{ inputs.event-number }}
         GH_RUN_NUMBER: ${{ github.run_number }}
         GH_RUN_ATTEMPT: ${{ github.run_attempt }}
+        USE_FULL_VERSION: ${{ inputs.use-full-version }}
         USE_REPO_NAME_PREVIEW_NAMESPACE: ${{ inputs.use-repo-name-preview-namespace }}
       run: |
         echo "DEBUG: OVERRIDE_PREVIEW_NAMESPACE = ${OVERRIDE_PREVIEW_NAMESPACE}"
         echo "DEBUG: GH_EVENT_NUMBER = ${GH_EVENT_NUMBER}"
         echo "DEBUG: GH_RUN_NUMBER   = ${GH_RUN_NUMBER}"
         echo "DEBUG: GH_RUN_ATTEMPT  = ${GH_RUN_ATTEMPT}"
+        if [ "${USE_FULL_VERSION}" = "true" ]; then
+          PR_VERSION="${{ inputs.event-number }}-${{ github.run_number }}-${{ github.run_attempt }}"
+        else
+          PR_VERSION="${{ inputs.event-number }}"
+        fi
+        echo "DEBUG: PR_VERSION      = ${PR_VERSION}"
+
         if [ -n "${OVERRIDE_PREVIEW_NAMESPACE}" ]; then
           PREVIEW_NAMESPACE="${{ inputs.override-preview-namespace }}"
           echo "OVERRIDE: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
-        # elif [ -n "${USE_REPO_NAME_PREVIEW_NAMESPACE}" ]; then
         elif [ "${USE_REPO_NAME_PREVIEW_NAMESPACE}" = "true" ]; then
-          PREVIEW_NAMESPACE=pr-$(basename "${{ inputs.repo-full-name }}")-${{ inputs.event-number }}-${{ github.run_number }}-${{ github.run_attempt }}
+          PREVIEW_NAMESPACE=pr-$(basename "${PR_VERSION}")
           echo "REPO NAME: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
         else
-          PREVIEW_NAMESPACE=pr-${{ inputs.name }}-${{ inputs.event-number }}-${{ github.run_number }}-${{ github.run_attempt }}
+          PREVIEW_NAMESPACE="pr-${{ inputs.name }}-${PR_VERSION}"
           echo "DEFAULT: PREVIEW_NAMESPACE = ${PREVIEW_NAMESPACE}"
         fi
         echo "PREVIEW_NAMESPACE: ${PREVIEW_NAMESPACE}"
