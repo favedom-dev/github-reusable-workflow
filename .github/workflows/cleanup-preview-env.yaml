@@ -180,16 +180,18 @@ jobs:
           echo "DOCKER_BASE_LOCATION=${DOCKER_BASE_LOCATION}" >> $GITHUB_ENV
           echo "DOCKER_BASE_LOCATION=${DOCKER_BASE_LOCATION}" >> $GITHUB_OUTPUT
           # ===
-          DOCKER_LOCATION=${DOCKER_BASE_LOCATION}/${{ inputs.NAME }}
-          echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_ENV
-          echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_OUTPUT
-          # ===
           TENANT=${{ inputs.TENANT }}
           if [ ${#TENANT} -gt 0 ]; then
             DOCKER_NAME=${{ inputs.NAME }}-${{ inputs.TENANT }}
           else
             DOCKER_NAME=${{ inputs.NAME }}
           fi
+          # ===
+          # DOCKER_LOCATION=${DOCKER_BASE_LOCATION}/${{ inputs.NAME }}
+          DOCKER_LOCATION=${DOCKER_BASE_LOCATION}/${DOCKER_NAME}
+          echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_ENV
+          echo "DOCKER_LOCATION=${DOCKER_LOCATION}" >> $GITHUB_OUTPUT
+          # ===
           DOCKER_URL="https://console.cloud.google.com/artifacts/docker/${{ inputs.PROJECT_ID }}/${{ inputs.GAR_LOCATION }}/${{ inputs.DOCKER_REGISTRY }}/${DOCKER_NAME}?project=${{ inputs.PROJECT_ID }}/"
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_ENV
           echo "DOCKER_URL=${DOCKER_URL}" >> $GITHUB_OUTPUT
