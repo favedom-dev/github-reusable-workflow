@@ -63,10 +63,10 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       USE_FULL_PR_VERSION:
-        # TODO change default to false when using keda
-        default: "true"
+        default: "false"
         required: false
         type: string
+        description: "true for Knative to create a new namespace per PR run"
 
       GH_RUNS_ON:
         default: 'ubuntu-latest'
