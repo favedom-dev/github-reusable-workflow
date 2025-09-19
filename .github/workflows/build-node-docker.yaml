@@ -12,6 +12,12 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
 
+      APP_WORKING_DIR:
+        default: '.'
+        required: false
+        type: string
+
+
       SECRETS_TO_FETCH:
         description: "Secrets to fetch from Google Secret Manager"
         required: false
@@ -305,14 +311,17 @@ jobs:
 
       - name: "🪛 ${{ inputs.INSTALL_NAME }}"
         if: inputs.INSTALL == true
+        working-directory: ${{ inputs.APP_WORKING_DIR }}
         run: ${{ inputs.INSTALL_CMD }}
 
       - name: "🔨 ${{ inputs.TEST_NAME }}"
         if: inputs.TEST == true
+        working-directory: ${{ inputs.APP_WORKING_DIR }}
         run: ${{ inputs.TEST_CMD }}
 
       - name: "🛠️ ${{ inputs.BUILD_NAME }}"
         if: inputs.BUILD == true
+        working-directory: ${{ inputs.APP_WORKING_DIR }}
         env:
           NODE_OPTIONS: "--max_old_space_size=4096"
         run: ${{ inputs.BUILD_CMD }}
