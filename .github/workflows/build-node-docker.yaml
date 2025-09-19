@@ -56,6 +56,11 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      CACHE_DEPENDENCY_PATH:
+        default: ''
+        required: false
+        type: string
+
       UPLOAD_GS:
         default: false
         required: false
@@ -249,6 +254,7 @@ jobs:
         with:
           node-version: ${{ inputs.NODE_VERSION }}
           cache: npm
+          cache-dependency-path: ${{ inputs.CACHE_DEPENDENCY_PATH }}
 
       - name: "📦 Cache node_modules"
         id: cache-node-modules
