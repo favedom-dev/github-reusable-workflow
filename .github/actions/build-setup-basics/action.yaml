@@ -33,9 +33,18 @@ runs:
         # Override the default binfmt image so it comes from GAR mirror instead of Docker Hub
         QEMU_BINARY_IMAGE: us-central1-docker.pkg.dev/favedom-dev/dockerhub-remote/tonistiigi/binfmt:${{ inputs.QEMU_BINARY_IMAGE_TAG }}
 
+    - name: "🧰 Create BuildKit config with registry mirror"
+      shell: bash
+      run: |
+        mkdir -p /tmp/buildkit
+        cat > /tmp/buildkit/config.toml <<EOF
+        [registry."docker.io"]
+          mirrors = ["https://us-central1-docker.pkg.dev/favedom-dev/dockerhub-remote"]
+        EOF
+
     - name: "🧰 Set up Docker Buildx ${{ inputs.PLATFORMS }}"
       uses: docker/setup-buildx-action@v3
       with:
         platforms: ${{ inputs.PLATFORMS }}
-        driver-opts: |
-          registry-mirror=docker.io=https://us-central1-docker.pkg.dev/favedom-dev/dockerhub-remote
+        driver: docker-container
+        buildkitd-flags: --config /tmp/buildkit/config.toml
