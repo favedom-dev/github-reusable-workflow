@@ -17,7 +17,6 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
-
       SECRETS_TO_FETCH:
         description: "Secrets to fetch from Google Secret Manager"
         required: false

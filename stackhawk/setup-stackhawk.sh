@@ -9,6 +9,8 @@
 # TEST_USERNAME
 # TEST_PASSWORD
 
+STACKHAWK_TMPL=${STACKHAWK_TMPL:-stackhawk-tmpl.yml}
+
 chmod 777 *
 
 # Get token and save value to variable
@@ -21,4 +23,4 @@ export AUTH_TOKEN=$(curl -X POST "${KEYCLOAK_AUTH}" \
  -d "client_id=peeq-query" | jq -r '.access_token')
 
 # update stackhawk.yml with variables
-envsubst < ./stackhawk-tmpl.yml > ./stackhawk.yml
+envsubst < ./${STACKHAWK_TMPL} > ./stackhawk.yml
