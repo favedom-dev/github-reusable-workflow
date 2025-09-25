@@ -247,8 +247,7 @@ jobs:
           DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
 
       - name: "🧰 Set up build basics"
-        # uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-basics@v2.1
-        uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-basics@FAN-7583/docker-hub
+        uses: favedom-dev/github-reusable-workflow/.github/actions/build-setup-basics@v2.1
         id: build-setup-basics
         with:
           GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
