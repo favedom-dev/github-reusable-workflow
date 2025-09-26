@@ -27,9 +27,6 @@ echo "TOKEN_FILE          : ${TOKEN_FILE}"
 echo "APP_HOST            : ${APP_HOST}"
 echo "====================="
 
-# StackHawk API key (set as env var or hardcode for local; get from StackHawk UI > Settings)
-STACKHAWK_API_KEY="${STACKHAWK_API_KEY:?Error: Set STACKHAWK_API_KEY env var}"
-
 # Fetch token via Client Credentials (for M2M; for user login, use Authorization Code below)
 curl -s -X POST "https://${AUTH0_DOMAIN}/oauth/token" \
   -H "Content-Type: application/json" \
@@ -62,6 +59,8 @@ rm -f "${TOKEN_FILE}"
 echo "Ready to scan..."
 
 # echo "Token fetched successfully (length: ${#AUTH_TOKEN}). Starting scan..."
+# StackHawk API key (set as env var or hardcode for local; get from StackHawk UI > Settings)
+# STACKHAWK_API_KEY="${STACKHAWK_API_KEY:?Error: Set STACKHAWK_API_KEY env var}"
 # Run HawkScan via Docker
 # docker run --rm \
 #   -e STACKHAWK_API_KEY="${STACKHAWK_API_KEY}" \
