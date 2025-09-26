@@ -130,6 +130,11 @@ on:
         required: false
         type: string
 
+      STACKHAWK_TMPL:
+        default: 'stackhawk-tmpl.yml'
+        required: false
+        type: string
+
       STACKHAWK_TMPL_YML:
         default: 'stackhawk-tmpl.yml'
         required: false
