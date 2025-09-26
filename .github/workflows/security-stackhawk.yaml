@@ -92,6 +92,21 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      AUTH0_AUDIENCE:
+        default: ''
+        required: false
+        type: string
+
+      AUTH0_DOMAIN:
+        default: 'dev-r07m4b63j2tgnwyc.us.auth0.com'
+        required: false
+        type: string
+
+      AUTH0_SCOPE:
+        default: 'openid profile email'
+        required: false
+        type: string
+
       STACKHAWK_SLEEP_DELAY:
         required: false
         type: number
@@ -111,8 +126,14 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      STACKHAWK_TMPL:
+        default: 'stackhawk-tmpl.yml'
+        required: false
+        type: string
+
       STACKHAWK_TMPL_YML:
         default: 'stackhawk-tmpl.yml'
+        description: "OBSOLETE"
         required: false
         type: string
 
@@ -215,6 +236,10 @@ jobs:
         id: setup-variables
         env:
           INPUT_APP_HOST: ${{ inputs.APP_HOST }}
+          INPUT_AUTH0_AUDIENCE: ${{ inputs.AUTH0_AUDIENCE }}
+          INPUT_AUTH0_DOMAIN: ${{ inputs.AUTH0_DOMAIN }}
+          INPUT_AUTH0_SCOPE: ${{ inputs.AUTH0_SCOPE }}
+          INPUT_STACKHAWK_TMPL: ${{ inputs.STACKHAWK_TMPL }}
           DEFAULT_APP_HOST: https://${{ inputs.NAMESPACE }}.${{ inputs.BASE_DOMAIN }}
         run: |
           APP_HOST=${DEFAULT_APP_HOST}
@@ -224,6 +249,33 @@ jobs:
           fi
           echo "APP_HOST: ${APP_HOST}"
           echo "APP_HOST=${APP_HOST}" >> $GITHUB_OUTPUT
+          echo "APP_HOST=${APP_HOST}" >> $GITHUB_ENV
+
+          if [ -n "${INPUT_AUTH0_DOMAIN}" ]; then
+            AUTH0_DOMAIN="${INPUT_AUTH0_DOMAIN}"
+            echo "AUTH0_DOMAIN: ${AUTH0_DOMAIN}"
+            echo "AUTH0_DOMAIN=${AUTH0_DOMAIN}" >> $GITHUB_OUTPUT
+            echo "AUTH0_DOMAIN=${AUTH0_DOMAIN}" >> $GITHUB_ENV
+
+            AUTH0_AUDIENCE="${INPUT_AUTH0_AUDIENCE:-https://${AUTH0_DOMAIN}/api/v2/}"
+            echo "AUTH0_AUDIENCE: ${AUTH0_AUDIENCE}"
+            echo "AUTH0_AUDIENCE=${AUTH0_AUDIENCE}" >> $GITHUB_OUTPUT
+            echo "AUTH0_AUDIENCE=${AUTH0_AUDIENCE}" >> $GITHUB_ENV
+          fi
+
+          if [ -n "${INPUT_AUTH0_SCOPE}" ]; then
+            AUTH0_SCOPE="${INPUT_AUTH0_SCOPE}"
+            echo "AUTH0_SCOPE: ${AUTH0_SCOPE}"
+            echo "AUTH0_SCOPE=${AUTH0_SCOPE}" >> $GITHUB_OUTPUT
+            echo "AUTH0_SCOPE=${AUTH0_SCOPE}" >> $GITHUB_ENV
+          fi
+
+          if [ -n "${INPUT_STACKHAWK_TMPL}" ]; then
+            STACKHAWK_TMPL="${INPUT_STACKHAWK_TMPL}"
+            echo "STACKHAWK_TMPL: ${STACKHAWK_TMPL}"
+            echo "STACKHAWK_TMPL=${STACKHAWK_TMPL}" >> $GITHUB_OUTPUT
+            echo "STACKHAWK_TMPL=${STACKHAWK_TMPL}" >> $GITHUB_ENV
+          fi
 
       - name: "⬇️ Get reusable files"
         uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2.1
@@ -251,6 +303,7 @@ jobs:
           TEST_PASSWORD: ${{ env.TEST_PASSWORD }}
           KEYCLOAK_AUTH: https://identity.${{ inputs.BASE_DOMAIN }}/realms/${{ inputs.KEYCLOAK_REALM }}/protocol/openid-connect/token
         run: |
+          env | sort
           if [ -f "${{ github.workspace }}/../${SCRIPT_NAME}" ]; then
             cp ${{ github.workspace }}/../${SCRIPT_NAME} ./${SCRIPT_NAME}
           else
