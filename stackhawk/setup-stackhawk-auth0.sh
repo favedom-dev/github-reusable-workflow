@@ -2,10 +2,10 @@
 
 # Config: Replace with your Auth0 values
 AUTH0_DOMAIN="${AUTH0_DOMAIN}"   # e.g., dev-abc123.us.auth0.com
-CLIENT_ID="${CLIENT_ID}"         # From Auth0 SPA or M2M app
-CLIENT_SECRET="${CLIENT_SECRET}" # Only for confidential clients (M2M); omit for public SPA
-AUDIENCE="${AUDIENCE}"           # e.g., https://your-api.com
-SCOPE="${SCOPE}"                 # Adjust scopes
+AUTH0_CLIENT_ID="${AUTH0_CLIENT_ID}"         # From Auth0 SPA or M2M app
+AUTH0_CLIENT_SECRET="${AUTH0_CLIENT_SECRET}" # Only for confidential clients (M2M); omit for public SPA
+AUTH0_AUDIENCE="${AUTH0_AUDIENCE}"           # e.g., https://your-api.com
+AUTH0_SCOPE="${AUTH0_SCOPE}"                 # Adjust scopes
 
 STACKHAWK_API_KEY="${STACKHAWK_API_KEY}"
 STACKHAWK_TMPL=${STACKHAWK_TMPL:-stackhawk-tmpl.yml}
@@ -14,18 +14,18 @@ TOKEN_FILE="${TOKEN_FILE:-/tmp/auth_token.txt}"
 # App host (for scan target)
 APP_HOST="${APP_HOST:-https://partner.dev.fanfuzenil.com/}"
 
-echo "-------------------"
-echo "AUTH0_DOMAIN      : ${AUTH0_DOMAIN}"
-echo "CLIENT_ID         : ${#CLIENT_ID}"
-echo "CLIENT_SECRET     : ${#CLIENT_SECRET}"
-echo "AUDIENCE          : ${AUDIENCE}"
-echo "SCOPE             : ${SCOPE}"
-echo "APP_HOST          : ${APP_HOST}"
-echo "STACKHAWK_API_KEY : ${#STACKHAWK_API_KEY}"
-echo "STACKHAWK_TMPL    : ${STACKHAWK_TMPL}"
-echo "TOKEN_FILE        : ${TOKEN_FILE}"
-echo "APP_HOST          : ${APP_HOST}"
-echo "==================="
+echo "---------------------"
+echo "AUTH0_DOMAIN        : ${AUTH0_DOMAIN}"
+echo "AUTH0_CLIENT_ID     : ${#AUTH0_CLIENT_ID}"
+echo "AUTH0_CLIENT_SECRET : ${#AUTH0_CLIENT_SECRET}"
+echo "AUTH0_AUDIENCE      : ${AUTH0_AUDIENCE}"
+echo "AUTH0_SCOPE         : ${AUTH0_SCOPE}"
+echo "APP_HOST            : ${APP_HOST}"
+echo "STACKHAWK_API_KEY   : ${#STACKHAWK_API_KEY}"
+echo "STACKHAWK_TMPL      : ${STACKHAWK_TMPL}"
+echo "TOKEN_FILE          : ${TOKEN_FILE}"
+echo "APP_HOST            : ${APP_HOST}"
+echo "====================="
 
 # StackHawk API key (set as env var or hardcode for local; get from StackHawk UI > Settings)
 STACKHAWK_API_KEY="${STACKHAWK_API_KEY:?Error: Set STACKHAWK_API_KEY env var}"
@@ -34,15 +34,15 @@ STACKHAWK_API_KEY="${STACKHAWK_API_KEY:?Error: Set STACKHAWK_API_KEY env var}"
 curl -s -X POST "https://${AUTH0_DOMAIN}/oauth/token" \
   -H "Content-Type: application/json" \
   -d "{
-    \"client_id\": \"${CLIENT_ID}\",
-    \"client_secret\": \"${CLIENT_SECRET}\",
-    \"audience\": \"${AUDIENCE}\",
+    \"client_id\": \"${AUTH0_CLIENT_ID}\",
+    \"client_secret\": \"${AUTH0_CLIENT_SECRET}\",
+    \"audience\": \"${AUTH0_AUDIENCE}\",
     \"grant_type\": \"client_credentials\"
   }" | jq -r '.access_token' > "${TOKEN_FILE}"
 
 # Alternative: For user-based Authorization Code + PKCE (run a local server or use manual login)
 # 1. Start a temp server to capture code (or use browser manually).
-# 2. Then: curl -s -X POST "https://${AUTH0_DOMAIN}/oauth/token" -H "Content-Type: application/x-www-form-urlencoded" -d "grant_type=authorization_code&client_id=${CLIENT_ID}&code=${CODE}&redirect_uri=http://localhost:3000&code_verifier=${VERIFIER}" | jq -r '.access_token'
+# 2. Then: curl -s -X POST "https://${AUTH0_DOMAIN}/oauth/token" -H "Content-Type: application/x-www-form-urlencoded" -d "grant_type=authorization_code&client_id=${AUTH0_CLIENT_ID}&code=${CODE}&redirect_uri=http://localhost:3000&code_verifier=${VERIFIER}" | jq -r '.access_token'
 
 AUTH_TOKEN=$(cat "${TOKEN_FILE}")
 if [ -z "$AUTH_TOKEN" ] || [ "$AUTH_TOKEN" == "null" ]; then
