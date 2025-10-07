@@ -35,7 +35,10 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
         default: |
-          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
+          ARGOCD_SERVER:projects/1054075584205/secrets/core_ARGOCD_SERVER,
+          ARGOCD_USERNAME:projects/1054075584205/secrets/core_ARGOCD_USERNAME,
+          ARGOCD_PASSWORD:projects/1054075584205/secrets/core_ARGOCD_PASSWORD,
 
       EXTRA_VARS:
         default: ''
