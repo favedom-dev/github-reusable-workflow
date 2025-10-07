@@ -340,18 +340,53 @@ jobs:
           echo "STACKHAWK_SLEEP_DELAY : ${STACKHAWK_SLEEP_DELAY}"
           echo "STACKHAWK_SLEEP_DELAY=${STACKHAWK_SLEEP_DELAY}" >> $GITHUB_OUTPUT
 
+      # - name: "💓 Check that service is alive"
+      #   env:
+      #     APP_HOST: ${{ steps.setup-variables.outputs.APP_HOST }}
+      #     API_PATH: ${{ inputs.API_PATH }}
+      #     HEALTH_PATH: ${{ inputs.HEALTH_PATH }}
+      #     HEALTH_RETRIES: ${{ inputs.HEALTH_RETRIES }}
+      #     HEALTH_RETRY_DELAY: ${{ inputs.HEALTH_RETRY_DELAY }}
+      #     STACKHAWK_SLEEP_DELAY: ${{ steps.set-stackhawk-sleep.outputs.STACKHAWK_SLEEP_DELAY }}
+      #   run: |
+      #     sleep ${STACKHAWK_SLEEP_DELAY}
+      #     echo "CHECKING: ${APP_HOST}${API_PATH}${HEALTH_PATH}"
+      #     curl --fail --retry ${HEALTH_RETRIES} --retry-delay ${HEALTH_RETRY_DELAY} ${{ inputs.CURL_ARGS }} ${APP_HOST}${API_PATH}${HEALTH_PATH}
+
       - name: "💓 Check that service is alive"
         env:
-          APP_HOST: ${{ steps.setup-variables.outputs.APP_HOST }}
-          API_PATH: ${{ inputs.API_PATH }}
-          HEALTH_PATH: ${{ inputs.HEALTH_PATH }}
+          EXPECTED_STATUS: 200
           HEALTH_RETRIES: ${{ inputs.HEALTH_RETRIES }}
           HEALTH_RETRY_DELAY: ${{ inputs.HEALTH_RETRY_DELAY }}
           STACKHAWK_SLEEP_DELAY: ${{ steps.set-stackhawk-sleep.outputs.STACKHAWK_SLEEP_DELAY }}
+          TARGET_URL: ${{ steps.setup-variables.outputs.APP_HOST }}${{ inputs.API_PATH }}${{ inputs.HEALTH_PATH }}
+        # This step will not fail until all retries are exhausted and the final exit code is non-zero
         run: |
+          echo "Waiting for resource at ${TARGET_URL} to become available...  Initial wait ${STACKHAWK_SLEEP_DELAY}"
           sleep ${STACKHAWK_SLEEP_DELAY}
-          echo "CHECKING: ${APP_HOST}${API_PATH}${HEALTH_PATH}"
-          curl --fail --retry ${HEALTH_RETRIES} --retry-delay ${HEALTH_RETRY_DELAY} ${{ inputs.CURL_ARGS }} ${APP_HOST}${API_PATH}${HEALTH_PATH}
+
+          for i in $(seq 1 $HEALTH_RETRIES); do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "${TARGET_URL}")
+
+            if [ "$HTTP_CODE" -eq "$EXPECTED_STATUS" ]; then
+              echo "Successfully received HTTP ${HTTP_CODE} on attempt $i."
+              # Success, exit the script with a zero status
+              exit 0
+            fi
+
+            if [ "$HTTP_CODE" -eq 404 ]; then
+              echo "Attempt ${i}/${HEALTH_RETRIES}: Received HTTP 404. Retrying in ${HEALTH_RETRY_DELAY} seconds..."
+              sleep "${HEALTH_RETRY_DELAY}"
+            else
+              # Handle other non-success status codes (e.g., 401, 500, etc.)
+              echo "Attempt ${i}/${HEALTH_RETRIES}: Received unexpected HTTP ${HTTP_CODE}. Retrying in ${HEALTH_RETRY_DELAY} seconds..."
+              sleep "${HEALTH_RETRY_DELAY}"
+            fi
+          done
+
+          # If the loop finishes without success, the script will reach here and fail the step.
+          echo "ERROR: Resource not available after ${HEALTH_RETRIES} attempts."
+          exit 1
 
       - name: "🦅 Run Stackhawk (timeout ${{ inputs.JOBS_TIMEOUT }} minutes)"
         env:
