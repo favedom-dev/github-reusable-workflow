@@ -304,7 +304,9 @@ jobs:
   #         echo "inputs.DO_DEV     : ${{ inputs.DO_DEV }}"
 
   preview:
-    uses:  favedom-dev/github-reusable-workflow/.github/workflows/deploy-helm-preview.yaml@v2.1
+    # TODO revert to v2.1
+    # uses:  favedom-dev/github-reusable-workflow/.github/workflows/deploy-helm-preview.yaml@v2.1
+    uses:  favedom-dev/github-reusable-workflow/.github/workflows/deploy-helm-preview.yaml@FAN-7628/argocd-sync
     if: github.event_name == 'pull_request' && inputs.DO_PREVIEW == true
     with:
       NAME: ${{ inputs.NAME }}
