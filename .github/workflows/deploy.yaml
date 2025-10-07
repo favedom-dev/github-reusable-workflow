@@ -30,12 +30,22 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
-      DEFAULT_SECRETS_TO_FETCH:
+      # DEFAULT_SECRETS_TO_FETCH:
+      #   description: "Default secrets to fetch from Google Secret Manager"
+      #   required: false
+      #   type: string
+      #   default: |
+      #     GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
+
+      PREVIEW_DEFAULT_SECRETS_TO_FETCH:
         description: "Default secrets to fetch from Google Secret Manager"
         required: false
         type: string
         default: |
-          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
+          ARGOCD_SERVER:projects/1054075584205/secrets/core_ARGOCD_SERVER,
+          ARGOCD_USERNAME:projects/1054075584205/secrets/core_ARGOCD_USERNAME,
+          ARGOCD_PASSWORD:projects/1054075584205/secrets/core_ARGOCD_PASSWORD
 
       EXTRA_VARS:
         default: ''
@@ -310,7 +320,7 @@ jobs:
       NAME: ${{ inputs.NAME }}
       VERSION: ${{ inputs.VERSION }}
       SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
-      DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
+      DEFAULT_SECRETS_TO_FETCH: ${{ inputs.PREVIEW_DEFAULT_SECRETS_TO_FETCH }}
       EXTRA_VARS: ${{ inputs.EXTRA_VARS }}
       TENANT: ${{ inputs.TENANT }}
       YQ_VERSION: ${{ inputs.YQ_VERSION }}

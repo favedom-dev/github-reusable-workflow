@@ -22,7 +22,10 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
         default: |
-          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
+          ARGOCD_SERVER:projects/1054075584205/secrets/core_ARGOCD_SERVER,
+          ARGOCD_USERNAME:projects/1054075584205/secrets/core_ARGOCD_USERNAME,
+          ARGOCD_PASSWORD:projects/1054075584205/secrets/core_ARGOCD_PASSWORD,
 
       # IS_FRONTEND:
       #   default: false
@@ -265,8 +268,6 @@ jobs:
     outputs:
       API_PATH: ${{ steps.get-api-path.outputs.API_PATH }}
       APP_HOST: ${{ steps.setup-variables.outputs.PREVIEW_URL }}
-    # env:
-    #   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     steps:
 
       - name: "☁️ Checkout repository"
@@ -292,6 +293,12 @@ jobs:
         if: ${{ !startsWith(inputs.GH_RUNS_ON, 'ubuntu') }}
         with:
           version: '${{ inputs.YQ_VERSION }}'
+
+      - name: "🧰 Install ArgoCD CLI"
+        run: |
+          curl -sSL -o argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          chmod +x argocd
+          sudo mv argocd /usr/local/bin/
 
       - name: "🔩 Git config"
         uses: favedom-dev/github-reusable-workflow/.github/actions/setup-git-config@v2.1
@@ -384,6 +391,8 @@ jobs:
             ARG_USE_LOCAL="-ul"
           fi
 
+          ARGOCD_APP=previews-${CHART_NAME}
+
           # Display values
           echo "ACT                        : ${ACT}"
           echo "HELM_REGISTRY_LOCATION     : ${HELM_REGISTRY_LOCATION}"
@@ -406,6 +415,7 @@ jobs:
           echo "PREVIEW_DOMAIN             : ${PREVIEW_DOMAIN}"
           echo "PREVIEW_URL                : ${PREVIEW_URL}"
           echo "ARGOCD_URL                 : ${ARGOCD_URL}"
+          echo "ARGOCD_APP                 : ${ARGOCD_APP}"
           echo "NAMEOVERRIDE               : ${NAMEOVERRIDE}"
 
           # set to output and env
@@ -437,6 +447,8 @@ jobs:
           echo "ARG_PREVIEW_CHART_VALUES=${ARG_PREVIEW_CHART_VALUES}" >> $GITHUB_OUTPUT
           echo "ARG_USE_LOCAL=${ARG_USE_LOCAL}" >> $GITHUB_ENV
           echo "ARG_USE_LOCAL=${ARG_USE_LOCAL}" >> $GITHUB_OUTPUT
+          echo "ARGOCD_APP=${ARGOCD_APP}" >> $GITHUB_ENV
+          echo "ARGOCD_APP=${ARGOCD_APP}" >> $GITHUB_OUTPUT
           echo "ARGOCD_URL=${ARGOCD_URL}" >> $GITHUB_ENV
           echo "ARGOCD_URL=${ARGOCD_URL}" >> $GITHUB_OUTPUT
           echo "PREVIEW_WORKING_DIR=${PREVIEW_WORKING_DIR}" >> $GITHUB_ENV
@@ -575,6 +587,20 @@ jobs:
           monorepo-app: ${{ inputs.MONOREPO_APP }}
           name: ${{ inputs.NAME }}
           version: ${{ inputs.VERSION }}
+
+      - name: "🔐 Log in to ArgoCD"
+        env:
+          ARGOCD_SERVER: ${{ env.ARGOCD_SERVER }}
+          ARGOCD_USERNAME: ${{ env.ARGOCD_USERNAME }}
+          ARGOCD_PASSWORD: ${{ env.ARGOCD_PASSWORD }}
+        run: |
+          argocd login ${ARGOCD_SERVER} --username ${ARGOCD_USERNAME} --password ${ARGOCD_PASSWORD} --insecure
+
+      - name: "🔁 Sync ArgoCD Application: ${{ steps.setup-variables.outputs.ARGOCD_APP }}"
+        env:
+          ARGOCD_APP: ${{ steps.setup-variables.outputs.ARGOCD_APP }}
+        run: |
+          argocd app sync ${ARGOCD_APP} --force
 
       - name: "⬇️ Get API path"
         id: get-api-path
