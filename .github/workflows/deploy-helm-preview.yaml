@@ -469,12 +469,23 @@ jobs:
           echo "HELM_DEBUG_FLAG=--debug" >> $GITHUB_ENV
           echo "HELM_DEBUG_SCRIPT_FLAG=-d" >> $GITHUB_ENV
 
-      - name: "⚙️ Set up helm version: ${{ inputs.HELM_VERSION }}"
-        # https://github.com/Azure/setup-helm
-        uses: azure/setup-helm@v4
-        with:
-          version: ${{ inputs.HELM_VERSION }}
-        id: install
+      # - name: "⚙️ Set up helm version: ${{ inputs.HELM_VERSION }}"
+      #   # https://github.com/Azure/setup-helm
+      #   uses: azure/setup-helm@v4
+      #   with:
+      #     version: ${{ inputs.HELM_VERSION }}
+      #   id: install
+
+      - name: "⚙️ Install Helm ${{ inputs.HELM_VERSION }}"
+        id: install-helm
+        run: |
+          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+          chmod 700 get_helm.sh
+
+          ./get_helm.sh --version ${{ inputs.HELM_VERSION }}
+
+          # Verify the installed version
+          helm version --short
 
       - name: "🔐 [GAR] (oci://): Helm login"
         # if: ${{ !env.ACT }}
