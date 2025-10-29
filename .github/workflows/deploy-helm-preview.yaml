@@ -476,13 +476,41 @@ jobs:
       #     version: ${{ inputs.HELM_VERSION }}
       #   id: install
 
-      - name: "⚙️ Install Helm ${{ inputs.HELM_VERSION }}"
+      - name: "⚙️ Install Helm: ${{ inputs.HELM_VERSION }}"
         id: install-helm
         run: |
-          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-          chmod 700 get_helm.sh
+          # Define a retry counter
+          MAX_RETRIES=3
+          RETRY_COUNT=0
+          WAIT_SECS=10
 
-          ./get_helm.sh --version ${{ inputs.HELM_VERSION }}
+          # Loop until success or max retries are hit
+          until [ $RETRY_COUNT -ge $MAX_RETRIES ]
+          do
+            echo "Attempting to install Helm (Attempt $((RETRY_COUNT + 1)) of $MAX_RETRIES)..."
+
+            # Combined command for installation
+            curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+            chmod 700 get_helm.sh
+
+            ./get_helm.sh --version ${{ inputs.HELM_VERSION }}
+            #DESIRED_VERSION=${{ inputs.HELM_VERSION }} ./get_helm.sh
+
+            # Check the exit code of the last command
+            if [ $? -eq 0 ]; then
+              echo "Helm installation successful."
+              break
+            fi
+
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+              echo "Host resolution failed. Waiting ${WAIT_SECS} seconds before retrying..."
+              sleep ${WAIT_SECS}
+            else
+              echo "Max retries reached. Helm installation failed."
+              exit 1
+            fi
+          done
 
           # Verify the installed version
           helm version --short
