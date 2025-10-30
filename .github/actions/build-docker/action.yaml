@@ -16,6 +16,10 @@ inputs:
     required: false
     description: "Build's context is the set of files located in the specified PATH or URL"
 
+  DOCKER_FILE:
+    required: false
+    description: "Path to the Dockerfile (relative to context). If not specified, defaults to {context}/Dockerfile"
+
   DOCKER_LOCATION:
     required: true
     description: "Docker location"
@@ -82,12 +86,10 @@ runs:
       if: ${{ !env.ACT }}
       with:
         context: ${{ inputs.DOCKER_CONTEXT }}
+        file: ${{ inputs.DOCKER_FILE != '' && inputs.DOCKER_FILE || null }}
         platforms: ${{ inputs.PLATFORMS }}
         push: ${{ inputs.DOCKER_PUSH }}
         tags: ${{ steps.docker-tags.outputs.tags }}
-      # env:
-      #   # Pass GitHub token as an environment variable for secure authentication
-      #   GITHUB_TOKEN: ${{ env.GH_TOKEN }}
 
     - name: "🔗 Link to Container"
       if: inputs.DOCKER_PUSH == 'true'
