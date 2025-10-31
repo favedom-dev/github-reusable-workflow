@@ -64,6 +64,12 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      DOCKER_ENABLE_CACHE:
+        type: string
+        default: 'false'
+        required: false
+        description: "Enable Docker layer caching (true or false)"
+
       DOCKER_FILE:
         required: false
         type: string
@@ -185,6 +191,7 @@ jobs:
           ACCESS_TOKEN: ${{ steps.get-secrets.outputs.access-token }}
           ARTIFACT_LINK_SCRIPT_NAME: ${{ env.ARTIFACT_LINK_SCRIPT_NAME }}
           DOCKER_CONTEXT: ${{ inputs.DOCKER_CONTEXT }}
+          DOCKER_ENABLE_CACHE: ${{ inputs. DOCKER_ENABLE_CACHE }}
           DOCKER_FILE: ${{ inputs.DOCKER_FILE }}
           DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
           DOCKER_PUSH: ${{ steps.setup-variables.outputs.DOCKER_PUSH }}
