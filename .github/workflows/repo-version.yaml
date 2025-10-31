@@ -8,6 +8,12 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      SIMULATE_PR:
+        description: 'Temporarily simulate PR context to bypass non-PR-only logic'
+        required: false
+        default: 'false'
+        type: boolean  # Enforces true/false values
+
       INCREMENT_SCRIPT_NAME:
         default: 'auto_increment_version.sh'
         required: false
@@ -96,7 +102,9 @@ jobs:
       - name: "⬇️ Get reusable files"
         uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2.1
         id: get-reusable-files
-        if: github.event_name != 'pull_request'
+        # if: github.event_name != 'pull_request'
+        if: >-
+          ${{ fromJson(inputs.SIMULATE_PR) && github.event_name != 'pull_request' }}
         with:
           FILE_GIT_BRANCH: ${{ inputs.SCRIPT_GIT_BRANCH }}
           FILE_DOWNLOAD_BASE_URL: ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}
@@ -108,7 +116,9 @@ jobs:
       - name: "☑ Release version"
         uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-release@v2.1
         id: version
-        if: github.event_name != 'pull_request'
+        # if: github.event_name != 'pull_request'
+        if: >-
+          ${{ fromJson(inputs.SIMULATE_PR) && github.event_name != 'pull_request' }}
         with:
           event-name: ${{ github.event_name }}
           increment-script-name: ${{ inputs.INCREMENT_SCRIPT_NAME }}
@@ -118,7 +128,9 @@ jobs:
       - name: "📝 Set PR Version"
         uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-pr@v2.1
         id: pr-version
-        if: github.event_name == 'pull_request'
+        # if: github.event_name == 'pull_request'
+        if: >-
+          ${{ fromJson(inputs.SIMULATE_PR) || github.event_name == 'pull_request' }}
         with:
           event-name: ${{ github.event_name }}
           pr-number: ${{ github.event.number }}

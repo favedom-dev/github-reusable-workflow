@@ -9,6 +9,12 @@ on:
         required: false
         type: string
 
+      SIMULATE_PR:
+        description: 'Temporarily simulate PR context to bypass non-PR-only logic'
+        required: false
+        default: 'false'
+        type: boolean  # Enforces true/false values
+
       OVERRIDE_PREVIEW_NAMESPACE:
         required: false
         type: string
@@ -160,6 +166,7 @@ jobs:
       MONOREPO_APP: ${{ inputs.MONOREPO_APP || inputs.OVERRIDE_NAME }}
       SCRIPT_GIT_BRANCH: ${{ inputs.SCRIPT_GIT_BRANCH }}
       SCRIPTS_DOWNLOAD_BASE_URL: ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}
+      SIMULATE_PR: ${{ inputs.SIMULATE_PR }}
     secrets:
       WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
       WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
