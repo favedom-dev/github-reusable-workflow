@@ -11,8 +11,8 @@ on:  # yamllint disable-line rule:truthy
       SIMULATE_PR:
         description: 'Temporarily simulate PR context to bypass non-PR-only logic'
         required: false
-        default: 'false'
-        type: boolean  # Enforces true/false values
+        default: false
+        type: boolean
 
       INCREMENT_SCRIPT_NAME:
         default: 'auto_increment_version.sh'

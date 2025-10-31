@@ -12,8 +12,8 @@ on:
       SIMULATE_PR:
         description: 'Temporarily simulate PR context to bypass non-PR-only logic'
         required: false
-        default: 'false'
-        type: boolean  # Enforces true/false values
+        default: false
+        type: boolean
 
       OVERRIDE_PREVIEW_NAMESPACE:
         required: false
