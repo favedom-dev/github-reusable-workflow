@@ -103,8 +103,7 @@ jobs:
         uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2.1
         id: get-reusable-files
         # if: github.event_name != 'pull_request'
-        if: >-
-          ${{ fromJson(inputs.SIMULATE_PR) && github.event_name != 'pull_request' }}
+        if: github.event_name != 'pull_request' && inputs.SIMULATE_PR == false
         with:
           FILE_GIT_BRANCH: ${{ inputs.SCRIPT_GIT_BRANCH }}
           FILE_DOWNLOAD_BASE_URL: ${{ inputs.SCRIPTS_DOWNLOAD_BASE_URL }}
@@ -117,8 +116,7 @@ jobs:
         uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-release@v2.1
         id: version
         # if: github.event_name != 'pull_request'
-        if: >-
-          ${{ fromJson(inputs.SIMULATE_PR) && github.event_name != 'pull_request' }}
+        if: github.event_name != 'pull_request' && inputs.SIMULATE_PR == false
         with:
           event-name: ${{ github.event_name }}
           increment-script-name: ${{ inputs.INCREMENT_SCRIPT_NAME }}
@@ -129,8 +127,7 @@ jobs:
         uses: favedom-dev/github-reusable-workflow/.github/actions/set-version-pr@v2.1
         id: pr-version
         # if: github.event_name == 'pull_request'
-        if: >-
-          ${{ fromJson(inputs.SIMULATE_PR) || github.event_name == 'pull_request' }}
+        if: github.event_name == 'pull_request' && inputs.SIMULATE_PR == true
         with:
           event-name: ${{ github.event_name }}
           pr-number: ${{ github.event.number }}
