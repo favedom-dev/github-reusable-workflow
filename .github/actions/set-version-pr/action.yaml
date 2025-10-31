@@ -36,18 +36,18 @@ runs:
           echo "pr_number=00"
           pr_number="00"
         else
-          echo "pr_number=inputpr-number"
+          echo "pr_number=input.pr-number"
         fi
 
         pr_run_number="${{ inputs.run-number }}"
         pr_run_attempt="${{ inputs.run-attempt }}"
-        build_version="${{ inputs.pr-number }}.${{ inputs.run-number }}.${{ inputs.run-attempt }}"
+        build_version="${pr_number}.${pr_run_number}.${pr_run_attempt}"
 
-        echo "PR Number        (github.event.number) : ${{ inputs.pr-number }}"
-        echo "PR Run Number    (github.run_number)   : ${{ inputs.run-number }}"
-        echo "PR Run Attempt   (github.run_attempt)  : ${{ inputs.run-attempt }}"
+        echo "PR Number        (github.event.number) : ${pr_number}"
+        echo "PR Run Number    (github.run_number)   : ${pr_run_number}"
+        echo "PR Run Attempt   (github.run_attempt)  : ${pr_run_attempt}"
         echo "PR Build Version                       : ${build_version}"
 
         echo "build-version=${build_version}" >> $GITHUB_OUTPUT
-        echo "version=0.0.0-SNAPSHOT-PR-${{ inputs.pr-number }}-${{ inputs.run-number }}-${{ inputs.run-attempt }}" >> $GITHUB_OUTPUT
+        echo "version=0.0.0-SNAPSHOT-PR-${pr_number}-${pr_run_number}-${pr_run_attempt}" >> $GITHUB_OUTPUT
       shell: bash
