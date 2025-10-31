@@ -46,14 +46,24 @@ runs:
         USE_FULL_VERSION: ${{ inputs.use-full-version }}
         USE_REPO_NAME_PREVIEW_NAMESPACE: ${{ inputs.use-repo-name-preview-namespace }}
       run: |
+        if [ -z "${GH_EVENT_NUMBER}" ]; then
+          # when forcing a PR run that is not really a PR run
+          # GH_EVENT_NUMBER="00"
+          GH_EVENT_NUMBER="00-${GH_RUN_NUMBER}-${GH_RUN_ATTEMPT}"
+          echo "GH_EVENT_NUMBER=${GH_EVENT_NUMBER}"
+        else
+          echo "GH_EVENT_NUMBER=input.pr-number"
+        fi
+
         echo "DEBUG: OVERRIDE_PREVIEW_NAMESPACE = ${OVERRIDE_PREVIEW_NAMESPACE}"
         echo "DEBUG: GH_EVENT_NUMBER = ${GH_EVENT_NUMBER}"
         echo "DEBUG: GH_RUN_NUMBER   = ${GH_RUN_NUMBER}"
         echo "DEBUG: GH_RUN_ATTEMPT  = ${GH_RUN_ATTEMPT}"
+
         if [ "${USE_FULL_VERSION}" = "true" ]; then
-          PR_VERSION="${{ inputs.event-number }}-${{ github.run_number }}-${{ github.run_attempt }}"
+          PR_VERSION="${GH_EVENT_NUMBER}-${GH_RUN_NUMBER}-${GH_RUN_ATTEMPT}"
         else
-          PR_VERSION="${{ inputs.event-number }}"
+          PR_VERSION="${GH_EVENT_NUMBER}"
         fi
         echo "DEBUG: PR_VERSION      = ${PR_VERSION}"
 
