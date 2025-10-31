@@ -89,8 +89,13 @@ on:
         required: false
         type: string
 
-      DOCKERFILE_FILE:
-        default: ./packages/api/Dockerfile
+      DOCKER_ENABLE_CACHE:
+        type: string
+        default: 'false'
+        required: false
+        description: "Enable Docker layer caching (true or false)"
+
+      DOCKER_FILE:
         required: false
         type: string
 
@@ -209,6 +214,8 @@ jobs:
           ACCESS_TOKEN: ${{ steps.get-secrets.outputs.access-token }}
           ARTIFACT_LINK_SCRIPT_NAME: ${{ env.ARTIFACT_LINK_SCRIPT_NAME }}
           DOCKER_CONTEXT: ${{ inputs.DOCKER_CONTEXT }}
+          DOCKER_ENABLE_CACHE: ${{ inputs. DOCKER_ENABLE_CACHE }}
+          DOCKER_FILE: ${{ inputs.DOCKER_FILE }}
           DOCKER_LOCATION: ${{ steps.setup-variables.outputs.DOCKER_LOCATION }}
           DOCKER_PUSH: ${{ steps.setup-variables.outputs.DOCKER_PUSH }}
           DOCKER_URL: ${{ steps.setup-variables.outputs.DOCKER_URL }}
