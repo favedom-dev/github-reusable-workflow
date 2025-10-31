@@ -25,6 +25,12 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
 
+      SIMULATE_PR:
+        description: 'Temporarily simulate PR context to bypass non-PR-only logic'
+        required: false
+        default: false
+        type: boolean
+
       SECRETS_TO_FETCH:
         description: "Secrets to fetch from Google Secret Manager"
         required: false
@@ -315,7 +321,8 @@ jobs:
 
   preview:
     uses:  favedom-dev/github-reusable-workflow/.github/workflows/deploy-helm-preview.yaml@v2.1
-    if: github.event_name == 'pull_request' && inputs.DO_PREVIEW == true
+    # if: github.event_name == 'pull_request' && inputs.DO_PREVIEW == true
+    if: (github.event_name == 'pull_request' || inputs.SIMULATE_PR == true) && inputs.DO_PREVIEW == true
     with:
       NAME: ${{ inputs.NAME }}
       VERSION: ${{ inputs.VERSION }}
