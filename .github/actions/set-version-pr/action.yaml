@@ -29,12 +29,12 @@ runs:
     - name: "Set PR Version"
       id: set-pr-version
       # if: ${{ inputs.event-name == 'pull_request' }}
+      env:
+        pr_number: ${{ inputs.pr-number }}
       run: |
-        echo "GITHUB_CONTEXT: ${{ toJSON(github) }}"
-        pr_number="${{ inputs.pr-number }}"
-        # echo "github.ref_name : ${{ github.ref_name }}"
-        # pr_number=$(gh pr view ${{ github.ref_name }} --json number --jq '.number' || echo "")
-        # echo "pr_number=$PR" >> $GITHUB_OUTPUT
+        if [ -z "${pr_number}" ]; then
+          pr_number="00"
+        fi
 
         pr_run_number="${{ inputs.run-number }}"
         pr_run_attempt="${{ inputs.run-attempt }}"
@@ -44,6 +44,7 @@ runs:
         echo "PR Run Number    (github.run_number)   : ${{ inputs.run-number }}"
         echo "PR Run Attempt   (github.run_attempt)  : ${{ inputs.run-attempt }}"
         echo "PR Build Version                       : ${build_version}"
+
         echo "build-version=${build_version}" >> $GITHUB_OUTPUT
         echo "version=0.0.0-SNAPSHOT-PR-${{ inputs.pr-number }}-${{ inputs.run-number }}-${{ inputs.run-attempt }}" >> $GITHUB_OUTPUT
       shell: bash
