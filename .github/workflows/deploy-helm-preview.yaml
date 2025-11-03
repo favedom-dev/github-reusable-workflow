@@ -431,6 +431,7 @@ jobs:
           echo "PREVIEW_DOMAIN             : ${PREVIEW_DOMAIN}"
           echo "PREVIEW_URL                : ${PREVIEW_URL}"
           echo "PREVIEW_NAMEOVERRIDE       : ${PREVIEW_NAMEOVERRIDE}"
+          echo "PR_LINK                    : ${PR_LINK}"
           echo "ARGOCD_URL                 : ${ARGOCD_URL}"
           echo "ARGOCD_APP                 : ${ARGOCD_APP}"
 
@@ -604,6 +605,7 @@ jobs:
         env:
           PR_DIR: ${{ env.PREVIEW_WORKING_DIR }}/${{ steps.setup-variables.outputs.PREVIEW_NAMEOVERRIDE }}
           PR_YAML: application.yaml
+          PR_LINK: ${{ steps.setup-variables.outputs.PR_LINK }}
         run: |
           echo "mkdir: ${PR_DIR}"
           mkdir -p "${PR_DIR}"
@@ -622,7 +624,7 @@ jobs:
             name: ${{ inputs.PREVIEW_NAMESPACE }}
             annotations:
               argocd.argoproj.io/sync-wave: "-1"
-              link.argocd.argoproj.io/external-link: ${{ github.event.pull_request.html_url }}
+              link.argocd.argoproj.io/external-link: ${PR_LINK}
 
           EOF
           echo "cat ${PR_DIR}/${PR_YAML}:"
