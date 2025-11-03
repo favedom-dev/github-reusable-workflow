@@ -12,6 +12,10 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
 
+      IN_PREVIEW_NAMEOVERRIDE:
+        required: false
+        type: string
+
       SECRETS_TO_FETCH:
         description: "Secrets to fetch from Google Secret Manager"
         required: false
@@ -331,6 +335,7 @@ jobs:
           EXTRA_VARS: ${{ inputs.EXTRA_VARS }}
           GH_REF: ${{ github.ref }}
           HELM_USE_LOCAL_COMMON: ${{ inputs.HELM_USE_LOCAL_COMMON }}
+          IN_PREVIEW_NAMEOVERRIDE: ${{ inputs.IN_PREVIEW_NAMEOVERRIDE }}
           OVERRIDE_CHART_NAME: ${{ inputs.OVERRIDE_CHART_NAME }}
         run: |
           HELM_REGISTRY_LOCATION=${{ inputs.HELM_DOCKER_REGISTRY }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}
@@ -365,26 +370,32 @@ jobs:
 
           RUN_NUMBER_ATTEMPT="-${{ github.run_number }}-${{ github.run_attempt }}"
           PREVIEW_NAMESPACE="${{ inputs.PREVIEW_NAMESPACE }}"
-          NAMEOVERRIDE="${PREVIEW_NAMESPACE%"$RUN_NUMBER_ATTEMPT"}"
+          PREVIEW_NAMEOVERRIDE="${PREVIEW_NAMESPACE%"$RUN_NUMBER_ATTEMPT"}"
+          if [ -n "${IN_PREVIEW_NAMEOVERRIDE}" ]; then
+            PR_NUM=${PREVIEW_NAMESPACE%-${RUN_NUMBER_ATTEMPT}};
+            PR_NUM=${PR_NUM##*-}
+            echo "PR_NUM = ${PR_NUM}"
+            PREVIEW_NAMEOVERRIDE=${IN_PREVIEW_NAMEOVERRIDE}-${PR_NUM}
+          fi
 
           # PREVIEW_SUBDOMAIN=${{ inputs.PREVIEW_NAMESPACE }}
-          PREVIEW_SUBDOMAIN=${NAMEOVERRIDE}
+          PREVIEW_SUBDOMAIN=${PREVIEW_NAMEOVERRIDE}
           if [ -n "${ARG_PREVIEW_SUBDOMAIN}" ]; then
             # PREVIEW_SUBDOMAIN=${PREVIEW_SUBDOMAIN}-${CHART_NAME}
             PREVIEW_SUBDOMAIN=${PREVIEW_SUBDOMAIN}-${{ inputs.NAME }}
           fi
 
           # PREVIEW_DOMAIN="${PREVIEW_SUBDOMAIN}.${{ inputs.PREVIEW_BASE_DOMAIN }}"
-          PREVIEW_DOMAIN="${NAMEOVERRIDE}.${{ inputs.PREVIEW_BASE_DOMAIN }}"
+          PREVIEW_DOMAIN="${PREVIEW_NAMEOVERRIDE}.${{ inputs.PREVIEW_BASE_DOMAIN }}"
           if [ -n "${ARG_PREVIEW_SUBDOMAIN}" ]; then
             HELM_VALUES_ISTIO_HOST="--set istio.host=${PREVIEW_DOMAIN}"
           fi
 
           # PREVIEW_URL=https://${PREVIEW_SUBDOMAIN}.${{ inputs.PREVIEW_BASE_DOMAIN }}
-          PREVIEW_URL=https://${NAMEOVERRIDE}.${{ inputs.PREVIEW_BASE_DOMAIN }}
+          PREVIEW_URL=https://${PREVIEW_NAMEOVERRIDE}.${{ inputs.PREVIEW_BASE_DOMAIN }}
           # PREVIEW_URL=https://${PREVIEW_DOMAIN}
 
-          ARGOCD_URL=https://argocd.core.joinpeeq.com/applications/argocd/${NAMEOVERRIDE}
+          ARGOCD_URL=https://argocd.core.joinpeeq.com/applications/argocd/${PREVIEW_NAMEOVERRIDE}
 
           ARG_USE_LOCAL=""
           if [ -n "${HELM_USE_LOCAL_COMMON}" ]; then
@@ -414,9 +425,9 @@ jobs:
           echo "PREVIEW_SUBDOMAIN          : ${PREVIEW_SUBDOMAIN}"
           echo "PREVIEW_DOMAIN             : ${PREVIEW_DOMAIN}"
           echo "PREVIEW_URL                : ${PREVIEW_URL}"
+          echo "PREVIEW_NAMEOVERRIDE       : ${PREVIEW_NAMEOVERRIDE}"
           echo "ARGOCD_URL                 : ${ARGOCD_URL}"
           echo "ARGOCD_APP                 : ${ARGOCD_APP}"
-          echo "NAMEOVERRIDE               : ${NAMEOVERRIDE}"
 
           # set to output and env
           echo "HELM_REGISTRY_LOCATION=${HELM_REGISTRY_LOCATION}" >> $GITHUB_ENV
@@ -459,9 +470,8 @@ jobs:
           echo "PREVIEW_DOMAIN=${PREVIEW_DOMAIN}" >> $GITHUB_OUTPUT
           echo "PREVIEW_URL=${PREVIEW_URL}" >> $GITHUB_ENV
           echo "PREVIEW_URL=${PREVIEW_URL}" >> $GITHUB_OUTPUT
-
-          echo "NAMEOVERRIDE=${NAMEOVERRIDE}" >> $GITHUB_ENV
-          echo "NAMEOVERRIDE=${NAMEOVERRIDE}" >> $GITHUB_OUTPUT
+          echo "PREVIEW_NAMEOVERRIDE=${PREVIEW_NAMEOVERRIDE}" >> $GITHUB_ENV
+          echo "PREVIEW_NAMEOVERRIDE=${PREVIEW_NAMEOVERRIDE}" >> $GITHUB_OUTPUT
 
       - name: "🔧 Enable helm debug"
         if: inputs.HELM_ENABLE_DEBUG == true
@@ -537,7 +547,7 @@ jobs:
           HELM_DOCKER_REGISTRY: ${{ inputs.HELM_DOCKER_REGISTRY }}
           HELM_EXPERIMENTAL_OCI: 1
           IMAGE_VERSION: ${{ inputs.VERSION }}
-          NAMEOVERRIDE: ${{ steps.setup-variables.outputs.NAMEOVERRIDE }}
+          PREVIEW_NAMEOVERRIDE: ${{ steps.setup-variables.outputs.PREVIEW_NAMEOVERRIDE }}
           PREVIEW_CHART_VALUES: ${{ steps.setup-variables.outputs.PREVIEW_CHART_VALUES }}
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           VERSION: ${{ inputs.VERSION }}
@@ -560,7 +570,7 @@ jobs:
             -v "${{ inputs.VERSION }}" \
             -iv "${{ inputs.VERSION }}" \
             -ns "${{ inputs.PREVIEW_NAMESPACE }}" \
-            -no "${{ steps.setup-variables.outputs.NAMEOVERRIDE }}" \
+            -no "${{ steps.setup-variables.outputs.PREVIEW_NAMEOVERRIDE }}" \
             ${ARG_EXTRA_VARS}
           echo ""
           echo "./charts/${{ steps.setup-variables.outputs.PREVIEW_CHART_VALUES }}:"
@@ -587,7 +597,7 @@ jobs:
 
       - name: "📦 Stage PR yaml file"
         env:
-          PR_DIR: ${{ env.PREVIEW_WORKING_DIR }}/${{ steps.setup-variables.outputs.NAMEOVERRIDE }}
+          PR_DIR: ${{ env.PREVIEW_WORKING_DIR }}/${{ steps.setup-variables.outputs.PREVIEW_NAMEOVERRIDE }}
           PR_YAML: application.yaml
         run: |
           echo "mkdir: ${PR_DIR}"
@@ -644,7 +654,7 @@ jobs:
       - name: "⬇️ Get API path"
         id: get-api-path
         env:
-          PR_DIR: ${{ env.PREVIEW_WORKING_DIR }}/${{ steps.setup-variables.outputs.NAMEOVERRIDE }}
+          PR_DIR: ${{ env.PREVIEW_WORKING_DIR }}/${{ steps.setup-variables.outputs.PREVIEW_NAMEOVERRIDE }}
           PR_YAML: application.yaml
           PREVIEW_NAMESPACE: ${{ inputs.PREVIEW_NAMESPACE }}
           CHART_NAME: ${{ steps.setup-variables.outputs.CHART_NAME }}
@@ -700,9 +710,8 @@ jobs:
           if [ ${#API_PATH} -gt 1 ]; then
             echo "| 💓 Healthcheck | [${PREVIEW_API_HEALTHCHECK}](${PREVIEW_HEALTHCHECK_URL}) |" >> ${PR_BODY}
           fi
-          # echo "| ☸ Preview Namespace | \`kubectl config set-context gke_development-375017_us-central1-a_fanfuzenil --namespace=${PREVIEW_NAMESPACE}\` |" >> ${PR_BODY}
           echo "| ☸ Preview Namespace | \`${PREVIEW_NAMESPACE}\` |" >> ${PR_BODY}
-          echo "| 🐙 ArgoCD App | [${NAMEOVERRIDE}](${ARGOCD_URL}) |" >> ${PR_BODY}
+          echo "| 🐙 ArgoCD App | [${PREVIEW_NAMEOVERRIDE}](${ARGOCD_URL}) |" >> ${PR_BODY}
           echo "===="
           echo "PR_BODY:"
           cat ${PR_BODY}

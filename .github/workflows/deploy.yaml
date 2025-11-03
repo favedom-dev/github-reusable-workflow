@@ -76,6 +76,10 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      IN_PREVIEW_NAMEOVERRIDE:
+        required: false
+        type: string
+
       CHARTS_DIR:
         default: 'charts'
         type: string
@@ -362,6 +366,7 @@ jobs:
       PREVIEW_BASE_DOMAIN: ${{ inputs.PREVIEW_BASE_DOMAIN }}
       PREVIEW_HEALTHCHECK: ${{ inputs.PREVIEW_HEALTHCHECK }}
       SECRETS_FROM_NAMESPACE: ${{ inputs.SECRETS_FROM_NAMESPACE }}
+      IN_PREVIEW_NAMEOVERRIDE: ${{ inputs.IN_PREVIEW_NAMEOVERRIDE }}
       GH_RUNS_ON: ${{ inputs.GH_RUNS_ON }}
     secrets:
       WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
