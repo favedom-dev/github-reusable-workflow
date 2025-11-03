@@ -12,7 +12,7 @@ on:  # yamllint disable-line rule:truthy
         required: true
         type: string
 
-      IN_PREVIEW_NAMEOVERRIDE:
+      PREVIEW_NAMEOVERRIDE:
         required: false
         type: string
 
@@ -335,7 +335,7 @@ jobs:
           EXTRA_VARS: ${{ inputs.EXTRA_VARS }}
           GH_REF: ${{ github.ref }}
           HELM_USE_LOCAL_COMMON: ${{ inputs.HELM_USE_LOCAL_COMMON }}
-          IN_PREVIEW_NAMEOVERRIDE: ${{ inputs.IN_PREVIEW_NAMEOVERRIDE }}
+          IN_PREVIEW_NAMEOVERRIDE: ${{ inputs.PREVIEW_NAMEOVERRIDE }}
           OVERRIDE_CHART_NAME: ${{ inputs.OVERRIDE_CHART_NAME }}
         run: |
           HELM_REGISTRY_LOCATION=${{ inputs.HELM_DOCKER_REGISTRY }}/${{ inputs.HELM_PROJECT_ID }}/${{ inputs.HELM_REGISTRY_NAME }}/${{ inputs.NAME }}
