@@ -478,6 +478,8 @@ jobs:
           echo "PREVIEW_URL=${PREVIEW_URL}" >> $GITHUB_OUTPUT
           echo "PREVIEW_NAMEOVERRIDE=${PREVIEW_NAMEOVERRIDE}" >> $GITHUB_ENV
           echo "PREVIEW_NAMEOVERRIDE=${PREVIEW_NAMEOVERRIDE}" >> $GITHUB_OUTPUT
+          echo "PR_LINK=${PR_LINK}" >> $GITHUB_ENV
+          echo "PR_LINK=${PR_LINK}" >> $GITHUB_OUTPUT
 
       - name: "🔧 Enable helm debug"
         if: inputs.HELM_ENABLE_DEBUG == true
