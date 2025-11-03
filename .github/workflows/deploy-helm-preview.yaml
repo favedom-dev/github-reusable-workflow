@@ -718,7 +718,11 @@ jobs:
           # END: body message file
           echo "===="
 
-          echo "gh pr comment ${{ github.event.number }} --body-file ${PR_BODY} --repo ${{ github.repository }}"
-          gh pr comment ${{ github.event.number }} --body-file ${PR_BODY} --repo ${{ github.repository }}
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "gh pr comment ${{ github.event.number }} --body-file ${PR_BODY} --repo ${{ github.repository }}"
+            gh pr comment ${{ github.event.number }} --body-file ${PR_BODY} --repo ${{ github.repository }}
+          else
+            echo "SKIPPED: PR comment"
+          fi
 
           cat ${PR_BODY} >> $GITHUB_STEP_SUMMARY
