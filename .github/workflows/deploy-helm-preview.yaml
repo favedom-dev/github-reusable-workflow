@@ -395,6 +395,11 @@ jobs:
           PREVIEW_URL=https://${PREVIEW_NAMEOVERRIDE}.${{ inputs.PREVIEW_BASE_DOMAIN }}
           # PREVIEW_URL=https://${PREVIEW_DOMAIN}
 
+          PR_LINK=${{ github.server_url }}/${{ github.repository }}/pulls
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            PR_LINK=${{ github.event.pull_request.html_url }}
+          fi
+
           ARGOCD_URL=https://argocd.core.joinpeeq.com/applications/argocd/${PREVIEW_NAMEOVERRIDE}
 
           ARG_USE_LOCAL=""
