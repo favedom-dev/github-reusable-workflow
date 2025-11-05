@@ -92,6 +92,9 @@ runs:
       uses: docker/build-push-action@v6
       id: docker-build
       if: ${{ !env.ACT }}
+      env:
+        QEMU_STRACE: 1
+        # QEMU_LOG: cpu,int,exec
       with:
         context: ${{ inputs.DOCKER_CONTEXT }}
         file: ${{ inputs.DOCKER_FILE != '' && inputs.DOCKER_FILE || null }}
