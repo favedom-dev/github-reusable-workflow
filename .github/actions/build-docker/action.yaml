@@ -82,7 +82,6 @@ runs:
       with:
         driver-opts: |
           env.QEMU_STRACE=1
-          QEMU_STRACE=1
 
     - name: "# Set up Docker tags"
       uses: favedom-dev/github-reusable-workflow/.github/actions/set-docker-tags@v2.1
