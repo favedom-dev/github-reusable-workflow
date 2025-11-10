@@ -97,7 +97,7 @@ runs:
       if: ${{ !env.ACT }}
       env:
         QEMU_STRACE: 1
-        # QEMU_LOG: cpu,int,exec
+        QEMU_LOG: cpu,int,exec
       with:
         context: ${{ inputs.DOCKER_CONTEXT }}
         file: ${{ inputs.DOCKER_FILE != '' && inputs.DOCKER_FILE || null }}
@@ -108,8 +108,6 @@ runs:
         cache-from: ${{ inputs.DOCKER_ENABLE_CACHE == 'true' && format('type=gha,ref={0}:buildcache', inputs.DOCKER_LOCATION) || '' }}
         # mode=max exports all layers (not just the final image layers)
         cache-to: ${{ inputs.DOCKER_ENABLE_CACHE == 'true' && inputs.DOCKER_PUSH == 'true' && format('type=gha,ref={0}:buildcache,mode=max', inputs.DOCKER_LOCATION) || '' }}
-        build-args: |
-          QEMU_STRACE=1
 
     - name: "🔗 Link to Container"
       if: inputs.DOCKER_PUSH == 'true'
