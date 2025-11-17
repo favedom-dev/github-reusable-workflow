@@ -31,6 +31,9 @@ on:
 jobs:
   check-yaml-changes:
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     outputs:
       has_yaml_changes: ${{ steps.check.outputs.has_yaml_changes }}
       changed_files: ${{ steps.check.outputs.changed_files }}
