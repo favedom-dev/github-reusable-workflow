@@ -1,0 +1,78 @@
+name: "PR Merged → Slack Notification"
+
+on:
+  workflow_call:
+    inputs:
+      # TODO
+      SECRETS_TO_FETCH:
+        description: "Secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+        # default: |
+        #   SLACK_BOT_TOKEN:projects/1054075584205/secrets/cicd_prod_SLACK_BOT_TOKEN
+
+      DEFAULT_SECRETS_TO_FETCH:
+        description: "Default secrets to fetch from Google Secret Manager"
+        required: false
+        type: string
+        default: |
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
+
+    secrets:
+
+      WIF_PROVIDER:
+        description: "Workload Identity Federation Provider"
+        required: true
+
+      WIF_SERVICE_ACCOUNT:
+        description: "Workload Identity Federation Service Account"
+        required: true
+
+jobs:
+  check-yaml-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_yaml_changes: ${{ steps.check.outputs.has_yaml_changes }}
+      changed_files: ${{ steps.check.outputs.changed_files }}
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: "🔐 Get Secrets"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
+        id: get-secrets
+        with:
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
+          DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
+
+      - name: Detect YAML changes
+        id: check
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.ref }}
+          CHANGED=$(git diff --name-only \
+            origin/${{ github.event.pull_request.base.ref }} \
+            ${{ github.event.pull_request.head.sha }} \
+            | grep -E '\.(yaml|yml)$' || true)
+
+          if [ -z "$CHANGED" ]; then
+            echo "has_yaml_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_yaml_changes=true" >> $GITHUB_OUTPUT
+            FORMATTED=$(echo "$CHANGED" | sed 's/^/  • /' | tr '\n' '\n')
+            echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+            echo "$FORMATTED" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+  notify-slack:
+    needs: check-yaml-changes
+    if: needs.check-yaml-changes.outputs.has_yaml_changes == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug
+        run: |
+          env | sort
