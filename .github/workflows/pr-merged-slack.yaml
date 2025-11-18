@@ -198,7 +198,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "```${{ steps.comment.outputs.comment }}```"
+                    "text": "${{ steps.comment.outputs.comment }}"
                   }
                 }${{ inputs.include-changed-files && format(',{{"type":"section","text":{{"type":"mrkdwn","text":"*Changed YAML files:*\n{0}"}}}}', needs.check-yaml-changes.outputs.changed_files) || '' }}
               ]
