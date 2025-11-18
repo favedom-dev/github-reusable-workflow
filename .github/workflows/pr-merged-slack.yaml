@@ -51,6 +51,17 @@ on:
           GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
           SLACK_BOT_TOKEN:projects/1054075584205/secrets/cicd_SLACK_DEVOPS_TOKEN
 
+      FILE_DOWNLOAD_BASE_URL:
+        default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
+        required: false
+        type: string
+
+      FILE_GIT_BRANCH:
+        default: 'v2' # 'v2.1'
+        required: false
+        type: string
+        description: "Used typically for testing new non-merged helm changes"
+
     secrets:
 
       WIF_PROVIDER:
@@ -124,8 +135,23 @@ jobs:
     outputs:
       thread_ts: ${{ steps.slack.outputs.thread_ts }}
     steps:
+
+
+      # mrkdwn-slack.sh
+
       - name: "☁️ Checkout"
         uses: actions/checkout@v4
+
+      - name: "⬇️ Get reusable files"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-reusable-files@v2.1
+        id: get-reusable-files
+        with:
+          FILE_GIT_BRANCH: ${{ inputs.FILE_GIT_BRANCH }}
+          FILE_DOWNLOAD_BASE_URL: ${{ inputs.FILE_DOWNLOAD_BASE_URL }}
+          FILES_TO_DOWNLOAD: |
+            [
+              { "subdirectory": ".github/scripts", "filename": "mrkdwn-slack.sh" },
+            ]
 
       - name: "🔐 Get Secrets"
         uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
@@ -169,6 +195,10 @@ jobs:
           else
             # Escape newlines and quotes for single-line output if necessary
             CLEAN=$(echo "$BODY" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+            echo "1CLEAN : ${CLEAN}"
+            pwd
+            ls -la
+            CLEAN=$($PR_BODY" | ./mrkdwn-slack.sh)
             echo "CLEAN : ${CLEAN}"
             echo "comment=$CLEAN" >> $GITHUB_OUTPUT
           fi
