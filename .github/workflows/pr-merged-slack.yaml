@@ -261,24 +261,24 @@ jobs:
           # echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig
           # export KUBECONFIG=kubeconfig
 
-      # - name: "☸️ Create/Update pr-to-revision ConfigMap"
-      #   run: |
-      #     COMMIT=${{ github.sha }}
-      #     cat <<EOF | kubectl apply -f -
-      #     apiVersion: v1
-      #     kind: ConfigMap
-      #     metadata:
-      #       name: pr-to-revision-$COMMIT
-      #       namespace: argocd
-      #       labels:
-      #         app.kubernetes.io/part-of: pr-tracking
-      #     data:
-      #       pr: "${{ github.event.pull_request.number }}"
-      #       url: "${{ github.event.pull_request.html_url }}"
-      #       title: "${{ github.event.pull_request.title }}"
-      #       author: "${{ github.event.pull_request.user.login }}"
-      #       slack_thread_ts: "${{ steps.slack.outputs.thread_ts }}"
-      #     EOF
+      - name: "☸️ Create/Update pr-to-revision ConfigMap"
+        run: |
+          COMMIT=${{ github.sha }}
+          cat <<EOF | kubectl apply -f -
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: pr-to-revision-$COMMIT
+            namespace: argocd
+            labels:
+              app.kubernetes.io/part-of: pr-tracking
+          data:
+            pr: "${{ github.event.pull_request.number }}"
+            url: "${{ github.event.pull_request.html_url }}"
+            title: "${{ github.event.pull_request.title }}"
+            author: "${{ github.event.pull_request.user.login }}"
+            slack_thread_ts: "${{ steps.slack.outputs.thread_ts }}"
+          EOF
 
       # Expose thread_ts for potential downstream jobs
       - name: "🩻 Expose thread_ts"
