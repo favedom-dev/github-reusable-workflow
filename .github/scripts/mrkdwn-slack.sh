@@ -28,7 +28,8 @@ SLACK_TEXT="$MARKDOWN_CONTENT"
 # --- Conversion Logic (Same as before) ---
 
 # 1. Convert ALL Headers (#, ##, ###, etc.) to *Bold Text*
-SLACK_TEXT=$(echo "$SLACK_TEXT" | sed -E 's/^[[:space:]]*#{1,6}[[:space:]]+(.*)$/\*\1\*/g')
+# SLACK_TEXT=$(echo "$SLACK_TEXT" | sed -E 's/^[[:space:]]*#{1,6}[[:space:]]+(.*)$/\*\1\*/g')
+SLACK_TEXT=$(echo "$SLACK_TEXT" | sed -E 's/^[[:space:]]*#{1,6}[[:space:]]*(.*)$/\*\1\*/g')
 
 # 2. Convert Bold: **text** or __text__ to *text* (Slack's primary bold)
 SLACK_TEXT=$(echo "$SLACK_TEXT" | sed -E 's/(\*\*|__)(.*?)(\*\*|__)/\*\2\*/g')
