@@ -160,6 +160,8 @@ jobs:
           BODY=$(echo "$COMMENTS" | jq -r --arg m "${{ inputs.marker }}" \
             '.[] | select(.body | contains($m)) | .body' | head -n 1)
 
+          echo "BODY : ${BODY}"
+
           if [ -z "$BODY" ]; then
             echo "comment=No changelog comment found" >> $GITHUB_OUTPUT
           else
@@ -173,7 +175,10 @@ jobs:
       - name: "📝 Post PR message to Slack"
         id: slack
         uses: slackapi/slack-github-action@v2
+        env:
+          SLACK_BOT_TOKEN: ${{ env.SLACK_BOT_TOKEN }}
         with:
+          method: chat.postMessage
           payload: |
             {
               "channel": "${{ inputs.channel-id }}",
@@ -195,8 +200,6 @@ jobs:
                 }${{ inputs.include-changed-files && format(',{{"type":"section","text":{{"type":"mrkdwn","text":"*Changed YAML files:*\n{0}"}}}}', needs.check-yaml-changes.outputs.changed_files) || '' }}
               ]
             }
-        env:
-          SLACK_BOT_TOKEN: ${{ env.SLACK_BOT_TOKEN }}
 
       # ------------------------------------------------------------------
       # Write PR → Revision + thread_ts mapping to Kubernetes
