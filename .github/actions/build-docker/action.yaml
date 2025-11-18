@@ -79,9 +79,9 @@ runs:
 
     - name: "🛠️ Set up Docker Buildx"
       uses: docker/setup-buildx-action@v3
-      with:
-        driver-opts: |
-          env.QEMU_STRACE=1
+      # with:
+      #   driver-opts: |
+      #     env.QEMU_STRACE=1
 
     - name: "# Set up Docker tags"
       uses: favedom-dev/github-reusable-workflow/.github/actions/set-docker-tags@v2.1
@@ -96,8 +96,8 @@ runs:
       id: docker-build
       if: ${{ !env.ACT }}
       env:
-        QEMU_STRACE: 1
-        QEMU_LOG: cpu,int,exec
+        QEMU_STRACE: "1"
+        QEMU_LOG: "cpu,int,exec"
       with:
         context: ${{ inputs.DOCKER_CONTEXT }}
         file: ${{ inputs.DOCKER_FILE != '' && inputs.DOCKER_FILE || null }}

@@ -209,6 +209,8 @@ jobs:
       # GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       # DOCKER_BUILDKIT: 1
       ARTIFACT_LINK_SCRIPT_NAME: artifact-link.sh
+      BUILDKIT_PROGRESS: plain
+      DEBUG: 1
     outputs:
       ARTIFACT_URL: ${{ steps.build-docker.outputs.ARTIFACT_URL }}
 

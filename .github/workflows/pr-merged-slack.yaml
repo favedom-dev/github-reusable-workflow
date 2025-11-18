@@ -188,16 +188,16 @@ jobs:
           #   '. | select(contains($m))' | head -n 1)
           BODY=$(echo "$PR_BODY" | awk '/${{ inputs.marker }}/{found=1; next} found')
 
+          pwd
+          ls -la
           echo "BODY : ${BODY}"
 
           if [ -z "$BODY" ]; then
             echo "comment=No changelog content found in PR body" >> $GITHUB_OUTPUT
           else
             # Escape newlines and quotes for single-line output if necessary
-            CLEAN=$(echo "$BODY" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
-            echo "1CLEAN : ${CLEAN}"
-            pwd
-            ls -la
+            # CLEAN=$(echo "$BODY" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+            # echo "1CLEAN : ${CLEAN}"
             CLEAN=$($PR_BODY" | ./mrkdwn-slack.sh)
             echo "CLEAN : ${CLEAN}"
             echo "comment=$CLEAN" >> $GITHUB_OUTPUT
