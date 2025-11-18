@@ -150,7 +150,7 @@ jobs:
           FILE_DOWNLOAD_BASE_URL: ${{ inputs.FILE_DOWNLOAD_BASE_URL }}
           FILES_TO_DOWNLOAD: |
             [
-              { "subdirectory": ".github/scripts", "filename": "mrkdwn-slack.sh" },
+              { "subdirectory": ".github/scripts", "filename": "mrkdwn-slack.sh" }
             ]
 
       - name: "🔐 Get Secrets"
