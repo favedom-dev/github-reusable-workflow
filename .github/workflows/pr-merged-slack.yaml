@@ -31,7 +31,7 @@ on:
         type: string
 
       LOCATION:
-        default: 'us-central1-a'
+        default: 'us-central1'
         required: false
         type: string
 
