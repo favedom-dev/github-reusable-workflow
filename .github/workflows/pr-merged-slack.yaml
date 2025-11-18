@@ -12,7 +12,7 @@ on:
 
       marker:
         description: "Text to identify the changelog comment"
-        default: "<!-- Image Generated -->"
+        default: "<!-- Image Generated:"
         type: string
 
       include-changed-files:
