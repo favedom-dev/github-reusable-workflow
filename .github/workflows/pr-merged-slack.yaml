@@ -3,6 +3,38 @@ name: "PR Merged → Slack Notification"
 on:
   workflow_call:
     inputs:
+
+      channel-id:
+        default: "#test-bot"
+        description: "Slack channel ID or name (e.g. deploys or C1234567890)"
+        required: true
+        type: string
+
+      marker:
+        description: "Text to identify the changelog comment"
+        default: "<!-- Image Generated -->"
+        type: string
+
+      include-changed-files:
+        description: "Include list of changed YAML files in message"
+        default: false
+        type: boolean
+
+      CLUSTER_NAME:
+        default: 'core'
+        required: false
+        type: string
+
+      CLUSTER_PROJECT_ID:
+        default: 'core-services-370815'
+        required: false
+        type: string
+
+      LOCATION:
+        default: 'us-central1-a'
+        required: false
+        type: string
+
       # TODO
       SECRETS_TO_FETCH:
         description: "Secrets to fetch from Google Secret Manager"
@@ -16,7 +48,8 @@ on:
         required: false
         type: string
         default: |
-          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD
+          GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
+          SLACK_BOT_TOKEN:projects/1054075584205/secrets/cicd_SLACK_DEVOPS_TOKEN
 
     secrets:
 
@@ -38,7 +71,7 @@ jobs:
       has_yaml_changes: ${{ steps.check.outputs.has_yaml_changes }}
       changed_files: ${{ steps.check.outputs.changed_files }}
     steps:
-      - name: Checkout with full history
+      - name: "☁️ Checkout with full history"
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -81,11 +114,117 @@ jobs:
             echo "$CHANGED"
           fi
 
-  notify-slack:
+  notify-and-track:
     needs: check-yaml-changes
     if: needs.check-yaml-changes.outputs.has_yaml_changes == 'true'
     runs-on: ubuntu-latest
+    outputs:
+      thread_ts: ${{ steps.slack.outputs.thread_ts }}
     steps:
-      - name: Debug
+      - name: "☁️ Checkout"
+        uses: actions/checkout@v4
+
+      - name: "🔐 Get Secrets"
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
+        id: get-secrets
+        with:
+          WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
+          WIF_SERVICE_ACCOUNT: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+          SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
+          DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
+
+      - name: "🔓 Get GKE Credentials cluster: ${{ inputs.CLUSTER_NAME }}"
+        id: 'get-credentials'
+        uses: 'google-github-actions/get-gke-credentials@v2'
+        with:
+          cluster_name: ${{ inputs.CLUSTER_NAME }}
+          location: ${{ inputs.LOCATION }}
+          project_id: ${{ inputs.CLUSTER_PROJECT_ID }}
+
+      # ------------------------------------------------------------------
+      # Find the changelog comment
+      # ------------------------------------------------------------------
+      - name: "🔎 Find PR comment with marker"
+        id: comment
+        env:
+          GITHUB_TOKEN: ${{ env.GH_TOKEN }}
         run: |
-          env | sort
+          COMMENTS=$(curl -s \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments")
+
+          BODY=$(echo "$COMMENTS" | jq -r --arg m "${{ inputs.marker }}" \
+            '.[] | select(.body | contains($m)) | .body' | head -n 1)
+
+          if [ -z "$BODY" ]; then
+            echo "comment=No changelog comment found" >> $GITHUB_OUTPUT
+          else
+            CLEAN=$(echo "$BODY" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+            echo "comment=$CLEAN" >> $GITHUB_OUTPUT
+          fi
+
+      # ------------------------------------------------------------------
+      # Post to Slack and capture thread_ts
+      # ------------------------------------------------------------------
+      - name: "📝 Post PR message to Slack"
+        id: slack
+        uses: slackapi/slack-github-action@v2
+        with:
+          payload: |
+            {
+              "channel": "${{ inputs.channel-id }}",
+              "text": ":merged: *PR #${{ github.event.pull_request.number }} merged* by ${{ github.event.pull_request.user.login }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":merged: *PR #${{ github.event.pull_request.number }} merged* by ${{ github.event.pull_request.user.login }}\n<${{ github.event.pull_request.html_url }}|View PR> | ${{ github.event.pull_request.title }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "```${{ steps.comment.outputs.comment }}```"
+                  }
+                }${{ inputs.include-changed-files && format(',{{"type":"section","text":{{"type":"mrkdwn","text":"*Changed YAML files:*\n{0}"}}}}', needs.check-yaml-changes.outputs.changed_files) || '' }}
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ env.SLACK_BOT_TOKEN }}
+
+      # ------------------------------------------------------------------
+      # Write PR → Revision + thread_ts mapping to Kubernetes
+      # ------------------------------------------------------------------
+      - name: "☸️ kubectl"
+        run: |
+          kubectl get ns
+          # echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig
+          # export KUBECONFIG=kubeconfig
+
+      # - name: "☸️ Create/Update pr-to-revision ConfigMap"
+      #   run: |
+      #     COMMIT=${{ github.sha }}
+      #     cat <<EOF | kubectl apply -f -
+      #     apiVersion: v1
+      #     kind: ConfigMap
+      #     metadata:
+      #       name: pr-to-revision-$COMMIT
+      #       namespace: argocd
+      #       labels:
+      #         app.kubernetes.io/part-of: pr-tracking
+      #     data:
+      #       pr: "${{ github.event.pull_request.number }}"
+      #       url: "${{ github.event.pull_request.html_url }}"
+      #       title: "${{ github.event.pull_request.title }}"
+      #       author: "${{ github.event.pull_request.user.login }}"
+      #       slack_thread_ts: "${{ steps.slack.outputs.thread_ts }}"
+      #     EOF
+
+      # Expose thread_ts for potential downstream jobs
+      - name: "🩻 Expose thread_ts"
+        run: |
+          echo "thread_ts : ${{ steps.slack.outputs.thread_ts }}"
+          echo "thread_ts=${{ steps.slack.outputs.thread_ts }}" >> $GITHUB_OUTPUT
