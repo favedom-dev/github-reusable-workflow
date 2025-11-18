@@ -7,7 +7,7 @@ on:
       channel-id:
         default: "#test-bot"
         description: "Slack channel ID or name (e.g. deploys or C1234567890)"
-        required: true
+        required: false # true
         type: string
 
       marker:
