@@ -192,16 +192,34 @@ jobs:
           ls -la ../
           echo "BODY : ${BODY}"
 
+          # Check if BODY is empty
           if [ -z "$BODY" ]; then
+            # Simple case: single-line output works fine without a delimiter
             echo "comment=No changelog content found in PR body" >> $GITHUB_OUTPUT
-          else
-            # Escape newlines and quotes for single-line output if necessary
-            # CLEAN=$(echo "$BODY" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
-            # echo "1CLEAN : ${CLEAN}"
-            CLEAN=$(echo -e "${BODY}" | ../mrkdwn-slack.sh)
-            echo "CLEAN : ${CLEAN}"
-            echo "comment=$CLEAN" >> $GITHUB_OUTPUT
+            exit 0
           fi
+
+          # Convert Markdown to Slack mrkdwn
+          # The -e flag ensures proper newline interpretation
+          CLEAN=$(echo -e "${BODY}" | ../mrkdwn-slack.sh)
+          echo "CLEAN : ${CLEAN}"
+
+          # Use the EOT delimiter for multi-line output to GITHUB_OUTPUT
+          # This correctly handles newlines and special characters in the converted text.
+          echo "comment<<EOT" >> $GITHUB_OUTPUT
+          echo "$CLEAN" >> $GITHUB_OUTPUT
+          echo "EOT" >> $GITHUB_OUTPUT
+
+          # if [ -z "$BODY" ]; then
+          #   echo "comment=No changelog content found in PR body" >> $GITHUB_OUTPUT
+          # else
+          #   # Escape newlines and quotes for single-line output if necessary
+          #   # CLEAN=$(echo "$BODY" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+          #   # echo "1CLEAN : ${CLEAN}"
+          #   CLEAN=$(echo -e "${BODY}" | ../mrkdwn-slack.sh)
+          #   echo "CLEAN : ${CLEAN}"
+          #   echo "comment=$CLEAN" >> $GITHUB_OUTPUT
+          # fi
 
       # ------------------------------------------------------------------
       # Post to Slack and capture thread_ts
