@@ -198,7 +198,7 @@ jobs:
             # Escape newlines and quotes for single-line output if necessary
             # CLEAN=$(echo "$BODY" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
             # echo "1CLEAN : ${CLEAN}"
-            CLEAN=$(echo -e "${PR_BODY}" | ../mrkdwn-slack.sh)
+            CLEAN=$(echo -e "${BODY}" | ../mrkdwn-slack.sh)
             echo "CLEAN : ${CLEAN}"
             echo "comment=$CLEAN" >> $GITHUB_OUTPUT
           fi
