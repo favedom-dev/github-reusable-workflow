@@ -158,8 +158,8 @@ jobs:
             --jq '.body')
 
           # Note: We are now searching the PR_BODY variable
-          BODY=$(echo "$PR_BODY" | jq -r --arg m "${{ inputs.marker }}" \
-            'select(contains($m))' | head -n 1)
+          BODY=$(echo "$PR_BODY" | jq -R -r --arg m "${{ inputs.marker }}" \
+            '. | select(contains($m))' | head -n 1)
 
           echo "BODY : ${BODY}"
 
