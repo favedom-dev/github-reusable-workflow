@@ -147,24 +147,26 @@ jobs:
       # ------------------------------------------------------------------
       # Find the changelog comment
       # ------------------------------------------------------------------
-      - name: "🔎 Find PR comment with marker"
+      - name: "🔎 Find Marker in PR Body"
         id: comment
         env:
           GITHUB_TOKEN: ${{ env.GH_TOKEN }}
         run: |
-          COMMENTS=$(curl -s \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments")
+          # get the PR body directly in JSON format
+          PR_BODY=$(gh pr view ${{ github.event.pull_request.number }} \
+            --json body \
+            --jq '.body')
 
-          BODY=$(echo "$COMMENTS" | jq -r --arg m "${{ inputs.marker }}" \
-            '.[] | select(.body | contains($m)) | .body' | head -n 1)
+          # Note: We are now searching the PR_BODY variable
+          BODY=$(echo "$PR_BODY" | jq -r --arg m "${{ inputs.marker }}" \
+            'select(contains($m))' | head -n 1)
 
           echo "BODY : ${BODY}"
 
           if [ -z "$BODY" ]; then
-            echo "comment=No changelog comment found" >> $GITHUB_OUTPUT
+            echo "comment=No changelog content found in PR body" >> $GITHUB_OUTPUT
           else
+            # Escape newlines and quotes for single-line output if necessary
             CLEAN=$(echo "$BODY" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
             echo "comment=$CLEAN" >> $GITHUB_OUTPUT
           fi
