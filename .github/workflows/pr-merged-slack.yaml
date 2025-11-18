@@ -175,10 +175,9 @@ jobs:
       - name: "📝 Post PR message to Slack"
         id: slack
         uses: slackapi/slack-github-action@v2
-        env:
-          SLACK_BOT_TOKEN: ${{ env.SLACK_BOT_TOKEN }}
         with:
           method: chat.postMessage
+          token: ${{ env.SLACK_BOT_TOKEN }}
           payload: |
             {
               "channel": "${{ inputs.channel-id }}",
