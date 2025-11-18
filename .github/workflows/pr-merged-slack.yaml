@@ -118,6 +118,9 @@ jobs:
     needs: check-yaml-changes
     if: needs.check-yaml-changes.outputs.has_yaml_changes == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     outputs:
       thread_ts: ${{ steps.slack.outputs.thread_ts }}
     steps:
