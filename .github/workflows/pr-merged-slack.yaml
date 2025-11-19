@@ -81,7 +81,10 @@ jobs:
     outputs:
       has_yaml_changes: ${{ steps.check.outputs.has_yaml_changes }}
       changed_files: ${{ steps.check.outputs.changed_files }}
+      UNIQUE_PAIRS: ${{ steps.check.outputs.UNIQUE_PAIRS }}
+      CHANGED_LIST: ${{ steps.check.outputs.CHANGED_LIST }}
     steps:
+
       - name: "☁️ Checkout with full history"
         uses: actions/checkout@v4
         with:
@@ -96,34 +99,104 @@ jobs:
           SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
           DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
 
+      # - name: "🕵️ Detect YAML changes"
+      #   id: check
+      #   env:
+      #     GITHUB_TOKEN: ${{ env.GH_TOKEN }}
+      #   run: |
+      #     BASE="${{ github.event.pull_request.base.sha }}"
+      #     HEAD="${{ github.event.pull_request.head.sha }}"
+
+      #     echo "Comparing $BASE..$HEAD"
+
+      #     CHANGED=$(curl -s \
+      #       -H "Authorization: token $GITHUB_TOKEN" \
+      #       -H "Accept: application/vnd.github.v3+json" \
+      #       "https://api.github.com/repos/${{ github.repository }}/compare/$BASE...$HEAD" \
+      #       | jq -r '.files[].filename | select(test("\\.(yaml|yml)$"))')
+
+      #     if [ -z "$CHANGED" ]; then
+      #       echo "has_yaml_changes=false" >> $GITHUB_OUTPUT
+      #       echo "No .yaml/.yml files changed"
+      #     else
+      #       echo "has_yaml_changes=true" >> $GITHUB_OUTPUT
+      #       FORMATTED=$(echo "$CHANGED" | sed 's/^/  • /' || true)
+      #       echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+      #       echo "$FORMATTED" >> $GITHUB_OUTPUT
+      #       echo "EOF" >> $GITHUB_OUTPUT
+      #       echo "YAML files changed:"
+      #       echo "$CHANGED"
+      #     fi
+
       - name: "🕵️ Detect YAML changes"
         id: check
         env:
           GITHUB_TOKEN: ${{ env.GH_TOKEN }}
         run: |
+          set -euo pipefail
+
           BASE="${{ github.event.pull_request.base.sha }}"
           HEAD="${{ github.event.pull_request.head.sha }}"
 
           echo "Comparing $BASE..$HEAD"
 
-          CHANGED=$(curl -s \
-            -H "Authorization: token $GITHUB_TOKEN" \
+          DATA=$(curl -s \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${{ github.repository }}/compare/$BASE...$HEAD" \
-            | jq -r '.files[].filename | select(test("\\.(yaml|yml)$"))')
+            "https://api.github.com/repos/${{ github.repository }}/compare/$BASE...$HEAD")
 
-          if [ -z "$CHANGED" ]; then
+          # Extract only .yaml/.yml files under <env>/<tenant>/...
+          # Output format: env tenant full-path
+          PAIRS=$(echo "$DATA" | jq -r '
+            .files[]
+            | select(.filename | test("\\.(yaml|yml)$"; "i"))
+            | .filename as $f
+            | ($f | split("/")) as $parts
+            | select($parts | length >= 3)
+            | "\($parts[0])\t\($parts[1])\t$f"
+          ')
+
+          if [ -z "$PAIRS" ]; then
             echo "has_yaml_changes=false" >> $GITHUB_OUTPUT
-            echo "No .yaml/.yml files changed"
-          else
-            echo "has_yaml_changes=true" >> $GITHUB_OUTPUT
-            FORMATTED=$(echo "$CHANGED" | sed 's/^/  • /' || true)
-            echo "changed_files<<EOF" >> $GITHUB_OUTPUT
-            echo "$FORMATTED" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
-            echo "YAML files changed:"
-            echo "$CHANGED"
+            echo "env_tenant_pairs=" >> $GITHUB_OUTPUT
+            echo "changed_files=" >> $GITHUB_OUTPUT
+            echo "No YAML files changed under <env>/<tenant>/"
+            exit 0
           fi
+
+          echo "has_yaml_changes=true" >> $GITHUB_OUTPUT
+
+          # Unique env-tenant pairs (preserves relationship!)
+          UNIQUE_PAIRS=$(echo "$PAIRS" | cut -f1,2 | sort -u)
+
+          # Format as JSON array of objects → perfect for matrix or fromJSON later
+          MATRIX_JSON=$(echo "$UNIQUE_PAIRS" | jq -R 'split("\t") | {env: .[0], tenant: .[1]}' | jq -s .)
+
+          # Pretty list of changed files
+          CHANGED_LIST=$(echo "$PAIRS" | cut -f3 | sed 's/^/  • /')
+
+          # Set outputs
+          echo "env_tenant_pairs<<EOF" >> $GITHUB_OUTPUT
+          echo "$UNIQUE_PAIRS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+
+          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED_LIST" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+          # Human readable summary
+          echo "YAML changes detected in these env/tenant combinations:"
+          echo "$UNIQUE_PAIRS" | awk '{printf "  • %s/%s\n", $1, $2}'
+          echo ""
+          echo "Changed files:"
+          echo "$CHANGED_LIST"
+
+          echo "UNIQUE PAIRS:" >> $GITHUB_STEP_SUMMARY
+          echo "$UNIQUE_PAIRS" | awk '{printf "  • %s/%s\n", $1, $2}' >> $GITHUB_STEP_SUMMARY
+          echo "Changed files:" >> $GITHUB_STEP_SUMMARY
+          echo "$CHANGED_LIST" >> $GITHUB_STEP_SUMMARY
 
   notify-and-track:
     needs: check-yaml-changes
@@ -135,9 +208,6 @@ jobs:
     outputs:
       thread_ts: ${{ steps.slack.outputs.thread_ts }}
     steps:
-
-
-      # mrkdwn-slack.sh
 
       - name: "☁️ Checkout"
         uses: actions/checkout@v4
@@ -233,24 +303,84 @@ jobs:
           payload: |
             {
               "channel": "${{ inputs.channel-id }}",
-              "text": ":merged: *PR #${{ github.event.pull_request.number }} merged* by ${{ github.event.pull_request.user.login }}",
+              "text": "🚀 Deployment Update Initiated: PR #${{ github.event.pull_request.number }}",
               "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "🚀 Deployment Update Initiated"
+                  }
+                },
+                {
+                  "type": "divider"
+                },
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": ":merged: *PR #${{ github.event.pull_request.number }} merged* by ${{ github.event.pull_request.user.login }}\n<${{ github.event.pull_request.html_url }}|View PR> | ${{ github.event.pull_request.title }}"
+                    "text": "*🛠️ Key Details*"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Status:*\nDeployment Started 🛠️"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Environment:*\n`${{ needs.check-yaml-changes.outputs.UNIQUE_PAIRS }}`"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*GitHub PR Link:*\n<${{ github.event.pull_request.html_url }}|#${{ github.event.pull_request.number }}>"
+                    }
+                  ]
+                },
+                {
+                  "type": "divider"
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*📰 Release Changelog*"
                   }
                 },
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "${{ steps.comment.outputs.comment }}"
+                    "text": "${{ steps.comment.outputs.comment }}\n\n[Link to Full Changelog](${ env.CHANGELOG_URL })"
                   }
-                }${{ inputs.include-changed-files && format(',{{"type":"section","text":{{"type":"mrkdwn","text":"*Changed YAML files:*\n{0}"}}}}', needs.check-yaml-changes.outputs.changed_files) || '' }}
+                }
               ]
             }
+
+
+
+# {
+#   "channel": "${{ inputs.channel-id }}",
+#   "text": ":merged: *PR #${{ github.event.pull_request.number }} merged* by ${{ github.event.pull_request.user.login }}",
+#   "blocks": [
+#     {
+#       "type": "section",
+#       "text": {
+#         "type": "mrkdwn",
+#         "text": ":merged: *PR #${{ github.event.pull_request.number }} merged* by ${{ github.event.pull_request.user.login }}\n<${{ github.event.pull_request.html_url }}|View PR> | ${{ github.event.pull_request.title }}"
+#       }
+#     },
+#     {
+#       "type": "section",
+#       "text": {
+#         "type": "mrkdwn",
+#         "text": "${{ steps.comment.outputs.comment }}"
+#       }
+#     }${{ inputs.include-changed-files && format(',{{"type":"section","text":{{"type":"mrkdwn","text":"*Changed YAML files:*\n{0}"}}}}', needs.check-yaml-changes.outputs.changed_files) || '' }}
+#   ]
+# }
 
       # ------------------------------------------------------------------
       # Write PR → Revision + thread_ts mapping to Kubernetes
