@@ -100,35 +100,6 @@ jobs:
           SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
           DEFAULT_SECRETS_TO_FETCH: ${{ inputs.DEFAULT_SECRETS_TO_FETCH }}
 
-      # - name: "🕵️ Detect YAML changes"
-      #   id: check
-      #   env:
-      #     GITHUB_TOKEN: ${{ env.GH_TOKEN }}
-      #   run: |
-      #     BASE="${{ github.event.pull_request.base.sha }}"
-      #     HEAD="${{ github.event.pull_request.head.sha }}"
-
-      #     echo "Comparing $BASE..$HEAD"
-
-      #     CHANGED=$(curl -s \
-      #       -H "Authorization: token $GITHUB_TOKEN" \
-      #       -H "Accept: application/vnd.github.v3+json" \
-      #       "https://api.github.com/repos/${{ github.repository }}/compare/$BASE...$HEAD" \
-      #       | jq -r '.files[].filename | select(test("\\.(yaml|yml)$"))')
-
-      #     if [ -z "$CHANGED" ]; then
-      #       echo "has_yaml_changes=false" >> $GITHUB_OUTPUT
-      #       echo "No .yaml/.yml files changed"
-      #     else
-      #       echo "has_yaml_changes=true" >> $GITHUB_OUTPUT
-      #       FORMATTED=$(echo "$CHANGED" | sed 's/^/  • /' || true)
-      #       echo "changed_files<<EOF" >> $GITHUB_OUTPUT
-      #       echo "$FORMATTED" >> $GITHUB_OUTPUT
-      #       echo "EOF" >> $GITHUB_OUTPUT
-      #       echo "YAML files changed:"
-      #       echo "$CHANGED"
-      #     fi
-
       - name: "🕵️ Detect YAML changes"
         id: check
         env:
@@ -281,7 +252,8 @@ jobs:
           # Check if BODY is empty
           if [ -z "$BODY" ]; then
             # Simple case: single-line output works fine without a delimiter
-            echo "comment=No changelog content found in PR body" >> $GITHUB_OUTPUT
+            # echo "comment=No changelog content found in PR body" >> $GITHUB_OUTPUT
+            echo "comment=${{ needs.check-yaml-changes.outputs.CHANGED_LIST }} >> $GITHUB_OUTPUT
             exit 0
           fi
 
