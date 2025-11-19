@@ -244,9 +244,10 @@ jobs:
           # BODY=$(echo "$PR_BODY" | jq -R -r --arg m "${{ inputs.marker }}" \
           #   '. | select(contains($m))' | head -n 1)
           BODY=$(echo "$PR_BODY" | awk '/${{ inputs.marker }}/{found=1; next} found')
+          if [ -z "$BODY" ]; then
+            BODY=$(echo "$PR_BODY" | awk '/Version: /{found=1; next} found')
+          fi
 
-          pwd
-          ls -la ../
           echo "BODY : ${BODY}"
 
           # Check if BODY is empty
