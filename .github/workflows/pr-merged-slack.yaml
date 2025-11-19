@@ -141,62 +141,67 @@ jobs:
           echo "Comparing $BASE..$HEAD"
 
           DATA=$(curl -s \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: token $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
             "https://api.github.com/repos/${{ github.repository }}/compare/$BASE...$HEAD")
 
-          # Extract only .yaml/.yml files under <env>/<tenant>/...
-          # Output format: env tenant full-path
+          # Extract structured YAML changes: env  tenant  full_path
           PAIRS=$(echo "$DATA" | jq -r '
             .files[]
             | select(.filename | test("\\.(yaml|yml)$"; "i"))
             | .filename as $f
-            | ($f | split("/")) as $parts
-            | select($parts | length >= 3)
-            | "\($parts[0])\t\($parts[1])\t$f"
+            | ($f | split("/")) as $p
+            | select($p | length >= 3)
+            | "\($p[0])\t\($p[1])\t$f"
           ')
 
           if [ -z "$PAIRS" ]; then
             echo "has_yaml_changes=false" >> $GITHUB_OUTPUT
-            echo "env_tenant_pairs=" >> $GITHUB_OUTPUT
-            echo "changed_files=" >> $GITHUB_OUTPUT
-            echo "No YAML files changed under <env>/<tenant>/"
+            echo "UNIQUE_PAIRS=" >> $GITHUB_OUTPUT
+            echo "CHANGED_LIST=" >> $GITHUB_OUTPUT
+            echo "MATRIX_JSON=[]" >> $GITHUB_OUTPUT
+            echo "No YAML files changed under <env>/<tenant>/ structure"
             exit 0
           fi
 
           echo "has_yaml_changes=true" >> $GITHUB_OUTPUT
 
-          # Unique env-tenant pairs (preserves relationship!)
+          # Unique env/tenant pairs (preserves relationship)
           UNIQUE_PAIRS=$(echo "$PAIRS" | cut -f1,2 | sort -u)
 
-          # Format as JSON array of objects → perfect for matrix or fromJSON later
-          MATRIX_JSON=$(echo "$UNIQUE_PAIRS" | jq -R 'split("\t") | {env: .[0], tenant: .[1]}' | jq -s .)
-
-          # Pretty list of changed files
+          # Build clean changed files list with proper bullet
           CHANGED_LIST=$(echo "$PAIRS" | cut -f3 | sed 's/^/  • /')
 
-          # Set outputs
-          echo "env_tenant_pairs<<EOF" >> $GITHUB_OUTPUT
-          echo "$UNIQUE_PAIRS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          # Build valid JSON matrix (this is the critical fix!)
+          MATRIX_JSON=$(echo "$UNIQUE_PAIRS" | jq -R 'split("\t") | {env: .[0], tenant: .[1]}' | jq -s .)
 
-          echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+          # === Set outputs safely ===
+          {
+            echo "UNIQUE_PAIRS<<EOF"
+            echo "$UNIQUE_PAIRS"
+            echo "EOF"
 
-          echo "changed_files<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGED_LIST" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+            echo "CHANGED_LIST<<EOF"
+            echo "$CHANGED_LIST"
+            echo "EOF"
 
-          # Human readable summary
-          echo "YAML changes detected in these env/tenant combinations:"
-          echo "$UNIQUE_PAIRS" | awk '{printf "  • %s/%s\n", $1, $2}'
+            # This is the correct way to output JSON in GITHUB_OUTPUT
+            echo "MATRIX_JSON<<EOF"
+            echo "$MATRIX_JSON"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+          # Human-readable summary
+          echo "YAML changes detected in:"
+          echo "$UNIQUE_PAIRS" | awk '{print "  • " $1 "/" $2}'
           echo ""
           echo "Changed files:"
           echo "$CHANGED_LIST"
 
-          # echo "UNIQUE PAIRS:" >> $GITHUB_STEP_SUMMARY
-          # echo "$UNIQUE_PAIRS" | awk '{printf "  • %s/%s\n", $1, $2}' >> $GITHUB_STEP_SUMMARY
-          # echo "Changed files:" >> $GITHUB_STEP_SUMMARY
-          # echo "$CHANGED_LIST" >> $GITHUB_STEP_SUMMARY
+          echo "UNIQUE PAIRS:" >> $GITHUB_STEP_SUMMARY
+          echo "$UNIQUE_PAIRS" | awk '{printf "  • %s/%s\n", $1, $2}' >> $GITHUB_STEP_SUMMARY
+          echo "Changed files:" >> $GITHUB_STEP_SUMMARY
+          echo "$CHANGED_LIST" >> $GITHUB_STEP_SUMMARY
 
   notify-and-track:
     needs: check-yaml-changes
