@@ -197,6 +197,9 @@ jobs:
           echo ""
           echo "Changed files:"
           echo "$CHANGED_LIST"
+          echo ""
+          echo "Pairs:"
+          echo "$PAIRS"
 
           echo "UNIQUE PAIRS:" >> $GITHUB_STEP_SUMMARY
           echo "$UNIQUE_PAIRS" | awk '{printf "  • %s/%s\n", $1, $2}' >> $GITHUB_STEP_SUMMARY
@@ -324,7 +327,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "*🛠️ Key Details*"
+                    "text": "*🛠️ Details*"
                   }
                 },
                 {
@@ -358,44 +361,25 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "${{ steps.comment.outputs.comment }}\n\n[Link to Full Changelog](${ env.CHANGELOG_URL })"
+                    "text": "${{ steps.comment.outputs.comment }}"
                   }
                 }
               ]
             }
 
-
-
-# {
-#   "channel": "${{ inputs.channel-id }}",
-#   "text": ":merged: *PR #${{ github.event.pull_request.number }} merged* by ${{ github.event.pull_request.user.login }}",
-#   "blocks": [
-#     {
-#       "type": "section",
-#       "text": {
-#         "type": "mrkdwn",
-#         "text": ":merged: *PR #${{ github.event.pull_request.number }} merged* by ${{ github.event.pull_request.user.login }}\n<${{ github.event.pull_request.html_url }}|View PR> | ${{ github.event.pull_request.title }}"
-#       }
-#     },
-#     {
-#       "type": "section",
-#       "text": {
-#         "type": "mrkdwn",
-#         "text": "${{ steps.comment.outputs.comment }}"
-#       }
-#     }${{ inputs.include-changed-files && format(',{{"type":"section","text":{{"type":"mrkdwn","text":"*Changed YAML files:*\n{0}"}}}}', needs.check-yaml-changes.outputs.changed_files) || '' }}
-#   ]
-# }
+      - name: "DEBUG"
+        run: |
+          # https://github.com/slackapi/slack-github-action/blob/26d9f0ada3710dfa07fea2aa146a59e80d978652/action.yml#L52
+          echo "steps.slack.outputs.ok : ${{ steps.slack.outputs.ok }}"
+          echo "steps.slack.outputs.response : ${{ steps.slack.outputs.response }}"
+          echo "steps.slack.outputs.time : ${{ steps.slack.outputs.time }}"
+          echo "steps.slack.outputs.channel_id : ${{ steps.slack.outputs.channel_id }}"
+          echo "steps.slack.outputs.ts : ${{ steps.slack.outputs.ts }}"
+          echo "steps.slack.outputs.thread_ts : ${{ steps.slack.outputs.thread_ts }}"
 
       # ------------------------------------------------------------------
       # Write PR → Revision + thread_ts mapping to Kubernetes
       # ------------------------------------------------------------------
-      - name: "☸️ kubectl"
-        run: |
-          kubectl get ns
-          # echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig
-          # export KUBECONFIG=kubeconfig
-
       - name: "☸️ Create/Update pr-to-revision ConfigMap"
         run: |
           COMMIT=${{ github.sha }}
