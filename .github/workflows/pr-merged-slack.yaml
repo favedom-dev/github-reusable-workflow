@@ -253,7 +253,7 @@ jobs:
           if [ -z "$BODY" ]; then
             # Simple case: single-line output works fine without a delimiter
             # echo "comment=No changelog content found in PR body" >> $GITHUB_OUTPUT
-            echo "comment=${{ needs.check-yaml-changes.outputs.CHANGED_LIST }} >> $GITHUB_OUTPUT
+            echo "comment=${{ needs.check-yaml-changes.outputs.CHANGED_LIST }}" >> $GITHUB_OUTPUT
             exit 0
           fi
 
