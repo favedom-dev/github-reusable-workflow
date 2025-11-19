@@ -322,7 +322,7 @@ jobs:
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": "🚀 Deployment Update Initiated"
+                    "text": "🚀 Deployment Update Initiated: PR #${{ github.event.pull_request.number }}"
                   }
                 },
                 {
@@ -340,11 +340,7 @@ jobs:
                   "fields": [
                     {
                       "type": "mrkdwn",
-                      "text": "*Status:*\nDeployment Started 🛠️"
-                    },
-                    {
-                      "type": "mrkdwn",
-                      "text": "*Environment:*\n`${{ needs.check-yaml-changes.outputs.UNIQUE_PAIRS }}`"
+                      "text": "*Environment:*\n${{ needs.check-yaml-changes.outputs.UNIQUE_PAIRS }}"
                     },
                     {
                       "type": "mrkdwn",
