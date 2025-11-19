@@ -153,7 +153,7 @@ jobs:
             | .filename as $f
             | ($f | split("/")) as $p
             | select($p | length >= 3)
-            | "\($p[0])\t\($p[1])\t$f"
+            | "\($p[0])\t\($p[1])\t\($f)"
           ')
 
           if [ -z "$PAIRS" ]; then
@@ -168,13 +168,15 @@ jobs:
           echo "has_yaml_changes=true" >> $GITHUB_OUTPUT
 
           # Unique env/tenant pairs (preserves relationship)
-          UNIQUE_PAIRS=$(echo "$PAIRS" | cut -f1,2 | sort -u)
+          # UNIQUE_PAIRS=$(echo "$PAIRS" | cut -f1,2 | sort -u)
+          UNIQUE_PAIRS=$(echo "$PAIRS" | awk '{print $1 " " $2}' | sort -u)
 
           # Build clean changed files list with proper bullet
           CHANGED_LIST=$(echo "$PAIRS" | cut -f3 | sed 's/^/  • /')
 
           # Build valid JSON matrix (this is the critical fix!)
-          MATRIX_JSON=$(echo "$UNIQUE_PAIRS" | jq -R 'split("\t") | {env: .[0], tenant: .[1]}' | jq -s .)
+          # MATRIX_JSON=$(echo "$UNIQUE_PAIRS" | jq -R 'split("\t") | {env: .[0], tenant: .[1]}' | jq -s .)
+          MATRIX_JSON=$(echo "$UNIQUE_PAIRS" | jq -R 'split(" ") | {env: .[0], tenant: .[1]}' | jq -s .)
 
           # === Set outputs safely ===
           {
