@@ -196,6 +196,9 @@ jobs:
           echo "YAML changes detected in:"
           echo "$UNIQUE_PAIRS" | awk '{print "  • " $1 "/" $2}'
           echo ""
+          echo "UNIQUE_PAIRS:"
+          echo "$UNIQUE_PAIRS"
+          echo ""
           echo "Changed files:"
           echo "$CHANGED_LIST"
           echo ""
@@ -205,10 +208,8 @@ jobs:
           echo "MATRIX_JSON:"
           echo "$MATRIX_JSON"
 
-          echo "UNIQUE PAIRS:" >> $GITHUB_STEP_SUMMARY
+          echo "Environment:" >> $GITHUB_STEP_SUMMARY
           echo "$UNIQUE_PAIRS" | awk '{printf "  • %s/%s\n", $1, $2}' >> $GITHUB_STEP_SUMMARY
-          echo "Changed files:" >> $GITHUB_STEP_SUMMARY
-          echo "$CHANGED_LIST" >> $GITHUB_STEP_SUMMARY
 
   notify-and-track:
     needs: check-yaml-changes
