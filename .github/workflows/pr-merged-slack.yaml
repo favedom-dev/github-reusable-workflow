@@ -83,6 +83,7 @@ jobs:
       changed_files: ${{ steps.check.outputs.changed_files }}
       UNIQUE_PAIRS: ${{ steps.check.outputs.UNIQUE_PAIRS }}
       CHANGED_LIST: ${{ steps.check.outputs.CHANGED_LIST }}
+      MATRIX_JSON: ${{ steps.check.outputs.MATRIX_JSON }}
     steps:
 
       - name: "☁️ Checkout with full history"
@@ -200,6 +201,9 @@ jobs:
           echo ""
           echo "Pairs:"
           echo "$PAIRS"
+          echo ""
+          echo "MATRIX_JSON:"
+          echo "$MATRIX_JSON"
 
           echo "UNIQUE PAIRS:" >> $GITHUB_STEP_SUMMARY
           echo "$UNIQUE_PAIRS" | awk '{printf "  • %s/%s\n", $1, $2}' >> $GITHUB_STEP_SUMMARY
@@ -214,6 +218,7 @@ jobs:
       contents: 'read'
       id-token: 'write'
     outputs:
+      ts: ${{ steps.slack.outputs.ts }}
       thread_ts: ${{ steps.slack.outputs.thread_ts }}
     steps:
 
@@ -300,7 +305,7 @@ jobs:
           # fi
 
       # ------------------------------------------------------------------
-      # Post to Slack and capture thread_ts
+      # Post to Slack and capture ts/thread_ts
       # ------------------------------------------------------------------
       - name: "📝 Post PR message to Slack"
         id: slack
@@ -367,15 +372,15 @@ jobs:
               ]
             }
 
-      - name: "DEBUG"
-        run: |
-          # https://github.com/slackapi/slack-github-action/blob/26d9f0ada3710dfa07fea2aa146a59e80d978652/action.yml#L52
-          echo "steps.slack.outputs.ok : ${{ steps.slack.outputs.ok }}"
-          echo "steps.slack.outputs.response : ${{ steps.slack.outputs.response }}"
-          echo "steps.slack.outputs.time : ${{ steps.slack.outputs.time }}"
-          echo "steps.slack.outputs.channel_id : ${{ steps.slack.outputs.channel_id }}"
-          echo "steps.slack.outputs.ts : ${{ steps.slack.outputs.ts }}"
-          echo "steps.slack.outputs.thread_ts : ${{ steps.slack.outputs.thread_ts }}"
+      # - name: "DEBUG"
+      #   run: |
+      #     # https://github.com/slackapi/slack-github-action/blob/26d9f0ada3710dfa07fea2aa146a59e80d978652/action.yml#L52
+      #     echo "steps.slack.outputs.ok : ${{ steps.slack.outputs.ok }}"
+      #     echo "steps.slack.outputs.response : ${{ steps.slack.outputs.response }}"
+      #     echo "steps.slack.outputs.time : ${{ steps.slack.outputs.time }}"
+      #     echo "steps.slack.outputs.channel_id : ${{ steps.slack.outputs.channel_id }}"
+      #     echo "steps.slack.outputs.ts : ${{ steps.slack.outputs.ts }}"
+      #     echo "steps.slack.outputs.thread_ts : ${{ steps.slack.outputs.thread_ts }}"
 
       # ------------------------------------------------------------------
       # Write PR → Revision + thread_ts mapping to Kubernetes
@@ -396,11 +401,13 @@ jobs:
             url: "${{ github.event.pull_request.html_url }}"
             title: "${{ github.event.pull_request.title }}"
             author: "${{ github.event.pull_request.user.login }}"
-            slack_thread_ts: "${{ steps.slack.outputs.thread_ts }}"
+            slack_thread_ts: "${{ steps.slack.outputs.ts }}"
           EOF
 
       # Expose thread_ts for potential downstream jobs
-      - name: "🩻 Expose thread_ts"
+      - name: "🩻 Expose ts/thread_ts"
         run: |
+          echo "ts        : ${{ steps.slack.outputs.ts }}"
           echo "thread_ts : ${{ steps.slack.outputs.thread_ts }}"
+          echo "ts=${{ steps.slack.outputs.ts }}" >> $GITHUB_OUTPUT
           echo "thread_ts=${{ steps.slack.outputs.thread_ts }}" >> $GITHUB_OUTPUT
