@@ -270,7 +270,7 @@ jobs:
           # Convert Markdown to Slack mrkdwn
           # The -e flag ensures proper newline interpretation
           CLEAN_MRKDWN=$(echo -e "${BODY}" | ../mrkdwn-slack.sh)
-          echo "CLEAN_MRKDWN : ${CLEAN_MRKDWN}"
+          # echo "CLEAN_MRKDWN : ${CLEAN_MRKDWN}"
 
           # Escape the Slack Mrkdwn string for safe JSON/YAML embedding.
           #    - Escape backslashes: s/\\/\\\\/g
