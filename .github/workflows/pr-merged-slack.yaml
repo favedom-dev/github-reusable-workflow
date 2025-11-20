@@ -269,7 +269,14 @@ jobs:
 
           # Convert Markdown to Slack mrkdwn
           # The -e flag ensures proper newline interpretation
-          CLEAN=$(echo -e "${BODY}" | ../mrkdwn-slack.sh)
+          CLEAN_MRKDWN=$(echo -e "${BODY}" | ../mrkdwn-slack.sh)
+          echo "CLEAN_MRKDWN : ${CLEAN_MRKDWN}"
+
+          # Escape the Slack Mrkdwn string for safe JSON/YAML embedding.
+          #    - Escape backslashes: s/\\/\\\\/g
+          #    - Escape double quotes: s/"/\\"/g
+          #    - Convert actual newlines to escaped newlines: s/\n/\\n/g
+          CLEAN=$(echo "$CLEAN_MRKDWN" | sed -E ':a;N;$!ba;s/\n/\\n/g' | sed -E 's/\"/\\\"/g')
           echo "CLEAN : ${CLEAN}"
 
           # Use the EOT delimiter for multi-line output to GITHUB_OUTPUT
