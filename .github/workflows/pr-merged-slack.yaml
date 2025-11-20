@@ -317,8 +317,8 @@ jobs:
                   },
                   "accessory": {
                     "type": "image",
-                    "image_url": "https://storage.googleapis.com/public-assets-8eb56dad/tenants/${{ steps.setup-variables.outputs.TENANT }}n/assets/images/logos/favicon.ico",
-                    "alt_text": "cute cat"
+                    "image_url": "https://storage.googleapis.com/public-assets-8eb56dad/tenants/${{ steps.setup-variables.outputs.TENANT }}/assets/images/logos/favicon.ico",
+                    "alt_text": "tenant favicon"
                         },
                 },
                 {
