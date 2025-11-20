@@ -36,6 +36,10 @@ inputs:
     description: 'Whether to auto-merge the PR'
     default: 'false'
 
+  init-pr-sleep-time:
+    description: 'Seconds to sleep before automerge.  Useful when using ArgoCD notifications'
+    default: '1'
+
   is-helm-chart:
     description: 'Whether this is a Helm chart update'
     default: 'false'
@@ -67,6 +71,7 @@ runs:
         ENV_REPO_NAME: ${{ inputs.env-repo-name }}
         GH_TOKEN: ${{ inputs.gh-token }}
         GITHUB_TOKEN: ${{ inputs.gh-token }}
+        INIT_PR_SLEEP_TIME: ${{ inputs.init-pr-sleep-time }}
         IS_HELM_CHART: ${{ inputs.is-helm-chart }}
         IS_PREVIEW: ${{ inputs.is-preview }}
         MONOREPO_APP: ${{ inputs.monorepo-app }}
@@ -214,7 +219,7 @@ runs:
         # Auto-merge if enabled
         if [ "${DO_PR_MERGE}" = "true" ]; then
           # Sleep added for slack message to sent base on tag approved
-          echo "Auto Squash & Merge PR in ${SLEEP_TIME} seconds......"
+          echo "Auto Squash & Merge PR in ${INIT_PR_SLEEP_TIME} seconds......"
           sleep ${SLEEP_TIME}
           for ((i=1; i<=MAX_RETRIES; i++)); do
             if gh pr merge "${BRANCH_NAME}" -R "${ENV_REPO_NAME}" --auto --squash; then
