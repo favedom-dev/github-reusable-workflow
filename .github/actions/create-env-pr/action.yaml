@@ -212,9 +212,10 @@ runs:
         done
 
         # Auto-merge if enabled
-        echo "Auto-merge if enabled"
         if [ "${DO_PR_MERGE}" = "true" ]; then
-          echo "Auto Squash & Merge PR..."
+          # Sleep added for slack message to sent base on tag approved
+          echo "Auto Squash & Merge PR in ${SLEEP_TIME} seconds......"
+          sleep ${SLEEP_TIME}
           for ((i=1; i<=MAX_RETRIES; i++)); do
             if gh pr merge "${BRANCH_NAME}" -R "${ENV_REPO_NAME}" --auto --squash; then
               echo "PR merged successfully."
