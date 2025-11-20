@@ -264,7 +264,7 @@ jobs:
           env-repo-path: ${{ inputs.ENV_REPO_PATH }}
           gh-token: ${{ env.GH_TOKEN }}
           is-helm-chart: 'false'
-          init-pr-sleep-time: '30'
+          init-pr-sleep-time: '60'
           monorepo-app: ${{ inputs.MONOREPO_APP }}
           name: ${{ inputs.NAME }}
           version: ${{ inputs.VERSION }}
