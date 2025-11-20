@@ -233,7 +233,7 @@ jobs:
         run: |
           JSON='${{ needs.check-yaml-changes.outputs.MATRIX_JSON }}'
           TENANT=$(echo "$JSON" | jq -r '.[0].tenant')
-          if [ "$TENANT" = "tmp-fanfuze" ] || [ "$TENANT" = "fanfuze" ]; then
+          if [ "$TENANT" = "tmp-fanfuze" ] || [ "$TENANT" = "fanfuzenil" ]; then
             TENANT="nilx"
           fi
           echo "Tenant : ${TENANT}"
