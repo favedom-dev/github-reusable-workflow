@@ -145,8 +145,7 @@ jobs:
           # Build clean changed files list with proper bullet
           CHANGED_LIST=$(echo "$PAIRS" | cut -f3 | sed 's/^/  • /')
 
-          # Build valid JSON matrix (this is the critical fix!)
-          # MATRIX_JSON=$(echo "$UNIQUE_PAIRS" | jq -R 'split("\t") | {env: .[0], tenant: .[1]}' | jq -s .)
+          # Build valid JSON matrix
           MATRIX_JSON=$(echo "$UNIQUE_PAIRS" | jq -R 'split(" ") | {env: .[0], tenant: .[1]}' | jq -s .)
 
           # === Set outputs safely ===
@@ -183,6 +182,8 @@ jobs:
 
           echo "Environment:" >> $GITHUB_STEP_SUMMARY
           echo "$UNIQUE_PAIRS" | awk '{printf "  • %s/%s\n", $1, $2}' >> $GITHUB_STEP_SUMMARY
+          echo "Changed files:" >> $GITHUB_STEP_SUMMARY
+          echo "$CHANGED_LIST" >> $GITHUB_STEP_SUMMARY
 
   notify-and-track:
     needs: check-yaml-changes
@@ -227,6 +228,18 @@ jobs:
           location: ${{ inputs.LOCATION }}
           project_id: ${{ inputs.CLUSTER_PROJECT_ID }}
 
+      - name: "🏷️ Set up variables"
+        id: setup-variables
+        run: |
+          JSON='${{ needs.check-yaml-changes.outputs.MATRIX_JSON }}'
+          TENANT=$(echo "$JSON" | jq -r '.[0].tenant')
+          if [ "$TENANT" = "tmp-fanfuze" ] || [ "$TENANT" = "fanfuze" ]; then
+            TENANT="nilx"
+          fi
+          echo "Tenant : ${TENANT}"
+          echo "TENANT=${TENANT}" >> $GITHUB_ENV
+          echo "TENANT=${TENANT}" >> $GITHUB_OUTPUT
+
       # ------------------------------------------------------------------
       # Find the changelog comment
       # ------------------------------------------------------------------
@@ -240,9 +253,6 @@ jobs:
             --json body \
             --jq '.body')
 
-          # Note: We are now searching the PR_BODY variable
-          # BODY=$(echo "$PR_BODY" | jq -R -r --arg m "${{ inputs.marker }}" \
-          #   '. | select(contains($m))' | head -n 1)
           BODY=$(echo "$PR_BODY" | awk '/${{ inputs.marker }}/{found=1; next} found')
           if [ -z "$BODY" ]; then
             BODY=$(echo "$PR_BODY" | awk '/Version: /{found=1; next} found')
@@ -253,7 +263,6 @@ jobs:
           # Check if BODY is empty
           if [ -z "$BODY" ]; then
             # Simple case: single-line output works fine without a delimiter
-            # echo "comment=No changelog content found in PR body" >> $GITHUB_OUTPUT
             echo "comment=${{ needs.check-yaml-changes.outputs.CHANGED_LIST }}" >> $GITHUB_OUTPUT
             exit 0
           fi
@@ -268,17 +277,6 @@ jobs:
           echo "comment<<EOT" >> $GITHUB_OUTPUT
           echo "$CLEAN" >> $GITHUB_OUTPUT
           echo "EOT" >> $GITHUB_OUTPUT
-
-          # if [ -z "$BODY" ]; then
-          #   echo "comment=No changelog content found in PR body" >> $GITHUB_OUTPUT
-          # else
-          #   # Escape newlines and quotes for single-line output if necessary
-          #   # CLEAN=$(echo "$BODY" | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
-          #   # echo "1CLEAN : ${CLEAN}"
-          #   CLEAN=$(echo -e "${BODY}" | ../mrkdwn-slack.sh)
-          #   echo "CLEAN : ${CLEAN}"
-          #   echo "comment=$CLEAN" >> $GITHUB_OUTPUT
-          # fi
 
       # ------------------------------------------------------------------
       # Post to Slack and capture ts/thread_ts
@@ -309,7 +307,12 @@ jobs:
                   "text": {
                     "type": "mrkdwn",
                     "text": "*🛠️ Details*"
-                  }
+                  },
+                  "accessory": {
+                    "type": "image",
+                    "image_url": "https://storage.googleapis.com/public-assets-8eb56dad/tenants/${{ steps.setup-variables.outputs.TENANT }}n/assets/images/logos/favicon.ico",
+                    "alt_text": "cute cat"
+                        },
                 },
                 {
                   "type": "section",
