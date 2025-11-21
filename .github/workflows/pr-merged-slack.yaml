@@ -370,6 +370,10 @@ jobs:
       - name: "☸️ Create/Update pr-to-revision ConfigMap"
         run: |
           COMMIT=${{ github.sha }}
+          MERGE_SHA="${{ github.event.pull_request.merge_commit_sha }}"
+          echo "COMMIT    : ${COMMIT}"
+          echo "MERGE_SHA : ${MERGE_SHA}"
+
           cat <<EOF | kubectl apply -f -
           apiVersion: v1
           kind: ConfigMap
