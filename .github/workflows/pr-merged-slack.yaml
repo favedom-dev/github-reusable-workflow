@@ -331,6 +331,14 @@ jobs:
                     {
                       "type": "mrkdwn",
                       "text": "*GitHub PR Link:*\n<${{ github.event.pull_request.html_url }}|#${{ github.event.pull_request.number }}>"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit:*\n${{ github.sha }}"
+                    }.
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Merge SHA:*\n${{ github.event.pull_request.merge_commit_sha }}"
                     }
                   ]
                 },
