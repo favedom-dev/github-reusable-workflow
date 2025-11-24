@@ -413,11 +413,11 @@ jobs:
       - name: "🕵️ Detect changed applications"
         id: detect-changes
         run: |
-          BASE=${{ github.event.pull_request.base.sha }}
-          MERGE=${{ github.sha }}
+          DATA=$(curl -s \
+            -H "Authorization: token ${{ env.GH_TOKEN}}" \
+            "https://api.github.com/repos/${{ github.repository }}/compare/$BASE...$MERGE")
 
-          # Get changed files between commits
-          changed_files=$(git diff --name-only "$BASE" "$MERGE")
+          changed_files=$(echo "$DATA" | jq -r '.files[].filename')
 
           echo "Changed files:"
           echo "$changed_files"
