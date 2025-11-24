@@ -497,7 +497,6 @@ jobs:
                 --grpc-web \
                 --async \
                 --prune \
-                --wait \
                 --timeout 300
                 # --dry-run
 
