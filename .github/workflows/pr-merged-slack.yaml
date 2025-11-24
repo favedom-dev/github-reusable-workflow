@@ -390,10 +390,10 @@ jobs:
           kind: ConfigMap
           metadata:
             name: pr-to-revision-$COMMIT
-            name-new: pr-rev-${COMMIT:0:20}
             namespace: argocd
             labels:
               app.kubernetes.io/part-of: pr-tracking
+              new-name: pr-rev-${COMMIT:0:20}
           data:
             pr: "${{ github.event.pull_request.number }}"
             url: "${{ github.event.pull_request.html_url }}"
