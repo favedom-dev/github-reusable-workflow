@@ -49,7 +49,10 @@ on:
         type: string
         default: |
           GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
-          SLACK_BOT_TOKEN:projects/1054075584205/secrets/cicd_SLACK_DEVOPS_TOKEN
+          SLACK_BOT_TOKEN:projects/1054075584205/secrets/cicd_SLACK_DEVOPS_TOKEN,
+          ARGOCD_SERVER:projects/1054075584205/secrets/core_ARGOCD_SERVER,
+          ARGOCD_USERNAME:projects/1054075584205/secrets/core_ARGOCD_USERNAME,
+          ARGOCD_PASSWORD:projects/1054075584205/secrets/core_ARGOCD_PASSWORD
 
       FILE_DOWNLOAD_BASE_URL:
         default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
@@ -387,6 +390,7 @@ jobs:
           kind: ConfigMap
           metadata:
             name: pr-to-revision-$COMMIT
+            name-new: pr-rev-${COMMIT:0:20}
             namespace: argocd
             labels:
               app.kubernetes.io/part-of: pr-tracking
@@ -405,3 +409,129 @@ jobs:
           echo "thread_ts : ${{ steps.slack.outputs.thread_ts }}"
           echo "ts=${{ steps.slack.outputs.ts }}" >> $GITHUB_OUTPUT
           echo "thread_ts=${{ steps.slack.outputs.thread_ts }}" >> $GITHUB_OUTPUT
+
+      - name: "🕵️ Detect changed applications"
+        id: detect-changes
+        run: |
+          BASE=${{ github.event.pull_request.base.sha }}
+          MERGE=${{ github.sha }}
+
+          # Get changed files between commits
+          changed_files=$(git diff --name-only "$BASE" "$MERGE")
+
+          echo "Changed files:"
+          echo "$changed_files"
+
+          # Extract unique environment/tenant/service combinations
+          apps=$(echo "$changed_files" | \
+            grep -E '^(dev|prod)/' | \
+            cut -d'/' -f1-3 | \
+            sort -u | \
+            jq -R -s -c 'split("\n") | map(select(length > 0))')
+
+          echo "Detected apps to sync:"
+          echo "$apps" | jq -r '.[]'
+
+          echo "apps=$apps" >> $GITHUB_OUTPUT
+
+      - name: "🔐 Log in to ArgoCD"
+        env:
+          ARGOCD_SERVER: ${{ env.ARGOCD_SERVER }}
+          ARGOCD_USERNAME: ${{ env.ARGOCD_USERNAME }}
+          ARGOCD_PASSWORD: ${{ env.ARGOCD_PASSWORD }}
+        if: steps.detect-changes.outputs.apps != '[]'
+        run: |
+          argocd login ${ARGOCD_SERVER} \
+            --username ${ARGOCD_USERNAME} \
+            --password ${ARGOCD_PASSWORD} \
+            --grpc-web \
+            --insecure
+
+      - name: "🔁 Force ArgoCD sync changed apps"
+        if: steps.detect-changes.outputs.apps != '[]'
+        run: |
+          apps='${{ steps.detect-changes.outputs.apps }}'
+
+          echo "$apps" | jq -r '.[]' | while read app_path; do
+            # Parse the path: env/tenant/service
+            env=$(echo "$app_path" | cut -d'/' -f1)
+            tenant=$(echo "$app_path" | cut -d'/' -f2)
+            service=$(echo "$app_path" | cut -d'/' -f3)
+
+            # Handle any tenant names
+            case $tenant in
+              "fanfuzenil")
+                tenant=fanfuze
+                ;;
+            esac
+
+            # Construct ArgoCD app name (adjust naming convention as needed)
+            app_name="${env}-${tenant}-${service}"
+
+            echo "================================================"
+            echo "Processing: $app_path"
+            echo "ArgoCD App Name: $app_name"
+            echo "================================================"
+
+            # Check if app exists in ArgoCD
+            if argocd app get "$app_name" --grpc-web >/dev/null 2>&1; then
+
+              echo "✓ App exists, hard refresh..."
+              argocd app get "$app_name" \
+                --hard-refresh \
+                --grpc-web
+
+              echo "☑️ App exists, syncing..."
+              # Sync with options
+              argocd app sync "$app_name" \
+                --grpc-web \
+                --async \
+                --prune \
+                --wait \
+                --timeout 300
+                # --dry-run
+
+              echo "✓ Sync initiated for $app_name"
+            else
+              echo "⚠ App '$app_name' not found in ArgoCD, skipping..."
+            fi
+
+            echo ""
+          done
+
+      - name: "🗒️ Summary"
+        if: always()
+        run: |
+          # Parse apps JSON
+          apps='${{ steps.detect-changes.outputs.apps }}'
+          count=$(echo "$apps" | jq '. | length')
+
+          # Build Markdown Summary
+          cat << EOF >> $GITHUB_STEP_SUMMARY
+
+          # Sync Summary
+
+          **Total applications processed:** \`${count}\`
+
+          ## Changed Applications
+          EOF
+
+          # Add each app as a bullet point
+          echo "$apps" | jq -r '.[]' | while IFS= read -r app; do
+            echo "- \`$app\`" >> $GITHUB_STEP_SUMMARY
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # === Console Output ===
+          echo "================================================"
+          echo "Sync Summary"
+          echo "================================================"
+          echo "Total applications processed: $count"
+          if [ "$count" -gt 0 ]; then
+            echo "Changed apps:"
+            echo "$apps" | jq -r '.[]' | sed 's/^/  - /'
+          else
+            echo "No changes detected."
+          fi
+          echo "================================================"
