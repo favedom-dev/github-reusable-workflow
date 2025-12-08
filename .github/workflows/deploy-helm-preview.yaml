@@ -27,7 +27,6 @@ on:  # yamllint disable-line rule:truthy
         type: string
         default: |
           GH_TOKEN:projects/1054075584205/secrets/core_GITHUB_FAVEDOM_DEV_PASSWORD,
-          ARGOCD_SERVER:projects/1054075584205/secrets/core_ARGOCD_SERVER,
           ARGOCD_USERNAME:projects/1054075584205/secrets/core_ARGOCD_USERNAME,
           ARGOCD_PASSWORD:projects/1054075584205/secrets/core_ARGOCD_PASSWORD,
 
@@ -648,7 +647,7 @@ jobs:
 
       - name: "🔐 Log in to ArgoCD"
         env:
-          ARGOCD_SERVER: ${{ env.ARGOCD_SERVER }}
+          ARGOCD_SERVER: argocd.core.joinpeeq.com
           ARGOCD_USERNAME: ${{ env.ARGOCD_USERNAME }}
           ARGOCD_PASSWORD: ${{ env.ARGOCD_PASSWORD }}
         run: |
