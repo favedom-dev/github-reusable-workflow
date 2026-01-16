@@ -189,7 +189,6 @@ runs:
           [ ${#MONOREPO_APP} -gt 0 ] && FULL_VERSION=${MONOREPO_APP}/${FULL_VERSION}
           echo "App: ${NAME}"> ./GH_RELEASE_NOTES.txt
           gh release view ${FULL_VERSION} -R ${{ github.repository }} --json author,tagName,url,body --template \
-          'App: [{{.tagName}}]({{.url}})
           'Version: [{{.tagName}}]({{.url}})
           {{.body}}' >> ./GH_RELEASE_NOTES.txt
         fi
