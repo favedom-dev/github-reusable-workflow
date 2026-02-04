@@ -94,6 +94,7 @@ runs:
       id: auth-gcp-token
       uses: 'google-github-actions/auth@v2'
       with:
+        project_id: 'favedom-dev'
         token_format: 'access_token'
         workload_identity_provider: '${{ inputs.WIF_PROVIDER }}'
         service_account: '${{ inputs.WIF_SERVICE_ACCOUNT }}'
