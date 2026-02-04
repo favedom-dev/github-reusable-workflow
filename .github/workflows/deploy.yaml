@@ -374,7 +374,7 @@ jobs:
 
   dev:
     uses: favedom-dev/github-reusable-workflow/.github/workflows/deploy-argocd-env.yaml@v2.1
-    if: github.ref == 'refs/heads/master' && inputs.DO_DEV == true
+    if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && inputs.DO_DEV == true }}
     with:
       NAME: ${{ inputs.NAME }}
       VERSION: ${{ inputs.VERSION }}
