@@ -171,7 +171,7 @@ jobs:
           GH_USER_EMAIL: ${{ inputs.GH_USER_EMAIL }}
 
       - name: "☁️ Checkout environment repository: ${{ inputs.ENV_REPO_NAME }} branch: ${{ inputs.ENV_REPO_BRANCH }}"
-        if: github.ref == 'refs/heads/master'
+        if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
         uses: actions/checkout@v4
         with:
           repository: ${{ inputs.ENV_REPO_NAME }}
@@ -201,14 +201,14 @@ jobs:
           echo "ENV_REPO_SUBDIR=${ENV_REPO_SUBDIR}" >> $GITHUB_OUTPUT
 
       - name: "👁️‍🗨️ PRE-update: ./${{ inputs.YAML_FILE }}"
-        if: github.ref == 'refs/heads/master'
+        if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
         working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }}
         run: |
           pwd
           cat ./${{ inputs.YAML_FILE }}
 
       - name: "🔄 Update ${{ inputs.NAME }} version ${{ inputs.VERSION }} in environment repo: ${{ inputs.YAML_FILE }}"
-        if: github.ref == 'refs/heads/master'
+        if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
         working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }}
         env:
           DEPENDENCY_NAME: ${{ inputs.DEPENDENCY_NAME }}
@@ -249,7 +249,7 @@ jobs:
           echo "🛈 NOTE: MAY NEED TO EXPAND THIS!!!"
 
       - name: "👁️ Updated: ./${{ inputs.YAML_FILE }}"
-        if: github.ref == 'refs/heads/master'
+        if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
         working-directory: ${{ inputs.ENV_REPO_PATH }}/${{ steps.set-env-repo-subdir.outputs.ENV_REPO_SUBDIR }}
         run: |
           pwd
@@ -257,7 +257,7 @@ jobs:
 
       - name: "🡢 Create environment PR in repo: ${{ inputs.ENV_REPO_NAME }}"
         uses: favedom-dev/github-reusable-workflow/.github/actions/create-env-pr@v2.1
-        if: github.ref == 'refs/heads/master'
+        if: ${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) }}
         with:
           do-pr-merge: ${{ inputs.DO_PR_MERGE }}
           env-repo-name: ${{ inputs.ENV_REPO_NAME }}
