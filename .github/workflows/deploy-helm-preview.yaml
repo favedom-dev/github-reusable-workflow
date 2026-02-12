@@ -244,6 +244,18 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      ADD_PR_LABEL:
+        description: "Enable adding a label to the PR"
+        default: false
+        required: false
+        type: boolean
+
+      PR_LABEL:
+        description: "Label to add to the PR"
+        default: 'ai-pr-tests'
+        required: false
+        type: string
+
     secrets:
       WIF_PROVIDER:
         description: "Workload Identity Federation Provider"
@@ -734,3 +746,10 @@ jobs:
           fi
 
           cat ${PR_BODY} >> $GITHUB_STEP_SUMMARY
+
+      - name: "🏷️ Add PR label"
+        if: inputs.ADD_PR_LABEL == true && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ env.GH_TOKEN }}
+        run: |
+          gh pr edit ${{ github.event.number }} --add-label "${{ inputs.PR_LABEL }}" --repo ${{ github.repository }}
