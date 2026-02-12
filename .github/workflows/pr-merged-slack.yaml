@@ -1,4 +1,5 @@
 name: "PR Merged → Slack Notification"
+# Reusable workflow to send a Slack notification when a PR is merged with deployment info.
 
 on:
   workflow_call:
@@ -21,16 +22,19 @@ on:
         type: boolean
 
       CLUSTER_NAME:
+        description: "GKE cluster name"
         default: 'core'
         required: false
         type: string
 
       CLUSTER_PROJECT_ID:
+        description: "GCP project ID for the Kubernetes cluster"
         default: 'core-services-370815'
         required: false
         type: string
 
       LOCATION:
+        description: "GCP region or zone"
         default: 'us-central1'
         required: false
         type: string
@@ -55,6 +59,7 @@ on:
           ARGOCD_PASSWORD:projects/1054075584205/secrets/core_ARGOCD_PASSWORD
 
       FILE_DOWNLOAD_BASE_URL:
+        description: "Base URL for downloading reusable workflow scripts"
         default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
         required: false
         type: string

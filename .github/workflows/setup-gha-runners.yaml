@@ -1,18 +1,22 @@
 name: GitHub Runners
+# Reusable workflow to determine which GitHub Actions runner to use.
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       GH_RUNS_ON:
+        description: "GitHub Actions runner label to use"
         default: 'ubuntu-latest'
         required: false
         type: string
 
       OVERRIDE_RUNNER_NAME:
+        description: "Override for the GitHub Actions runner name"
         required: false
         type: string
 
       SELF_HOSTED_RUNNER:
+        description: "Whether to use self-hosted runners"
         default: "core"
         required: false
         type: string

@@ -1,13 +1,16 @@
 name: Example
+# Example reusable workflow for testing and demonstration purposes.
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       VER:
+        description: "Version string for the example workflow"
         required: true
         type: string
 
       GH_RUNS_ON:
+        description: "GitHub Actions runner label to use"
         default: 'ubuntu-latest'
         required: false
         type: string

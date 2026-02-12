@@ -1,4 +1,5 @@
 name: Maven jar registry
+# Reusable workflow to build a Maven JAR library and publish it to Google Artifact Registry.
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
@@ -9,6 +10,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       VERSION:
+        description: "Version tag for the build artifact"
         required: true
         type: string
 
@@ -26,6 +28,7 @@ on:  # yamllint disable-line rule:truthy
           SHIFTLEFT_ACCESS_TOKEN:projects/1054075584205/secrets/cicd_SHIFTLEFT_ACCESS_TOKEN
 
       FILE_DOWNLOAD_BASE_URL:
+        description: "Base URL for downloading reusable workflow scripts"
         default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
         required: false
         type: string
@@ -37,11 +40,13 @@ on:  # yamllint disable-line rule:truthy
         description: "Used typically for testing new non-merged helm changes"
 
       JDK_VERSION:
+        description: "Java Development Kit version"
         default: 21
         required: false
         type: number
 
       JDK_DISTRIBUTION:
+        description: "JDK distribution (e.g. corretto, temurin)"
         # default: 'temurin'
         default: 'corretto'
         required: false
@@ -54,61 +59,73 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       MVN_ARGS:
+        description: "Maven build arguments"
         default: 'clean deploy'
         required: false
         type: string
 
       MAVEN_WORKING_DIR:
+        description: "Maven working directory"
         default: '.'
         required: false
         type: string
 
       MAVEN_SETTINGS_URL:
+        description: "URL to Maven settings.xml template"
         default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow/master/.m2'
         required: false
         type: string
 
       PLATFORMS:
+        description: "Target platforms for multi-arch builds"
         required: false
         type: string
         default: linux/amd64,linux/arm64
 
       PROJECT_ID:
+        description: "GCP project ID"
         default: 'favedom-dev'
         required: false
         type: string
 
       GAR_LOCATION:
+        description: "Google Artifact Registry location"
         default: 'us-central1'
         required: false
         type: string
 
       GAR_MAVEN_URL:
+        description: "Google Artifact Registry Maven repository URL"
         default: 'https://console.cloud.google.com/artifacts/maven/'
         required: false
         type: string
 
       MAVEN_REGISTRY:
+        description: "Maven artifact registry name"
         default: 'java'
         required: false
         type: string
 
       JAR_PATH:
+        description: "Path to the JAR artifact"
         default: 'com.velocityz'
         required: false
         type: string
 
       SCAN_JAR:
+        description: "Whether to run security scan on the JAR"
         default: './target/*.jar'
         required: false
         type: string
 
       VCS_PREFIX_CORRECTION:
+        description: "VCS prefix correction for security scanning"
         default: 'src/main/java'
         required: false
         type: string
 
       GH_RUNS_ON:
+        description: "GitHub Actions runner label to use"
         default: 'ubuntu-latest'
         required: false
         type: string

@@ -1,9 +1,11 @@
 name: Repo Version
+# Reusable workflow to auto-increment the semantic version and create a GitHub release.
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       MONOREPO_APP:
+        description: "Monorepo application name (for multi-app repos)"
         default: ''
         required: false
         type: string
@@ -15,21 +17,25 @@ on:  # yamllint disable-line rule:truthy
         type: boolean
 
       INCREMENT_SCRIPT_NAME:
+        description: "Name of the version increment script"
         default: 'auto_increment_version.sh'
         required: false
         type: string
 
       SCRIPT_GIT_BRANCH:
+        description: "Git branch for version scripts"
         default: 'master'
         required: false
         type: string
 
       SCRIPTS_DOWNLOAD_BASE_URL:
+        description: "Base URL for downloading version scripts"
         default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
         required: false
         type: string
 
       GH_RUNS_ON:
+        description: "GitHub Actions runner label to use"
         default: 'ubuntu-latest'
         required: false
         type: string

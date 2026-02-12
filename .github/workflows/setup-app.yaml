@@ -1,41 +1,50 @@
 name: App Setup
+# Reusable workflow to derive application-level setup variables (name, namespace, feature flags).
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       OVERRIDE_NAME:
+        description: "Override for the derived service name"
         required: false
         type: string
 
       OVERRIDE_PREVIEW_NAMESPACE:
+        description: "Override for the preview namespace"
         required: false
         type: string
 
       USE_REPO_NAME_PREVIEW_NAMESPACE:
+        description: "Use repository name as preview namespace"
         default: false
         required: false
         type: boolean
 
       IS_STACKHAWK_READY:
+        description: "Whether StackHawk scanning is configured"
         default: true
         required: false
         type: boolean
 
       OVERRIDE_IS_STACKHAWK_READY:
+        description: "Override StackHawk readiness check"
         required: false
         type: string
 
       STACKHAWK_DIRECTORY:
+        description: "Directory for StackHawk configuration"
         default: 'stackhawk'
         required: false
         type: string
 
       STACKHAWK_TMPL_YML:
+        description: "StackHawk YAML template file name"
         default: 'stackhawk-tmpl.yml'
         required: false
         type: string
 
       DO_TRIVY:
+        description: "Whether to run Trivy security scanning"
         required: false
         type: string
 
@@ -50,6 +59,7 @@ on:  # yamllint disable-line rule:truthy
       #   type: boolean
 
       GH_RUNS_ON:
+        description: "GitHub Actions runner label to use"
         default: 'ubuntu-latest'
         # default: 'core'
         required: false

@@ -1,4 +1,5 @@
 name: Setup
+# Reusable workflow to set up common CI variables, version, and environment configuration.
 
 on:
   workflow_call:
@@ -6,6 +7,7 @@ on:
     inputs:
       # Inputs from setup-app.yaml
       OVERRIDE_NAME:
+        description: "Override for the derived service name"
         required: false
         type: string
 
@@ -16,25 +18,30 @@ on:
         type: boolean
 
       OVERRIDE_PREVIEW_NAMESPACE:
+        description: "Override for the preview namespace"
         required: false
         type: string
 
       USE_REPO_NAME_PREVIEW_NAMESPACE:
+        description: "Use repository name as preview namespace"
         default: false
         required: false
         type: boolean
 
       IS_STACKHAWK_READY:
+        description: "Whether StackHawk scanning is configured"
         default: true
         required: false
         type: boolean
 
       STACKHAWK_DIRECTORY:
+        description: "Directory for StackHawk configuration"
         default: 'stackhawk'
         required: false
         type: string
 
       STACKHAWK_TMPL_YML:
+        description: "StackHawk YAML template file name"
         default: 'stackhawk-tmpl.yml'
         required: false
         type: string
@@ -55,27 +62,32 @@ on:
 
       # Inputs from repo-version.yaml
       MONOREPO_APP:
+        description: "Monorepo application name (for multi-app repos)"
         default: ''
         required: false
         type: string
 
       INCREMENT_SCRIPT_NAME:
+        description: "Name of the version increment script"
         default: 'auto_increment_version.sh'
         required: false
         type: string
 
       SCRIPT_GIT_BRANCH:
+        description: "Git branch for version scripts"
         default: 'master'
         required: false
         type: string
 
       SCRIPTS_DOWNLOAD_BASE_URL:
+        description: "Base URL for downloading version scripts"
         default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
         required: false
         type: string
 
       # Common input
       GH_RUNS_ON:
+        description: "GitHub Actions runner label to use"
         default: 'ubuntu-latest'
         required: false
         type: string
