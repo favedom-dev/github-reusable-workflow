@@ -336,7 +336,7 @@ jobs:
     with:
       NAME: ${{ inputs.NAME }}
       VERSION: ${{ inputs.VERSION }}
-      ADD_PR_LABEL: ${{ inputs.VERSION }}
+      ADD_PR_LABEL: ${{ inputs.ADD_PR_LABEL }}
       SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
       DEFAULT_SECRETS_TO_FETCH: ${{ inputs.PREVIEW_DEFAULT_SECRETS_TO_FETCH }}
       EXTRA_VARS: ${{ inputs.EXTRA_VARS }}
