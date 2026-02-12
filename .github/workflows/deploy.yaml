@@ -227,6 +227,12 @@ on:  # yamllint disable-line rule:truthy
         required: false
         type: string
 
+      ADD_PR_LABEL:
+        description: "Enable adding a label to the PR"
+        default: false
+        required: false
+        type: boolean
+
       GH_RUNS_ON:
         default: 'ubuntu-latest'
         required: false
@@ -330,6 +336,7 @@ jobs:
     with:
       NAME: ${{ inputs.NAME }}
       VERSION: ${{ inputs.VERSION }}
+      ADD_PR_LABEL: ${{ inputs.VERSION }}
       SECRETS_TO_FETCH: ${{ inputs.SECRETS_TO_FETCH }}
       DEFAULT_SECRETS_TO_FETCH: ${{ inputs.PREVIEW_DEFAULT_SECRETS_TO_FETCH }}
       EXTRA_VARS: ${{ inputs.EXTRA_VARS }}
