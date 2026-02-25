@@ -78,7 +78,7 @@ jobs:
     #   GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
     outputs:
       version: ${{ steps.set-version.outputs.version }}
-      tag: ${{ steps.set-version.outputs.tag }}
+      tag: ${{ steps.version.outputs.tag }}
       build-version: ${{ steps.set-version.outputs.build-version }}
     steps:
 
