@@ -78,7 +78,7 @@ on:  # yamllint disable-line rule:truthy
 jobs:
 
   app-setup:
-    timeout-minutes: 4
+    timeout-minutes: 10
     runs-on: ${{ inputs.GH_RUNS_ON }}
     outputs:
       NAME: ${{ steps.set-name.outputs.NAME }}
