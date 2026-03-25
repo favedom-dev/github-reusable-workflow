@@ -309,7 +309,7 @@ jobs:
           registry: '${{ inputs.GAR_LOCATION }}-docker.pkg.dev'  # Google Artifact Registry
 
       - name: "🚀 Run Trivy vulnerability scanner: ${{ matrix.arch }}"
-        uses: aquasecurity/trivy-action@0.29.0
+        uses: aquasecurity/trivy-action@0.35.0
         env:
           TRIVY_PLATFORMS: ${{ matrix.arch }}
         with:
