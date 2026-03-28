@@ -74,13 +74,17 @@ fi
 ESCAPED_DEP=$(echo "${DEPENDENCIES}" | sed 's/\./\\./g')
 echo "ESCAPED_DEP       : ${ESCAPED_DEP}"
 
+# Escape sed special characters (/, &, \) in replacement values
+SAFE_NEW_IMAGE_TAG=$(printf '%s\n' "${NEW_IMAGE_TAG}" | sed 's/[\/&\\]/\\&/g')
+SAFE_NEW_REPO=$(printf '%s\n' "${NEW_REPO}" | sed 's/[\/&\\]/\\&/g')
+
 # Use sed to update the image tag associated with the specified dependency
-sed -i '/'"${ESCAPED_DEP}"':/,/^[^ ]/ s/\(tag:\s*\).*/\1'"${NEW_IMAGE_TAG}"'/' "${VALUES_YAML}"
+sed -i '/'"${ESCAPED_DEP}"':/,/^[^ ]/ s/\(tag:\s*\).*/\1'"${SAFE_NEW_IMAGE_TAG}"'/' "${VALUES_YAML}"
 echo ""
 echo "Updated image tag in ${VALUES_YAML} to ${NEW_IMAGE_TAG} for dependency: ${TARGET_DEP}"
 echo ""
 
-sed -i '/'"${ESCAPED_DEP}"':/,/^[^ ]/ s/\(repository:\s*\).*/\1'"${NEW_REPO}"'/' "${VALUES_YAML}"
+sed -i '/'"${ESCAPED_DEP}"':/,/^[^ ]/ s/\(repository:\s*\).*/\1'"${SAFE_NEW_REPO}"'/' "${VALUES_YAML}"
 echo ""
 echo "Updated image repository in ${VALUES_YAML} to ${NEW_REPO} for dependency: ${TARGET_DEP}"
 

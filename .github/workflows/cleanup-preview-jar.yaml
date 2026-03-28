@@ -1,4 +1,5 @@
 name: PR Cleanup jar
+# Reusable workflow to clean up preview JAR artifacts when a PR is closed.
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
@@ -14,51 +15,61 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       PR_PREFIX:
+        description: "Pull request branch prefix to match for cleanup"
         default: '0.0.0-SNAPSHOT-PR-'
         required: false
         type: string
 
       PROJECT_ID:
+        description: "GCP project ID"
         default: 'favedom-dev'
         required: false
         type: string
 
       GAR_LOCATION:
+        description: "Google Artifact Registry location"
         default: 'us-central1'
         required: false
         type: string
 
       ARTIFACT_REGISTRY:
+        description: "Artifact Registry name"
         default: 'maven'
         required: false
         type: string
 
       ARTIFACT_REPOSITORY:
+        description: "Artifact Repository name within the registry"
         default: 'java'
         required: false
         type: string
 
       JAR_PATH:
+        description: "Path to the JAR artifact"
         default: 'com.velocityz'
         required: false
         type: string
 
       CREATE_CREDENTIALS_FILE:
+        description: "Whether to create a GCP credentials file"
         default: true
         required: false
         type: boolean
 
       EXPORT_ENVIRONMENT_VARIABLES:
+        description: "Whether to export GCP environment variables"
         default: true
         required: false
         type: boolean
 
       LOCATION:
+        description: "GCP region or zone"
         default: 'us-central1-a'
         required: false
         type: string
 
       GH_RUNS_ON:
+        description: "GitHub Actions runner label to use"
         default: 'ubuntu-latest'
         required: false
         type: string

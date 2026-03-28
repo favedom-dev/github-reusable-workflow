@@ -1,4 +1,5 @@
 name: Repo Tag
+# Reusable workflow to tag a repo with major and minor version tags after release.
 run-name: "Repo Tag: ${{ inputs.TAG_NAME }} Branch: ${{ inputs.BRANCH_NAME }}"
 
 on: # yamllint disable-line rule:truthy

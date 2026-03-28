@@ -1,25 +1,31 @@
 name: Stackhawk
+# Reusable workflow to run StackHawk DAST security testing against a deployed application.
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       NAME:  # name of service, (ex: users)
+        description: "Name of the service or application"
         required: true
         type: string
 
       NAMESPACE:
+        description: "Kubernetes namespace for the target application"
         required: true
         type: string
 
       API_PATH:
+        description: "API path for security testing"
         required: true
         type: string
 
       APP_HOST:
+        description: "Application hostname for security testing"
         required: false
         type: string
 
       APP_ID:
+        description: "Application ID for security testing"
         required: false
         type: string
 
@@ -37,31 +43,37 @@ on:  # yamllint disable-line rule:truthy
           HAWK_API_KEY:projects/1054075584205/secrets/cicd_HAWK_API_KEY
 
       TEST_USERNAME:
+        description: "Username for authenticated security testing"
         default: 'stackhawk@velocityz.com'
         required: false
         type: string
 
       BASE_DOMAIN:
+        description: "Base domain for the target application"
         default: 'dev.fanfuzenil.com'
         required: false
         type: string
 
       KEYCLOAK_REALM:
+        description: "Keycloak realm for authentication"
         default: 'fanfuzenil'
         required: false
         type: string
 
       HEALTH_PATH:
+        description: "Health check endpoint path"
         default: 'actuator/health'
         required: false
         type: string
 
       HEALTH_RETRIES:
+        description: "Number of health check retries"
         default: 6
         required: false
         type: number
 
       HEALTH_RETRY_DELAY:
+        description: "Delay between health check retries in seconds"
         default: 15
         required: false
         type: number
@@ -73,60 +85,72 @@ on:  # yamllint disable-line rule:truthy
         description: "Used typically for testing new non-merged helm changes"
 
       FILE_DOWNLOAD_BASE_URL:
+        description: "Base URL for downloading reusable workflow scripts"
         default: 'https://raw.githubusercontent.com/favedom-dev/github-reusable-workflow'
         required: false
         type: string
 
       CURL_ARGS:
+        description: "Additional curl arguments for health checks"
         default: ''
         required: false
         type: string
 
       JDK_VERSION:
+        description: "Java Development Kit version"
         default: 21
         required: false
         type: number
 
       JDK_DISTRIBUTION:
+        description: "JDK distribution (e.g. corretto, temurin)"
         default: 'temurin'
         required: false
         type: string
 
       AUTH0_AUDIENCE:
+        description: "Auth0 API audience identifier"
         default: ''
         required: false
         type: string
 
       AUTH0_DOMAIN:
+        description: "Auth0 domain for authentication"
         default: 'dev-r07m4b63j2tgnwyc.us.auth0.com'
         required: false
         type: string
 
       AUTH0_SCOPE:
+        description: "Auth0 OAuth scope"
         default: 'openid profile email'
         required: false
         type: string
 
       STACKHAWK_SLEEP_DELAY:
+        description: "Delay before running StackHawk scan"
         required: false
         type: number
 
       STACKHAWK_SLEEP_DELAY_DEFAULT:
+        description: "Default sleep delay for StackHawk"
         default: 15
         required: false
         type: number
 
       STACKHAWK_SLEEP_DELAY_DEFAULT_JAVA:
+        description: "Default sleep delay for Java StackHawk scans"
         default: 30
         required: false
         type: number
 
       STACKHAWK_SETUP_SCRIPT_NAME:
+        description: "Name of the StackHawk setup script"
         default: 'setup-stackhawk.sh'
         required: false
         type: string
 
       STACKHAWK_TMPL:
+        description: "StackHawk configuration template name"
         default: 'stackhawk-tmpl.yml'
         required: false
         type: string
@@ -138,45 +162,54 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       STACKHAWK_DIRECTORY:
+        description: "Directory for StackHawk configuration"
         default: 'stackhawk'
         required: false
         type: string
 
       STACKHAWK_APP_ID:
+        description: "StackHawk application ID"
         required: false
         type: string
 
       STACKHAWK_APP_ENV:
+        description: "StackHawk application environment"
         default: 'Preview'
         required: false
         type: string
 
       STACKHAWK_DRYRUN:
+        description: "Run StackHawk scan in dry-run mode"
         default: false
         required: false
         type: boolean
 
       STACKHAWK_VERBOSE:
+        description: "Enable verbose StackHawk output"
         default: false
         required: false
         type: boolean
 
       STACKHAWK_DEBUG:
+        description: "Enable StackHawk debug mode"
         default: true
         required: false
         type: boolean
 
       STACKHAWK_CODESCANNINGALERTS:
+        description: "Enable code scanning alerts from StackHawk"
         default: true
         required: false
         type: boolean
 
       JOBS_TIMEOUT:
+        description: "Timeout in minutes for the workflow jobs"
         default: 10
         required: false
         type: number
 
       GH_RUNS_ON:
+        description: "GitHub Actions runner label to use"
         default: 'ubuntu-latest'
         required: false
         type: string

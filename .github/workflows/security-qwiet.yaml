@@ -1,34 +1,41 @@
 name: Qwiet
+# Reusable workflow to run Qwiet (ShiftLeft) SAST security analysis.
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
 
     inputs:
       NAME:  # name of service, (ex: peeq-tracking)
+        description: "Name of the service or application"
         required: true
         type: string
 
       ARG_LANGUAGE:
+        description: "Target language for security scanning"
         default: '--js'
         required: false
         type: string
 
       ARG_STANDARD:
+        description: "Security standard to scan against"
         default: '--cpg'
         required: false
         type: string
 
       SCAN_DIR:
+        description: "Directory to scan for security issues"
         default: './'
         required: false
         type: string
 
       VCS_PREFIX_CORRECTION:
+        description: "VCS prefix correction for security scanning"
         default: ''
         required: false
         type: string
 
       GH_RUNS_ON:
+        description: "GitHub Actions runner label to use"
         default: 'ubuntu-latest'
         required: false
         type: string

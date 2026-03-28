@@ -1,25 +1,30 @@
 # https://github.com/sqlfluff/sqlfluff-github-actions/tree/main/menu_of_workflows/drizly
 name: SQLFluff
+# Reusable workflow to lint SQL files using sqlfluff.
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       DIALECTS:
+        description: "SQL dialects to lint against"
         default: 'postgres'
         required: false
         type: string
 
       SQL_DIR:
+        description: "Directory containing SQL files to lint"
         default: "."
         required: false
         type: string
 
       PYTHON_VERSION:
+        description: "Python version for linting tools"
         default: "3.7"
         required: false
         type: string
 
       GH_RUNS_ON:
+        description: "GitHub Actions runner label to use"
         default: 'ubuntu-latest'
         required: false
         type: string

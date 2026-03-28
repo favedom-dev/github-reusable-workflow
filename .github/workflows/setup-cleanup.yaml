@@ -1,4 +1,5 @@
 name: Setup
+# Reusable workflow to derive cleanup-related setup variables for preview environments.
 
 on:
   workflow_call:
@@ -6,34 +7,41 @@ on:
     inputs:
 
       OVERRIDE_NAME:
+        description: "Override for the derived service name"
         required: false
         type: string
 
       OVERRIDE_PREVIEW_NAMESPACE:
+        description: "Override for the preview namespace"
         required: false
         type: string
 
       USE_REPO_NAME_PREVIEW_NAMESPACE:
+        description: "Use repository name as preview namespace"
         default: false
         required: false
         type: boolean
 
       IS_STACKHAWK_READY:
+        description: "Whether StackHawk scanning is configured"
         default: true
         required: false
         type: boolean
 
       STACKHAWK_DIRECTORY:
+        description: "Directory for StackHawk configuration"
         default: 'stackhawk'
         required: false
         type: string
 
       STACKHAWK_TMPL_YML:
+        description: "StackHawk YAML template file name"
         default: 'stackhawk-tmpl.yml'
         required: false
         type: string
 
       GH_RUNS_ON:
+        description: "GitHub Actions runner label to use"
         default: 'ubuntu-latest'
         required: false
         type: string

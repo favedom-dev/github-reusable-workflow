@@ -1,9 +1,11 @@
 name: App Setup
+# Reusable workflow to configure tenant-specific naming and deployment variables.
 
 on:  # yamllint disable-line rule:truthy
   workflow_call:
     inputs:
       TENANT:
+        description: "Tenant identifier for multi-tenant deployments"
         # default: 'speedofai'
         # default: 'agilenetwork'
         # default: 'fanfuzenil'
@@ -13,6 +15,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       DEFAULT_TENANT:
+        description: "Default tenant name"
         default: 'agilenetwork'
         # default: 'speedofai'
         # default: 'fanfuzenil'
@@ -22,28 +25,34 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       DEFAULT_APP_NAME:
+        description: "Default application name"
         # default: 'mono-web'
         required: false
         type: string
 
       ARGOCD_APP_NAME:
+        description: "ArgoCD application name"
         # default: 'mono-web'
         required: false
         type: string
 
       OVERRIDE_NAME_PREFIX:
+        description: "Override for the name prefix"
         required: false
         type: string
 
       OVERRIDE_NAME:
+        description: "Override for the derived service name"
         required: false
         type: string
 
       OVERRIDE_CHART_APP_NAME_PREFIX:
+        description: "Override for the Helm chart app name prefix"
         required: false
         type: string
 
       OVERRIDE_CHART_APP_NAME:
+        description: "Override for the Helm chart app name"
         required: false
         type: string
 
@@ -59,6 +68,7 @@ on:  # yamllint disable-line rule:truthy
         type: string
 
       OVERRIDE_PREVIEW_NAMESPACE:
+        description: "Override for the preview namespace"
         required: false
         type: string
 
@@ -69,6 +79,7 @@ on:  # yamllint disable-line rule:truthy
         description: "true for Knative to create a new namespace per PR run"
 
       GH_RUNS_ON:
+        description: "GitHub Actions runner label to use"
         default: 'ubuntu-latest'
         # default: 'core'
         required: false
