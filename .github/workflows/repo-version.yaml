@@ -92,7 +92,9 @@ jobs:
           fetch-depth: 0
 
       - name: "🔐 Get Secrets"
-        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
+        # TODO: after testing and tagging uncomment
+        # uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2.1
+        uses: favedom-dev/github-reusable-workflow/.github/actions/get-google-secrets@v2
         id: get-secrets
         with:
           WIF_PROVIDER: ${{ secrets.WIF_PROVIDER }}
