@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # CHART_NAME=users
-# CHART_DIR=dev/tmp-fanfuze/users
+# CHART_DIR=dev/fanfuzenil/users
 # VERSION=9.9.9
 # YAML_FILE=requirements.yaml
 CHART_DIR=${CHART_DIR}
